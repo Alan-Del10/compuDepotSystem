@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Inventario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use DateTime;
 
 class InventarioController extends Controller
 {
@@ -14,7 +17,8 @@ class InventarioController extends Controller
      */
     public function index()
     {
-        //
+        $inventarios = Inventario::orderby('id_inventario','asc')->get();
+        return view('Inventario.inventario', compact('inventarios'));
     }
 
     /**
@@ -24,7 +28,10 @@ class InventarioController extends Controller
      */
     public function create()
     {
-        //
+        $modelos = DB::table('modelo')->get();
+        $marcas = DB::table('marca')->get();
+        $capacidades = DB::table('capacidad')->get();
+        return view('Inventario.agregarInventario',  compact('modelos', 'marcas', 'capacidades'));
     }
 
     /**
@@ -35,7 +42,43 @@ class InventarioController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            //Validamos los campos de la base de datos, para no aceptar información erronea
+            $validator = Validator::make($request->all(), [
+                'id_marca' => 'required|numeric',
+                'id_modelo' => 'required|numeric',
+                'descripcion' => 'required|max:200',
+                'peso' => 'required|numeric',
+                'costo' => 'nullable|numeric',
+                'largo' => 'nullable|numeric',
+                'alto' => 'nullable|numeric',
+                'ancho' => 'nullable|numeric',
+                'capacidad' => 'nullable|numeric'
+            ]);
+
+            //Si encuentra datos erroneos los regresa con un mensaje de error
+            if($validator->fails()){
+                return redirect()->back()->withErrors($validator);
+            }else{
+                $fecha_alta = new DateTime();
+                Inventario::insert([
+                    'id_marca' => $request->marca,
+                    'id_modelo' => $request->modelo,
+                    'descripcion' => $request->descripcion,
+                    'peso' => $request->peso,
+                    'costo_promedio' => $request->costo,
+                    'largo' => $request->largo,
+                    'alto' => $request->alto,
+                    'ancho' => $request->ancho,
+                    'fecha_alta' => $fecha_alta,
+                    'id_capacidad' => $request->capacidad
+                ]);
+                return redirect()->back()->with('success', 'Se agregó correctamente el artículo.');
+            }
+
+        } catch (\Throwable $th) {
+            return redirect()->back()->withErrors($th);
+        }
     }
 
     /**
@@ -55,9 +98,12 @@ class InventarioController extends Controller
      * @param  \App\Inventario  $inventario
      * @return \Illuminate\Http\Response
      */
-    public function edit(Inventario $inventario)
+    public function edit($id)
     {
-        //
+        $inventario = Inventario::find($id);
+        $modelos = DB::table('modelo')->get();
+        $marcas = DB::table('marca')->get();
+        return view('Inventario.modificarInventario', compact('inventario', 'modelos', 'marcas'));
     }
 
     /**
