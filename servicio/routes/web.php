@@ -67,13 +67,22 @@ Route::resource('TipoInventario', TipoInventarioController::class)->middleware('
 
 //Inventario routes
 Route::resource('Inventario', InventarioController::class)->middleware('auth');
+Route::get('/inventario/verificarUPC', 'InventarioController@verificarUPC')->name('verificarUPC')->middleware('auth');
+Route::get('/inventario/agregarCapacidad','InventarioController@agregarCapacidad')->name('agregarCapacidad')->middleware('auth');
+
 
 //Capacidad routes
 Route::resource('Capacidad', CapacidadController::class)->middleware('auth');
 
+//Categoria routes
+Route::resource('Categoria', CategoriaController::class)->middleware('auth');
+
 //Sucursal routes
 Route::resource('Sucursal', SucursalController::class)->middleware('auth');
 //Route::get('/home', 'HomeController@index')->name('home');
+
+//Venta routes
+Route::resource('Venta', VentaController::class)->middleware('auth');
 
 //Configuracion routes
 Route::resource('Configuracion', ConfiguracionController::class)->middleware('auth');
@@ -82,4 +91,4 @@ Route::post('/configuracionLogo','ConfiguracionController@cambiarLogoAplicacion'
 Route::post('/configuracionCorreo','ConfiguracionController@cambiarSMTPAplicacion')->name('cambiarSMTPAplicacion')->middleware('auth');
 
 
-
+Route::post('/agregarVenta', 'VentaController@store');

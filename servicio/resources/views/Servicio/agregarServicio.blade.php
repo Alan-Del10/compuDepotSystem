@@ -125,7 +125,7 @@
                         <div class="form-group row">
                             <label for="notasTecnicas" class="col-sm-2 col-form-label">Notas Técnicas (Revision adicional)</label>
                             <div class="col-sm-4">
-                            <textarea name="notasTecnicas" id="notasTecnicas" cols="120" rows="5" placeholder="Notas Técnicas (Revision adicional)"></textarea>
+                            <textarea name="notasTecnicas" id="notasTecnicas" class="form-control" rows="5" placeholder="Notas Técnicas (Revision adicional)"></textarea>
                             </div>
                             <div class="col-sm-2"></div><!-- separador -->
                             <div class="col-sm-3">
@@ -188,7 +188,7 @@
                         <div class="form-group row">
                             <label for="notas" class="col-sm-2 col-form-label">Notas</label>
                             <div class="col-sm-4">
-                            <textarea name="notas" id="notas" cols="120" rows="5" placeholder="Notas"></textarea>
+                            <textarea name="notas" class="form-control" id="notas" cols="120" rows="5" placeholder="Notas"></textarea>
                             </div>
                         </div>
                         <!-- /.card-body -->

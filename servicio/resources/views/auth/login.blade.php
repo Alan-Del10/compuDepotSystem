@@ -41,6 +41,97 @@
     <script src="{{asset('plugins/jquery/jquery.min.js')}}"></script>
     <!-- Bootstrap 4 -->
 
+    <style>
+body {
+	font-family: 'Varela Round', sans-serif;
+}
+.modal-login {
+	color: #636363;
+	width: 450px;
+}
+.modal-login .modal-content {
+	padding: 10px;
+	border-radius: 5px;
+	border: none;
+    color: #636363;
+}
+.modal-login .modal-header {
+	border-bottom: none;
+	position: relative;
+	justify-content: center;
+}
+.modal-login h4 {
+	text-align: center;
+	font-size: 26px;
+	margin: 30px 0 -15px;
+}
+.modal-login .form-control:focus {
+	border-color: #70c5c0;
+}
+.modal-login .form-control, .modal-login .btn {
+	min-height: 40px;
+	border-radius: 3px;
+}
+.modal-login .close {
+	position: absolute;
+	top: -5px;
+	right: -5px;
+}
+.modal-login .modal-footer {
+	background: #ecf0f1;
+	border-color: #dee4e7;
+	text-align: center;
+	justify-content: center;
+	margin: 0 -20px -20px;
+	border-radius: 5px;
+	font-size: 13px;
+}
+.modal-login .modal-footer a {
+	color: rgb(138, 132, 132)173, 12, 12);
+}
+.modal-login .avatar {
+	position: absolute;
+	margin: 0 auto;
+	left: 0;
+	right: 0;
+	top: -70px;
+	width: 95px;
+	height: 95px;
+	border-radius: 50%;
+	z-index: 9;
+	background: #252421;
+	padding: 15px;
+	box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+}
+.modal-login .avatar img {
+	width: 100%;
+}
+.modal-login.modal-dialog {
+	margin-top: 80px;
+}
+.modal-login .btn, .modal-login .btn:active {
+	color: #fff;
+	border-radius: 4px;
+	background: #60c7c1 !important;
+	text-decoration: none;
+	transition: all 0.4s;
+	line-height: normal;
+	border: none;
+}
+.modal-login .btn:hover, .modal-login .btn:focus {
+	background: #45aba6 !important;
+	outline: none;
+}
+.trigger-btn {
+	display: inline-block;
+	margin: 100px auto;
+}
+.remember{
+    left 10;
+    position: center;
+}
+</style>
+
     <script src="{{asset('plugins/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 </head>
@@ -50,14 +141,18 @@
 		<div class="modal-content">
 			<div class="modal-header">
                 <div class="card">
-                    <div class="card-header">{{ __('Login') }}</div>
+                <div class="avatar">
+					<img src="/storage/img/logo.png" alt="Avatar">
+				</div>
+
+                    <h4 class="modal-header center">{{ __('Login') }}</h4>
 
                     <div class="card-body">
                         <form method="POST" action="{{ route('login') }}">
                             @csrf
 
                             <div class="form-group row">
-                                <label for="email" class="col-md-4 col-form-label text-md-right">{{ __('E-Mail Address') }}</label>
+                                <label for="email" class="col-md-4 col-form-label text-md-center">{{ __('E-Mail') }}</label>
 
                                 <div class="col-md-6">
                                     <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
@@ -71,7 +166,7 @@
                             </div>
 
                             <div class="form-group row">
-                                <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
+                                <label for="password" class="col-md-4 col-form-label text-md-center">{{ __('Password') }}</label>
 
                                 <div class="col-md-6">
                                     <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
@@ -101,13 +196,17 @@
                                     <button type="submit" class="btn btn-primary">
                                         {{ __('Login') }}
                                     </button>
+                                   <br>
+                                   <br>
+
 
                                     @if (Route::has('password.request'))
-                                        <a class="btn btn-link" href="{{ route('password.request') }}">
-                                            {{ __('Forgot Your Password?') }}
+                                        <a  href="{{ route('password.request') }}">
+                                            {{ __('¿Olvidaste tu contraseña?') }}
                                         </a>
                                     @endif
                                 </div>
+
                             </div>
                         </form>
                     </div>

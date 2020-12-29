@@ -40,9 +40,41 @@
     <!-- jQuery -->
     <script src="{{asset('plugins/jquery/jquery.min.js')}}"></script>
     <!-- Bootstrap 4 -->
-
     <script src="{{asset('plugins/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+    <style>
+        .scroll {
+            overflow-y: scroll;
+            max-height: 70.85vh;
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .scroll {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        /* Track */
+        .scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        /* Handle */
+        .scroll::-webkit-scrollbar-thumb {
+            background: #888;
+        }
+
+        /* Handle on hover */
+        .scroll::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div id="app">
@@ -177,7 +209,7 @@
                     <ul class="nav nav-treeview">
 
                     <li class="nav-item">
-                        <a href="pages/layout/fixed-sidebar.html" class="nav-link">
+                        <a href="{{route("Venta.index")}}" class="nav-link" id="ventas">
                         <i class="fas fa-mobile nav-icon"></i>
                         <p>Ventas Smartphones</p>
                         </a>
@@ -240,28 +272,28 @@
                     <a href="#" class="nav-link">
                     <i class="nav-icon fas fa-box-open"></i>
                     <p>
-                        Inventario
+                        Inventarios
                         <i class="fas fa-angle-left right"></i>
                         <span class="badge badge-info right">6</span>
                     </p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{route('Articulo.index')}}" class="nav-link">
+                            <a href="{{route('Inventario.index')}}" class="nav-link">
                             <i class="fas fa-mobile nav-icon"></i>
-                            <p>Artículos</p>
+                            <p>Listado de Inventario</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{route("Inventario.create")}}" class="nav-link">
+                            <i class="fas fa-plus nav-icon"></i>
+                            <p>Agregar Inventario</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="{{route('TipoInventario.index')}}" class="nav-link">
                             <i class="fas fa-thumbtack nav-icon"></i>
                             <p>Tipo Inventario</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{route('Inventario.index')}}" class="nav-link">
-                            <i class="fas fa-cubes nav-icon"></i>
-                            <p>Productos</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -321,12 +353,6 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="pages/layout/fixed-sidebar.html" class="nav-link">
-                            <i class="fas fa-envelope-open-text nav-icon"></i>
-                            <p>Correo SMTP</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a href="{{route('Configuracion.index')}}" class="nav-link">
                             <i class="fas fa-ad nav-icon"></i>
                             <p>Personalización</p>
@@ -348,7 +374,7 @@
             </main>
         </div>
         <footer class="main-footer">
-            <strong>Copyright &copy; 15-10-2020 <a href="https://lodesbloqueo.com">Lo Desbloqueo</a>.</strong>
+            <strong>Copyright &copy; 15-10-2020 <a href="https://lodesbloqueo.com">{{ config('app.name') }}</a>.</strong>
             All rights reserved.
             <div class="float-right d-none d-sm-inline-block">
             <b>Version</b> 0.0.1

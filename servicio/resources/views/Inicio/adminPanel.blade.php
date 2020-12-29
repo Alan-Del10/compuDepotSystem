@@ -36,7 +36,7 @@
       <li class="nav-item">
         <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
       </li>
-      
+
     </ul>
 
 
@@ -99,7 +99,7 @@
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-          
+
           <li class="nav-item">
             <a href="/" class="nav-link">
               <i class="nav-icon fas fa-th"></i>
@@ -137,7 +137,7 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
-             
+
               <li class="nav-item">
                 <a href="pages/layout/fixed-sidebar.html" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
@@ -834,7 +834,7 @@
     $(".content-wrapper").css({
       height: "100%",
   });
-    
+
     $(".content-wrapper").append('<iframe  src="{{route("Servicio.index")}}" frameborder="0"  width="100%" height="650px"></iframe>');
     //$(".content-wrapper").load("{{route('Servicio.index')}}");
 
@@ -847,7 +847,7 @@
     $(".content-wrapper").css({
       height: "100%",
   });
-    
+
     $(".content-wrapper").append('<iframe  src="{{route("indexDatos")}}" frameborder="0"  width="100%" height="650px"></iframe>');
     //$(".content-wrapper").load("{{route('Servicio.index')}}");
 

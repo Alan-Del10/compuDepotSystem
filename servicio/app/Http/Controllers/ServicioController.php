@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Redirect;
 use Barryvdh\DomPDF\Facade as PDF;
+use Illuminate\Support\Facades\Validator;
 
 class ServicioController extends Controller
 {
@@ -124,20 +125,31 @@ class ServicioController extends Controller
 
     public function agregarMarca(Request $request)
     {
-        $select = DB::table('marca')->select('descripcion')->where('descripcion',strtoupper($request->marcaDescripcion))->get();
-        if(count($select) > 0){
-            return 2;
-        }else{
-            $res = DB::table('marca')->insert(
-                ['descripcion' => strtoupper($request->marcaDescripcion)]
-            );
+        try {
+            //Validamos los campos de la base de datos, para no aceptar información erronea
+            $validator = Validator::make($request->all(), [
+                'marcaDescripcion' => 'required|max:50'
+            ]);
 
-            if($res == 1){
-                return 1;
+            //Si encuentra datos erroneos los regresa con un mensaje de error
+            if($validator->fails()){
+                return redirect()->back()->withErrors($validator);
             }else{
-                return $res;
+                DB::table('marca')->insert(
+                    ['descripcion' => strtoupper($request->marcaDescripcion)]
+                );
+
+                if($request->ajax()){
+                    $id = DB::getPdo()->lastInsertId();
+                    $marca = DB::table('marca')->where('id_marca', $id)->get();
+                    return $marca;
+                }else{
+                    return redirect()->back()->with('success', 'Se agregó correctamente la marca.');
+                }
             }
 
+        } catch (\Throwable $th) {
+            return redirect()->back()->withErrors($th);
         }
 
     }
@@ -145,48 +157,62 @@ class ServicioController extends Controller
     public function agregarModelo(Request $request)
     {
 
-        $select = DB::table('modelo')->select('descripcion')
-        ->where('descripcion','like',''.$request->modeloDescripcion)
-        ->where('id_marca','=', $request->marcaOption)
-        ->get();
+        try {
+            //Validamos los campos de la base de datos, para no aceptar información erronea
+            $validator = Validator::make($request->all(), [
+                'modeloDescripcion' => 'required|max:50',
+                'marcaOption' => 'required|numeric'
+            ]);
 
-
-        if(count($select) > 0){
-
-            return 2;
-        }else{
-
-            $res = DB::table('modelo')->insert(
-                ['descripcion' => strtoupper($request->modeloDescripcion),'id_marca' => $request->marcaOption]
-
-            );
-
-            if($res == 1){
-                return 1;
+            //Si encuentra datos erroneos los regresa con un mensaje de error
+            if($validator->fails()){
+                return redirect()->back()->withErrors($validator);
             }else{
-                return $res;
+                DB::table('modelo')->insert(
+                    ['descripcion' => strtoupper($request->modeloDescripcion),'id_marca' => $request->marcaOption]
+                );
+
+                if($request->ajax()){
+                    $id = DB::getPdo()->lastInsertId();
+                    $modelo = DB::table('modelo')->where('id_modelo', $id)->get();
+                    return $modelo;
+                }else{
+                    return redirect()->back()->with('success', 'Se agregó correctamente el modelo.');
+                }
             }
 
+        } catch (\Throwable $th) {
+            return redirect()->back()->withErrors($th);
         }
 
     }
 
     public function agregarColor(Request $request)
     {
-        $select = DB::table('color')->select('descripcion')->where('descripcion',strtoupper($request->colorDescripcion))->get();
-        if(count($select) > 0){
-            return 2;
-        }else{
-            $res = DB::table('color')->insert(
-                ['descripcion' => strtoupper($request->colorDescripcion)]
-            );
+        try {
+            //Validamos los campos de la base de datos, para no aceptar información erronea
+            $validator = Validator::make($request->all(), [
+                'colorDescripcion' => 'required|max:50'
+            ]);
 
-            if($res == 1){
-                return 1;
+            //Si encuentra datos erroneos los regresa con un mensaje de error
+            if($validator->fails()){
+                return redirect()->back()->withErrors($validator);
             }else{
-                return $res;
+                DB::table('color')->insert(
+                    ['descripcion' => strtoupper($request->colorDescripcion),
+                    'estatus' => true]
+                );
+                if($request->ajax()){
+                    $id = DB::getPdo()->lastInsertId();
+                    $color = DB::table('color')->where('id_color', $id)->get();
+                    return $color;
+                }else{
+                    return redirect()->back()->with('success', 'Se agregó correctamente el color.');
+                }
             }
-
+        } catch (\Throwable $th) {
+            return redirect()->back()->withErrors($th);
         }
 
     }
