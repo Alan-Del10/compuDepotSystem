@@ -28,14 +28,23 @@
                             <div class="card-body">
                                 <div class="form-group row">
                                     <label for="upc" class="col-sm-2 col-form-label">UPC</label>
-                                    <div class="col-sm-9">
+                                    <div class="col-sm-5">
                                         <input type="text" class="form-control @error('upc') is-invalid @enderror" name="upc" id="upc" placeholder="UPC" value="{{ old('upc')}}" autofocus>
                                     </div>
+                                    <div class="col-sm-1"></div>
+                                    <div class="col-sm-1">
+                                        @if(old('checkOnline') == true)
+                                            <input type="checkbox" class="form-check-input" id="checkOnline" name="checkOnline" disabled onclick="checkVentaOnline()" checked>
+                                        @else
+                                            <input type="checkbox" class="form-check-input" id="checkOnline" name="checkOnline" disabled onclick="checkVentaOnline()">
+                                        @endif
+                                    </div>
+                                    <label class="form-check-label col-sm-3" for="checkOnline">Venta online?</label>
                                 </div>
                                 <hr>
                                 <div class="form-group row" id="Categoria">
                                     <label for="categoria" class="col-sm-2 col-form-label">Categoria</label>
-                                    <div class="col-sm-9">
+                                    <div class="col-sm-4">
                                         <select class="form-control" id="categoria" name="categoria" disabled>
                                             <option value="0">Seleccionar Categoria</option>
                                             @foreach($categorias as $categoria)
@@ -49,6 +58,21 @@
                                     </div>
                                     <div class="col-sm-1">
                                         <button type="button" class="btn btn-primary" id="agregarCategoria" disabled><i class="fas fa-plus"></i></button>
+                                    </div>
+                                    <div class="col-sm-1"></div>
+                                    <div class="col-sm-4">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="radiosDetalle" id="radioDefault" value="default" onclick="radioDetalle()" checked>
+                                            <label class="form-check-label" for="radioDefault">Default</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="radiosDetalle" id="radioImei" value="imei" onclick="radioDetalle()">
+                                            <label class="form-check-label" for="radioImei">IMEI</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="radiosDetalle" id="radioSerie" value="no_serie" onclick="radioDetalle()">
+                                            <label class="form-check-label" for="radioSerie">No. Serie</label>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -242,6 +266,7 @@
         var modelos = @json($modelos);
         var marcas = @json($marcas);
         var upc = "";
+        var detalleRadio = 0;
         //Función para detectar cunado se ingrese un UPC
         $('#upc').on('input', function(){
             upc = $(this).val();
@@ -281,6 +306,7 @@
         }
         //Función para habilitar los campos
         function habilitarFormulario(estado, datosFormulario){
+            $('#checkOnline').attr('disabled', false);
             $('#agregarInventario').attr('disabled', false);
             $('#agregarDetalle').attr('disabled', false);
             $('#agregarDetalleInventario').attr('disabled', false);
@@ -309,6 +335,22 @@
                 $('#ancho').val(datosFormulario[0].ancho);
             }
         }
+
+        function radioDetalle(){
+            var radio = $(this);
+            if (radio.checked == true){
+                if(radio.val() == "imei"){
+                    detalleRadio = 1;
+                }else if(radio.val() == "no_serie"){
+                    detalleRadio = 2;
+                }else{
+                    detalleRadio = 0;
+                }
+
+            } else {
+                detalleRadio = 0;
+            }
+        }
         //Función para habílitar las entradas en el formulario
         $('#categoria').change(function(){
             //$('#detalleInventario').remove('.agregado');
@@ -329,55 +371,51 @@
                 conteoDetalle = 0;
                 $('#detalleInventario').children().remove();
             });
-            if($('#categoria').prop('selectedIndex') != 0){
-                if($('#categoria').prop('selectedIndex') == 1){
-                    $('#detalleInventario').append(
-                        '<div class="form-group row agregado">'+
-                            '<label for="imei" class="col-sm-2 col-form-label">IMEI</label>'+
-                            '<div class="col-sm-2">'+
-                                '<input type="text" class="form-control" id="imei" name="detalle['+conteoDetalle+'][imei]" placeholder="IMEI">'+
-                            '</div>'+
-                            '<label for="liberado" class="col-sm-2 col-form-label">Condición</label>'+
-                            '<div class="col-sm-2">'+
-                                '<select class="form-control" id="liberado" name="detalle['+conteoDetalle+'][liberado]">'+
-                                    '<option value="1">Liberado</option>'+
-                                    '<option value="2">No Liberado</option>'+
-                                '</select>'+
-                            '</div>'+
-                            '<label for="vida" class="col-sm-2 col-form-label">Vida Bateria</label>'+
-                            '<div class="col-sm-2">'+
-                                '<input type="number" class="form-control vida" id="vida" name="detalle['+conteoDetalle+'][vida]" placeholder="Vida" disabled>'+
-                            '</div>'+
+            if(detalleRadio == 1){
+                $('#detalleInventario').append(
+                    '<div class="form-group row agregado">'+
+                        '<label for="imei" class="col-sm-2 col-form-label">IMEI</label>'+
+                        '<div class="col-sm-2">'+
+                            '<input type="text" class="form-control" id="imei" name="detalle['+conteoDetalle+'][imei]" placeholder="IMEI">'+
                         '</div>'+
-                        '<hr>'
-                    );
-                }else if($('#categoria').prop('selectedIndex') == 2){
-                    $('#detalleInventario').append(
-                        '<div class="form-group row agregado">'+
-                            '<label for="ns" class="col-sm-2 col-form-label">N/S</label>'+
-                            '<div class="col-sm-2">'+
-                                '<input type="text" class="form-control" id="ns" name="detalle['+conteoDetalle+'][ns]" placeholder="N/S">'+
-                            '</div>'+
-                            '<label for="liberado" class="col-sm-2 col-form-label">Condición</label>'+
-                            '<div class="col-sm-2">'+
-                                '<select name="liberado"  class="form-control" id="liberado" name="detalle['+conteoDetalle+'][liberado]">'+
-                                    '<option value="1">Liberado</option>'+
-                                    '<option value="2">No Liberado</option>'+
-                                '</select>'+
-                            '</div>'+
-                            '<label for="vida" class="col-sm-2 col-form-label">Vida Bateria</label>'+
-                            '<div class="col-sm-2">'+
-                                '<input type="number" class="form-control" name="detalle['+conteoDetalle+'][vida]" id="vida" placeholder="Vida" disabled>'+
-                            '</div>'+
+                        '<label for="liberado" class="col-sm-2 col-form-label">Condición</label>'+
+                        '<div class="col-sm-2">'+
+                            '<select class="form-control" id="liberado" name="detalle['+conteoDetalle+'][liberado]">'+
+                                '<option value="1">Liberado</option>'+
+                                '<option value="2">No Liberado</option>'+
+                            '</select>'+
                         '</div>'+
-                        '<hr>'
-                    );
-                }else if($('#categoria').prop('selectedIndex') == 3){
-                    $('#detalleInventai')
-                }
+                        '<label for="vida" class="col-sm-2 col-form-label">Vida Bateria</label>'+
+                        '<div class="col-sm-2">'+
+                            '<input type="number" class="form-control vida" id="vida" name="detalle['+conteoDetalle+'][vida]" placeholder="Vida" disabled>'+
+                        '</div>'+
+                    '</div>'+
+                    '<hr>'
+                );
+            }else if(detalleRadio == 2){
+                $('#detalleInventario').append(
+                    '<div class="form-group row agregado">'+
+                        '<label for="ns" class="col-sm-2 col-form-label">N/S</label>'+
+                        '<div class="col-sm-2">'+
+                            '<input type="text" class="form-control" id="ns" name="detalle['+conteoDetalle+'][ns]" placeholder="N/S">'+
+                        '</div>'+
+                        '<label for="liberado" class="col-sm-2 col-form-label">Condición</label>'+
+                        '<div class="col-sm-2">'+
+                            '<select name="liberado"  class="form-control" id="liberado" name="detalle['+conteoDetalle+'][liberado]">'+
+                                '<option value="1">Liberado</option>'+
+                                '<option value="2">No Liberado</option>'+
+                            '</select>'+
+                        '</div>'+
+                        '<label for="vida" class="col-sm-2 col-form-label">Vida Bateria</label>'+
+                        '<div class="col-sm-2">'+
+                            '<input type="number" class="form-control" name="detalle['+conteoDetalle+'][vida]" id="vida" placeholder="Vida" disabled>'+
+                        '</div>'+
+                    '</div>'+
+                    '<hr>'
+                );
             }
         });
-        //Funcion para habílitar el campo de bateria de los equipos
+        //Funcion para habílitar el campo de bateria de los equipos electrónicos
         function checkVidaBateria(){
             var checkBox = document.getElementById("checkBateria");
             if (checkBox.checked == true){
@@ -388,6 +426,17 @@
                 $('.vida').each(function(){
                     $(this).attr('disabled', true);
                 });
+            }
+        }
+        //Funcion para habílitar lod campos de título y descripción para venta online de los productos
+        function checkVentaOnline(){
+            var checkBox = document.getElementById("checkOnline");
+            if (checkBox.checked == true){
+                $('#titulo').attr('disabled', false);
+                $('#descripcion').attr('disabled', false);
+            } else {
+                $('#titulo').attr('disabled', true);
+                $('#descripcion').attr('disabled', true);
             }
         }
         //Cargar modelos dependiendo de la marca

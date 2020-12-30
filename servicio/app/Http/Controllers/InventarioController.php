@@ -44,7 +44,6 @@ class InventarioController extends Controller
      */
     public function store(Request $request)
     {
-
         try {
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
@@ -64,7 +63,6 @@ class InventarioController extends Controller
                 'stock' => 'required|numeric',
                 'stockMin' => 'nullable|numeric',
                 'publico' => 'required|numeric'
-
             ]);
 
             //Si encuentra datos erroneos los regresa con un mensaje de error
@@ -80,6 +78,11 @@ class InventarioController extends Controller
                     $this->update($request, $id_inventario);
                 }else{
                     $fecha_alta = new DateTime();
+                    if($request->checkOnline == "on"){
+                        $online = true;
+                    }else{
+                        $online = false;
+                    }
                     Inventario::insert([
                         'upc' => $request->upc,
                         'id_categoria' => $request->categoria,
@@ -97,7 +100,8 @@ class InventarioController extends Controller
                         'stock' => $request->stock,
                         'stock_min' => $request->stockMin,
                         'precio_publico' => $request->publico,
-                        'id_color' => $request->color
+                        'id_color' => $request->color,
+                        'venta_online' => $online
                     ]);
                     return redirect()->back()->with('success', 'Se agregó correctamente el artículo.');
                 }
@@ -171,8 +175,34 @@ class InventarioController extends Controller
             if($validator->fails()){
                 return redirect()->back()->withErrors($validator);
             }else{
+                $fecha_modificacion = new DateTime();
+                if($request->checkOnline == "on"){
+                    $online = true;
+                }else{
+                    $online = false;
+                }
                 //Validamos que se haya modificado la información y regresamos un mensaje sobre el estado
-                if($inventario->update($data)){
+                $json_actualizar = [
+                    'upc' => $request->upc,
+                    'id_categoria' => $request->categoria,
+                    'id_modelo' => $request->modelo,
+                    'titulo' => $request->titulo,
+                    'descripcion_inventario' => $request->descripcion,
+                    'peso' => $request->peso,
+                    'costo' => $request->costo,
+                    'largo' => $request->largo,
+                    'alto' => $request->alto,
+                    'ancho' => $request->ancho,
+                    'fecha_modificacion' => date_format($fecha_modificacion, 'Y-m-d H:i:s'),
+                    'id_capacidad' => $request->capacidad,
+                    'costo' => $request->costo,
+                    'stock' => $request->stock,
+                    'stock_min' => $request->stockMin,
+                    'precio_publico' => $request->publico,
+                    'id_color' => $request->color,
+                    'venta_online' => $online
+                ];
+                if($inventario->update($json_actualizar)){
                     return redirect()->back()->with('message', 'Se modificó correctamente el inventario.');
                 }else{
                     return redirect()->back()->withErrors('error', 'Algo pasó al intenar modificar los datos!');

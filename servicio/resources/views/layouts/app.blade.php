@@ -287,7 +287,7 @@
                         <li class="nav-item">
                             <a href="{{route("Inventario.create")}}" class="nav-link">
                             <i class="fas fa-plus nav-icon"></i>
-                            <p>Agregar Inventario</p>
+                            <p>Agregar/Editar Inventario</p>
                             </a>
                         </li>
                         <li class="nav-item">

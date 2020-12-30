@@ -10,5 +10,8 @@ class Inventario extends Model
     public $timestamps = false;
     protected $primaryKey = 'id_inventario';
     public $incrementing = true;
-    protected $fillable = array('id_modelo', 'descripcion_inventario', 'peso', 'fecha_alta', 'costo', 'largo', 'alto', 'ancho', 'id_capacidad', 'upc', 'id_color', 'id_categoria', 'stock', 'stock_min', 'precio_publico');
+    protected $fillable = array('id_modelo', 'descripcion_inventario', 'peso', 'fecha_alta', 'fecha_modificacion', 'costo', 'largo', 'alto', 'ancho', 'id_capacidad', 'upc', 'id_color', 'id_categoria', 'stock', 'stock_min', 'precio_publico', 'venta_online');
+    protected $casts = [
+        'checkOnline' => 'boolean'
+    ];
 }
