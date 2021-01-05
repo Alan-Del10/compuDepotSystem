@@ -45,16 +45,17 @@
                                 <div class="form-group row" id="Categoria">
                                     <label for="categoria" class="col-sm-2 col-form-label">Categoria</label>
                                     <div class="col-sm-4">
-                                        <select class="form-control" id="categoria" name="categoria" disabled>
-                                            <option value="0">Seleccionar Categoria</option>
-                                            @foreach($categorias as $categoria)
-                                                @if(old('categoria') == $categoria->id_categoria)
-                                                    <option value="{{$categoria->id_categoria}}" selected>{{$categoria->descripcion}}</option>
-                                                @else
-                                                    <option value="{{$categoria->id_categoria}}">{{$categoria->descripcion}}</option>
+                                        <input type="text" list="categoriaData" class="form-control @error('categoria') is-invalid @enderror" id="categoria" name="categoria" value="{{old('categoria')}}" placeholder="Seleccionar Categoria" disabled/>
+                                        <datalist id="categoriaData">
+                                        @foreach($categorias as $categoria)
+                                            <option value="{{$categoria->categoria}}"></option>
+                                            @foreach ($subcategorias as $subcategoria)
+                                                @if($subcategoria->id_categoria == $categoria->id_categoria)
+                                                <option class="sub" value="{{$subcategoria->subcategoria}}"></option>
                                                 @endif
                                             @endforeach
-                                        </select>
+                                        @endforeach
+                                        </datalist>
                                     </div>
                                     <div class="col-sm-1">
                                         <button type="button" class="btn btn-primary" id="agregarCategoria" disabled><i class="fas fa-plus"></i></button>
@@ -62,32 +63,28 @@
                                     <div class="col-sm-1"></div>
                                     <div class="col-sm-4">
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="radiosDetalle" id="radioDefault" value="default" onclick="radioDetalle()" checked>
+                                            <input class="form-check-input" type="radio" name="radiosDetalle" id="radioDefault" value="default" onclick="radioDetalle($(this))" checked>
                                             <label class="form-check-label" for="radioDefault">Default</label>
                                         </div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="radiosDetalle" id="radioImei" value="imei" onclick="radioDetalle()">
+                                            <input class="form-check-input" type="radio" name="radiosDetalle" id="radioImei" value="imei" onclick="radioDetalle($(this))">
                                             <label class="form-check-label" for="radioImei">IMEI</label>
                                         </div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="radiosDetalle" id="radioSerie" value="no_serie" onclick="radioDetalle()">
+                                            <input class="form-check-input" type="radio" name="radiosDetalle" id="radioSerie" value="no_serie" onclick="radioDetalle($(this))">
                                             <label class="form-check-label" for="radioSerie">No. Serie</label>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="marca" class="col-sm-2 col-form-label">Marca</label>
+                                    <label class="col-sm-2 col-form-label">Marca</label>
                                     <div class="col-sm-4">
-                                        <select class="form-control" id="marca" name="marca" disabled>
-                                            <option value="0">Seleccionar Marca</option>
+                                        <input type="text" list="marcaData" class="form-control @error('marca') is-invalid @enderror" id="marca" name="marca" value="{{old('marca')}}" placeholder="Seleccionar Marca" disabled/>
+                                        <datalist id="marcaData">
                                             @foreach($marcas as $marca)
-                                                @if(old('marca') == $marca->id_marca)
-                                                    <option value="{{$marca->id_marca}}" selected> {{$marca->descripcion}}</option>
-                                                @else
-                                                    <option value="{{$marca->id_marca}}"> {{$marca->descripcion}}</option>
-                                                @endif
+                                                <option value="{{$marca->marca}}">{{$marca->marca}}</option>
                                             @endforeach
-                                        </select>
+                                        </datalist>
                                     </div>
                                     <div class="col-sm-1">
                                         <button type="button" class="btn btn-primary" id="agregarMarca" disabled><i class="fas fa-plus"></i></button>
@@ -105,16 +102,12 @@
                                 <div class="form-group row">
                                     <label for="modelo" class="col-sm-2 col-form-label">Modelo</label>
                                     <div class="col-sm-9">
-                                        <select class="form-control" id="modelo" name="modelo" disabled>
-                                            <option value="0">Seleccionar Modelo</option>
+                                        <input type="text" list="modeloData" class="form-control @error('modelo') is-invalid @enderror" id="modelo" name="modelo" value="{{old('modelo')}}" placeholder="Seleccionar Modelo" disabled/>
+                                        <datalist id="modeloData">
                                             @foreach($modelos as $modelo)
-                                                @if(old('modelo') == $modelo->id_modelo)
-                                                    <option value="{{$modelo->id_modelo}}" selected>{{$modelo->descripcion}}</option>
-                                                @else
-                                                    <option value="{{$modelo->id_modelo}}">{{$modelo->descripcion}}</option>
-                                                @endif
+                                                <option value="{{$modelo->modelo}}">{{$modelo->modelo}}</option>
                                             @endforeach
-                                        </select>
+                                        </datalist>
                                     </div>
                                     <div class="col-sm-1">
                                         <button type="button" class="btn btn-primary" id="agregarModelo" disabled><i class="fas fa-plus"></i></button>
@@ -123,32 +116,24 @@
                                 <div class="form-group row">
                                     <label for="color" class="col-sm-2 col-form-label">Color</label>
                                     <div class="col-sm-3">
-                                        <select class="form-control" id="color" name="color" disabled>
-                                            <option value="0">Color</option>
+                                        <input type="text" list="colorData" class="form-control @error('color') is-invalid @enderror" id="color" name="color" value="{{old('color')}}" placeholder="Seleccionar Color" disabled/>
+                                        <datalist id="colorData">
                                             @foreach($colores as $color)
-                                                @if(old('color') == $color->id_color)
-                                                    <option value="{{$color->id_color}}" selected>{{$color->descripcion}}</option>
-                                                @else
-                                                    <option value="{{$color->id_color}}">{{$color->descripcion}}</option>
-                                                @endif
+                                                <option value="{{$color->color}}">{{$color->color}}</option>
                                             @endforeach
-                                        </select>
+                                        </datalist>
                                     </div>
                                     <div class="col-sm-1">
                                         <button type="button" class="btn btn-primary" id="agregarColor" disabled><i class="fas fa-plus"></i></button>
                                     </div>
                                     <label for="capacidad" class="col-sm-2 col-form-label">Capacidad</label>
                                     <div class="col-sm-3">
-                                        <select class="form-control" id="capacidad" name="capacidad" disabled>
-                                            <option value="0">Capacidad</option>
+                                        <input type="text" list="capacidadData" class="form-control @error('capacidad') is-invalid @enderror" id="capacidad" name="capacidad" value="{{old('capacidad')}}" placeholder="Seleccionar Capacidad" disabled/>
+                                        <datalist id="capacidadData">
                                             @foreach($capacidades as $capacidad)
-                                                @if(old('capacidad') == $capacidad->id_capacidad)
-                                                    <option value="{{$capacidad->id_capacidad}}" selected>{{$capacidad->tipo}}</option>
-                                                @else
-                                                    <option value="{{$capacidad->id_capacidad}}">{{$capacidad->tipo}}</option>
-                                                @endif
+                                                <option value="{{$capacidad->tipo}}">{{$capacidad->tipo}}</option>
                                             @endforeach
-                                        </select>
+                                        </datalist>
                                     </div>
                                     <div class="col-sm-1">
                                         <button type="button" class="btn btn-primary" id="agregarCapacidad" disabled><i class="fas fa-plus"></i></button>
@@ -156,23 +141,32 @@
                                 </div>
                                 <hr>
 
-                                <div class="form-group row" id="onlineTitulo">
-                                    <label for="titulo" class="col-sm-3 col-form-label">Título</label>
-                                    <div class="col-sm-9">
+                                <div class="form-group row" id="onlineTitulo" style="display: none">
+                                    <label for="titulo" class="col-sm-2 col-form-label">Título</label>
+                                    <div class="col-sm-6">
                                         <input type="text" class="form-control @error('titulo') is-invalid @enderror" name="titulo" id="titulo" placeholder="Título" value="{{ old('titulo')}}" disabled>
                                     </div>
+                                    <div class="col-sm-1"></div>
+                                    <div class="col-sm-1">
+                                        @if(old('checkGenerarTitulo') == true)
+                                            <input type="checkbox" class="form-check-input" id="checkGenerarTitulo" name="checkGenerarTitulo" onclick="generarTitulo()" checked>
+                                        @else
+                                            <input type="checkbox" class="form-check-input" id="checkGenerarTitulo" name="checkGenerarTitulo" onclick="generarTitulo()">
+                                        @endif
+                                    </div>
+                                    <label class="form-check-label col-sm-2" for="checkGenerarTitulo">Generar Título</label>
                                 </div>
-                                <div class="form-group row" id="onlineDescripcion">
-                                    <label for="descripcion" class="col-sm-3 col-form-label">Descripción</label>
-                                    <div class="col-sm-9">
+                                <div class="form-group row" id="onlineDescripcion" style="display: none">
+                                    <label for="descripcion" class="col-sm-2 col-form-label">Descripción</label>
+                                    <div class="col-sm-10">
                                         <textarea class="form-control @error('descripcion') is-invalid @enderror" id="descripcion" rows="4" placeholder="Descripción" name="descripcion" disabled>{{ old('descripcion')}}</textarea>
                                     </div>
                                 </div>
-                                <hr>
+                                <hr style="display: none" id="hrOnline">
                                 <div class="form-group row">
                                     <label for="costo" class="col-sm-2 col-form-label">Costo ($)</label>
                                     <div class="col-sm-2">
-                                        <input type="number" class="form-control @error('costo') is-invalid @enderror" id="costo" name="costo" placeholder="Costo" value="{{ old('costo')}}" disabled>
+                                        <input type="number" class="form-control @error('costo') is-invalid @enderror" id="costo" name="costo" placeholder="Costo" step="0.01" value="{{ old('costo')}}" disabled>
                                     </div>
                                     <label for="stock" class="col-sm-2 col-form-label">Stock (pz)</label>
                                     <div class="col-sm-2">
@@ -186,38 +180,38 @@
                                 <div class="form-group row">
                                     <label for="precioMin" class="col-sm-3 col-form-label">Precio Min.</label>
                                     <div class="col-sm-3">
-                                        <input type="number" class="form-control @error('precioMin') is-invalid @enderror" id="precioMin" name="precioMin" placeholder="Precio Mínimo" value="{{ old('precioMin')}}" disabled>
+                                        <input type="number" class="form-control @error('precioMin') is-invalid @enderror" id="precioMin" name="precioMin" placeholder="Precio Mínimo" step="0.01" value="{{ old('precioMin')}}" disabled>
                                     </div>
                                     <label for="precioMax" class="col-sm-3 col-form-label">Precio Max.</label>
                                     <div class="col-sm-3">
-                                        <input type="number" class="form-control @error('precioMax') is-invalid @enderror" id="precioMax" name="precioMax" placeholder="Precio Máximo" value="{{ old('precioMax')}}" disabled>
+                                        <input type="number" class="form-control @error('precioMax') is-invalid @enderror" id="precioMax" name="precioMax" placeholder="Precio Máximo" step="0.01" value="{{ old('precioMax')}}" disabled>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label for="publico" class="col-sm-3 col-form-label">Precio Pub.</label>
                                     <div class="col-sm-3">
-                                        <input type="number" class="form-control @error('publico') is-invalid @enderror" id="publico" name="publico" placeholder="Precio Público" value="{{ old('publico')}}" disabled>
+                                        <input type="number" class="form-control @error('publico') is-invalid @enderror" id="publico" name="publico" placeholder="Precio Público" step="0.01" value="{{ old('publico')}}" disabled>
                                     </div>
                                     <label for="mayoreo" class="col-sm-3 col-form-label">Precio May.</label>
                                     <div class="col-sm-3">
-                                        <input type="number" class="form-control @error('mayoreo') is-invalid @enderror" id="mayoreo" name="mayoreo" placeholder="Precio Mayoreo" value="{{ old('mayoreo')}}" disabled>
+                                        <input type="number" class="form-control @error('mayoreo') is-invalid @enderror" id="mayoreo" name="mayoreo" placeholder="Precio Mayoreo" step="0.01" value="{{ old('mayoreo')}}" disabled>
                                     </div>
                                 </div>
                                 <hr>
                                 <div class="form-group row">
                                     <label for="largo" class="col-sm-2 col-form-label">Largo(m)</label>
                                     <div class="col-sm-2">
-                                        <input type="number" class="form-control @error('largo') is-invalid @enderror" id="largo" name="largo" placeholder="Largo" value="{{ old('largo')}}" disabled>
+                                        <input type="number" class="form-control @error('largo') is-invalid @enderror" id="largo" name="largo" placeholder="Largo" step="0.01" value="{{ old('largo')}}" disabled>
                                     </div>
 
                                     <label for="alto" class="col-sm-2 col-form-label">Alto(m)</label>
                                     <div class="col-sm-2">
-                                        <input type="number" class="form-control @error('alto') is-invalid @enderror" id="alto" name="alto" placeholder="Alto" value="{{ old('alto')}}" disabled>
+                                        <input type="number" class="form-control @error('alto') is-invalid @enderror" id="alto" name="alto" placeholder="Alto" step="0.01" value="{{ old('alto')}}" disabled>
                                     </div>
 
                                     <label for="ancho" class="col-sm-2 col-form-label">Ancho(m)</label>
                                     <div class="col-sm-2">
-                                        <input type="number" class="form-control @error('ancho') is-invalid @enderror" id="ancho" name="ancho" placeholder="Ancho" value="{{ old('ancho')}}" disabled>
+                                        <input type="number" class="form-control @error('ancho') is-invalid @enderror" id="ancho" name="ancho" placeholder="Ancho" step="0.01" value="{{ old('ancho')}}" disabled>
                                     </div>
                                 </div>
                             </div>
@@ -265,8 +259,13 @@
         let conteoDetalle = 0;
         var modelos = @json($modelos);
         var marcas = @json($marcas);
+        var categorias = @json($categorias);
         var upc = "";
         var detalleRadio = 0;
+        //setup before functions
+        var typingTimer;                //timer identifier
+        var doneTypingInterval = 5000;  //time in ms, 5 second for example
+        var $input = $('#myInput');
         //Función para detectar cunado se ingrese un UPC
         $('#upc').on('input', function(){
             upc = $(this).val();
@@ -316,13 +315,29 @@
                 }
             });
             if(estado != false){
-                $('#categoria option[value="'+datosFormulario[0].id_categoria+'"]').prop('selected', 'selected');
-                $('#marca option[value="'+datosFormulario[0].id_marca+'"]').prop('selected', 'selected');
-                $('#modelo option[value="'+datosFormulario[0].id_modelo+'"]').prop('selected', 'selected');
-                $('#color option[value="'+datosFormulario[0].id_color+'"]').prop('selected', 'selected');
-                $('#capacidad option[value="'+datosFormulario[0].id_capacidad+'"]').prop('selected', 'selected');
-                $('#titulo').val(datosFormulario[0].titulo);
-                $('#descripcion').val(datosFormulario[0].descripcion_inventario);
+                $('#categoria').val(datosFormulario[0].categoria);
+                if(datosFormulario[0].id_categoria != null){
+                    $('#marcaData option').remove();
+                    marcas.forEach(marca => {
+                        if(datosFormulario[0].id_categoria == marca.id_categoria){
+                            console.log(marca);
+                            $('#marcaData').append('<option value="'+marca.marca+'">'+marca.marca+'</option>');
+                        }
+                    });
+                }
+                $('#marca').val(datosFormulario[0].marca);
+                if(datosFormulario[0].id_marca != null){
+                    $('#modeloData option').remove();
+                    modelos.forEach(modelo => {
+                        if(datosFormulario[0].id_marca == modelo.id_marca){
+                            console.log(modelo);
+                            $('#modeloData').append('<option value="'+modelo.modelo+'">'+modelo.modelo+'</option>');
+                        }
+                    });
+                }
+                $('#modelo').val(datosFormulario[0].modelo);
+                $('#color').val(datosFormulario[0].color);
+                $('#capacidad').val(datosFormulario[0].tipo);
                 $('#costo').val(datosFormulario[0].costo);
                 $('#stock').val(datosFormulario[0].stock);
                 $('#stockMin').val(datosFormulario[0].stock_min);
@@ -333,21 +348,25 @@
                 $('#largo').val(datosFormulario[0].largo);
                 $('#alto').val(datosFormulario[0].alto);
                 $('#ancho').val(datosFormulario[0].ancho);
+                if(datosFormulario[0].venta_online == 1){
+                    $('#checkOnline').prop('checked', 'checked');
+                    $('#titulo').val(datosFormulario[0].titulo_inventario);
+                    $('#titulo').attr('disabled', false);
+                    $('#descripcion').val(datosFormulario[0].descripcion_inventario);
+                    $('#descripcion').attr('disabled', false);
+                }
+                checkVentaOnline();
             }
         }
-
-        function radioDetalle(){
-            var radio = $(this);
-            if (radio.checked == true){
-                if(radio.val() == "imei"){
-                    detalleRadio = 1;
-                }else if(radio.val() == "no_serie"){
-                    detalleRadio = 2;
-                }else{
-                    detalleRadio = 0;
-                }
-
-            } else {
+        //Función para cambiar el formulario del detalle del inventario
+        function radioDetalle(radio){
+            console.log(radio);
+            $('#detalleInventario').children().remove();
+            if(radio.val() == "imei"){
+                detalleRadio = 1;
+            }else if(radio.val() == "no_serie"){
+                detalleRadio = 2;
+            }else{
                 detalleRadio = 0;
             }
         }
@@ -432,13 +451,31 @@
         function checkVentaOnline(){
             var checkBox = document.getElementById("checkOnline");
             if (checkBox.checked == true){
+                $('#onlineTitulo').show();
+                $('#onlineDescripcion').show();
+                $('#hrOnline').show();
                 $('#titulo').attr('disabled', false);
                 $('#descripcion').attr('disabled', false);
             } else {
+                $('#onlineTitulo').hide();
+                $('#onlineDescripcion').hide();
+                $('#hrOnline').hide();
                 $('#titulo').attr('disabled', true);
                 $('#descripcion').attr('disabled', true);
             }
         }
+        //Cargar marcas dependiendo de la categoria
+        $('#categoria').change(function(){
+            if($(this).val() != null){
+                $('#marca option').remove();
+                marcas.forEach(marca => {
+                    if($(this).val() == marca.id_categoria){
+                        console.log(marca);
+                        $('#marca').append('<option value="'+marca.id_marca+'">'+marca.descripcion+'</option>');
+                    }
+                });
+            }
+        });
         //Cargar modelos dependiendo de la marca
         $('#marca').change(function(){
             if($(this).val() != null){
@@ -453,10 +490,20 @@
         });
         //Agregar marca
         $('#agregarMarca').on('click', function() {
+            //sacar una cadena de options para el sweet alert
+            var cadenaOption = '<select class="form-control" id="categoriaOption">';//inicializo variable para el options del sweet alert
+            categorias.forEach(categoria => {
+                cadenaOption = cadenaOption +'<option value="'+categoria.id_categoria+'">'+categoria.descripcion+'</option>';
+            });
+            cadenaOption = cadenaOption + '</select>';
             Swal.fire({
                 title: "Agregar Marca",
                 html:
                     '<div class="form-group row">' +
+                    '<div class="col-sm-12">' +
+                        '<label for="categoriaOption" class="float-left col-form-label">Categoria</label>' +
+                        ''+cadenaOption+'' +
+                    '</div>' +
                     '<div class="col-sm-12">' +
                         '<label for="marcaDescripcion" class="float-left col-form-label">Descripcion</label>' +
                         '<input type="text" class="form-control" id="marcaDescripcion" placeholder="Descripcion">' +
@@ -743,6 +790,41 @@
                 }
             })
         });
+        //Función para generar automáticamente un titulo para el producto
+        function generarTitulo(){
+            var checkBox = document.getElementById("checkGenerarTitulo");
+            if (checkBox.checked == true){
+                var cadenaTitulo = "";
+                cadenaTitulo = $('#marca').val() + " " + $('#modelo').val() + " " + $('#color').val() + " " + $('#capacidad').val();
+                $('#titulo').val(cadenaTitulo);
+            }else{
+                $('#titulo').val("");
+            }
+        }
+        //Funciones para validar datos de los data list
+        /*$('#marca,#modelo,#capacidad,#categoria,#color').on('keyup', function(){
+            var val = $(this).val();
+            var obj = $('#'+$(this).attr('id')+'Data').find("option[value='" + val + "']");
+            console.log(obj);
+            if(obj != null && obj.length > 0)
+                alert("valid");  // allow form submission
+            else
+                alert("invalid");
+        });
+
+        $('#marca,#modelo,#capacidad,#categoria,#color').on('keydown', function(){
+            var val = $(this).val();
+            var obj = $('#'+$(this).attr('id')+'Data').find("option[value='" + val + "']");
+            console.log(obj);
+            if(obj != null && obj.length > 0)
+                alert("valid");  // allow form submission
+            else
+                alert("invalid");
+        });
+
+        function validarDatalist(){
+
+        }*/
     </script>
 @endsection
 

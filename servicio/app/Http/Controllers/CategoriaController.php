@@ -49,7 +49,7 @@ class CategoriaController extends Controller
                 return redirect()->back()->withErrors($validator);
             }else{
                 Categoria::insert([
-                    'descripcion' => strtoupper($request->descripcion),
+                    'categoria' => strtoupper($request->descripcion),
                     'estatus' => true,
                 ]);
                 if($request->ajax()){

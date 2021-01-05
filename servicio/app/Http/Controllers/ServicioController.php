@@ -113,12 +113,12 @@ class ServicioController extends Controller
     public function indexDatos()
     {
         $companias = DB::table('compania')->orderby('descripcion','asc')->get();
-        $colores = DB::table('color')->orderby('descripcion','asc')->get();
+        $colores = DB::table('color')->orderby('color','asc')->get();
         $tipos = DB::table('tipo_servicio')->orderby('descripcion','asc')->get();
         $conceptos = DB::table('concepto_servicio')->orderby('descripcion','asc')->get();
         $estatus = DB::table('estatus')->orderby('descripcion','asc')->get();
-        $marcas = DB::table('marca')->orderby('descripcion','asc')->get();
-        $modelos = DB::table('modelo')->orderby('descripcion','asc')->get();
+        $marcas = DB::table('marca')->orderby('marca','asc')->get();
+        $modelos = DB::table('modelo')->orderby('modelo','asc')->get();
         $formasPagos = DB::table('forma_de_pago')->orderby('id_forma_de_pago','asc')->get();
         return view('Servicio.datosServicio',compact('companias','colores','tipos','conceptos','estatus','marcas','modelos','formasPagos'));
     }
@@ -128,7 +128,8 @@ class ServicioController extends Controller
         try {
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
-                'marcaDescripcion' => 'required|max:50'
+                'marcaDescripcion' => 'required|max:50',
+                'categoriaOption' => 'required'
             ]);
 
             //Si encuentra datos erroneos los regresa con un mensaje de error
@@ -136,7 +137,8 @@ class ServicioController extends Controller
                 return redirect()->back()->withErrors($validator);
             }else{
                 DB::table('marca')->insert(
-                    ['descripcion' => strtoupper($request->marcaDescripcion)]
+                    ['marca' => strtoupper($request->marcaDescripcion),
+                    'id_categoria' => $request->categoria]
                 );
 
                 if($request->ajax()){
@@ -169,7 +171,7 @@ class ServicioController extends Controller
                 return redirect()->back()->withErrors($validator);
             }else{
                 DB::table('modelo')->insert(
-                    ['descripcion' => strtoupper($request->modeloDescripcion),'id_marca' => $request->marcaOption]
+                    ['modelo' => strtoupper($request->modeloDescripcion),'id_marca' => $request->marcaOption]
                 );
 
                 if($request->ajax()){
@@ -200,7 +202,7 @@ class ServicioController extends Controller
                 return redirect()->back()->withErrors($validator);
             }else{
                 DB::table('color')->insert(
-                    ['descripcion' => strtoupper($request->colorDescripcion),
+                    ['color' => strtoupper($request->colorDescripcion),
                     'estatus' => true]
                 );
                 if($request->ajax()){

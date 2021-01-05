@@ -17,7 +17,10 @@ class InventarioController extends Controller
      */
     public function index()
     {
-        $inventarios = Inventario::orderby('id_inventario','asc')->get();
+        $inventarios = Inventario::orderby('id_inventario','asc')
+        ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
+        ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
+        ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')->get();
         return view('Inventario.inventario', compact('inventarios'));
     }
 
@@ -33,7 +36,8 @@ class InventarioController extends Controller
         $capacidades = DB::table('capacidad')->get();
         $colores = DB::table('color')->get();
         $categorias =  DB::table('categoria')->get();
-        return view('Inventario.agregarInventario',  compact('modelos', 'marcas', 'capacidades', 'colores', 'categorias'));
+        $subcategorias = DB::table('sub_categoria')->get();
+        return view('Inventario.agregarInventario',  compact('modelos', 'marcas', 'capacidades', 'colores', 'categorias', 'subcategorias'));
     }
 
     /**
@@ -48,9 +52,9 @@ class InventarioController extends Controller
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
                 'upc' => 'required|numeric',
-                'categoria' => 'required|numeric',
-                'modelo' => 'required|numeric',
-                'color' => 'required|numeric',
+                'categoria' => 'required',
+                'modelo' => 'required',
+                'color' => 'required',
                 'titulo' => 'nullable|max:50',
                 'descripcion' => 'nullable|max:200',
                 'peso' => 'nullable|numeric',
@@ -58,11 +62,14 @@ class InventarioController extends Controller
                 'largo' => 'nullable|numeric',
                 'alto' => 'nullable|numeric',
                 'ancho' => 'nullable|numeric',
-                'capacidad' => 'nullable|numeric',
+                'capacidad' => 'nullable',
                 'costo' => 'nullable|numeric',
                 'stock' => 'required|numeric',
                 'stockMin' => 'nullable|numeric',
-                'publico' => 'required|numeric'
+                'publico' => 'required|numeric',
+                'mayoreo' => 'nullable|numeric',
+                'precioMin' => 'nullable|numeric',
+                'precioMax' => 'nullable|numeric'
             ]);
 
             //Si encuentra datos erroneos los regresa con un mensaje de error
@@ -87,7 +94,7 @@ class InventarioController extends Controller
                         'upc' => $request->upc,
                         'id_categoria' => $request->categoria,
                         'id_modelo' => $request->modelo,
-                        'titulo' => $request->titulo,
+                        'titulo_inventario' => $request->titulo,
                         'descripcion_inventario' => $request->descripcion,
                         'peso' => $request->peso,
                         'costo' => $request->costo,
@@ -100,6 +107,9 @@ class InventarioController extends Controller
                         'stock' => $request->stock,
                         'stock_min' => $request->stockMin,
                         'precio_publico' => $request->publico,
+                        'precio_mayoreo' => $request->mayoreo,
+                        'precio_min' => $request->precioMin,
+                        'precio_max' => $request->precioMax,
                         'id_color' => $request->color,
                         'venta_online' => $online
                     ]);
@@ -153,9 +163,9 @@ class InventarioController extends Controller
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
                 'upc' => 'required|numeric',
-                'categoria' => 'required|numeric',
-                'modelo' => 'required|numeric',
-                'color' => 'required|numeric',
+                'categoria' => 'required',
+                'modelo' => 'required',
+                'color' => 'required',
                 'titulo' => 'nullable|max:50',
                 'descripcion' => 'nullable|max:200',
                 'peso' => 'nullable|numeric',
@@ -163,12 +173,14 @@ class InventarioController extends Controller
                 'largo' => 'nullable|numeric',
                 'alto' => 'nullable|numeric',
                 'ancho' => 'nullable|numeric',
-                'capacidad' => 'nullable|numeric',
+                'capacidad' => 'nullable',
                 'costo' => 'nullable|numeric',
                 'stock' => 'required|numeric',
                 'stockMin' => 'nullable|numeric',
-                'publico' => 'required|numeric'
-
+                'publico' => 'required|numeric',
+                'mayoreo' => 'nullable|numeric',
+                'precioMin' => 'nullable|numeric',
+                'precioMax' => 'nullable|numeric'
             ]);
             $inventario = Inventario::find($id);
             //Si encuentra datos erroneos los regresa con un mensaje de error
@@ -181,12 +193,27 @@ class InventarioController extends Controller
                 }else{
                     $online = false;
                 }
+                $categoria = DB::table('categoria')->where('categoria', $request->categoria)->get();
+                if(count($categoria) > 0){
+                    $categoria = $this->convertToJSON($categoria);
+                }else{
+                    $request->flash();
+                    return redirect()->to('Inventario.create')->withErrors('error', 'Algo pasó al intenar modificar los datos!');
+                }
+                $modelo = DB::table('modelo')->where('modelo', $request->modelo)->get();
+                $modelo = $this->convertToJSON($modelo);
+                $marca = DB::table('marca')->where('marca', $request->marca)->get();
+                $marca = $this->convertToJSON($marca);
+                $color = DB::table('color')->where('color', $request->color)->get();
+                $color = $this->convertToJSON($color);
+                $capacidad = DB::table('capacidad')->where('tipo', $request->capacidad)->get();
+                $capacidad = $this->convertToJSON($capacidad);
                 //Validamos que se haya modificado la información y regresamos un mensaje sobre el estado
                 $json_actualizar = [
                     'upc' => $request->upc,
-                    'id_categoria' => $request->categoria,
-                    'id_modelo' => $request->modelo,
-                    'titulo' => $request->titulo,
+                    'id_categoria' => $categoria[0]->id_categoria,
+                    'id_modelo' => $modelo[0]->id_modelo,
+                    'titulo_inventario' => $request->titulo,
                     'descripcion_inventario' => $request->descripcion,
                     'peso' => $request->peso,
                     'costo' => $request->costo,
@@ -194,22 +221,27 @@ class InventarioController extends Controller
                     'alto' => $request->alto,
                     'ancho' => $request->ancho,
                     'fecha_modificacion' => date_format($fecha_modificacion, 'Y-m-d H:i:s'),
-                    'id_capacidad' => $request->capacidad,
+                    'id_capacidad' => $capacidad[0]->id_capacidad,
                     'costo' => $request->costo,
                     'stock' => $request->stock,
                     'stock_min' => $request->stockMin,
                     'precio_publico' => $request->publico,
-                    'id_color' => $request->color,
+                    'precio_mayoreo' => $request->mayoreo,
+                    'precio_min' => $request->precioMin,
+                    'precio_max' => $request->precioMax,
+                    'id_color' => $color[0]->id_color,
                     'venta_online' => $online
                 ];
                 if($inventario->update($json_actualizar)){
                     return redirect()->back()->with('message', 'Se modificó correctamente el inventario.');
                 }else{
+                    $request->flash();
                     return redirect()->back()->withErrors('error', 'Algo pasó al intenar modificar los datos!');
                 }
 
             }
         } catch (\Throwable $th) {
+            $request->flash();
             return redirect()->back()->withErrors($th);
         }
     }
@@ -231,7 +263,11 @@ class InventarioController extends Controller
      */
     public function verificarUPC(Request $request){
         try {
-            $articulo = Inventario::leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')->where('upc', $request->upc)->get();
+            $articulo = Inventario::leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')->
+            leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')->
+            leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')->
+            leftJoin('color', 'color.id_color', 'inventario.id_color')->
+            leftJoin('capacidad', 'capacidad.id_capacidad', 'inventario.id_capacidad')->where('upc', $request->upc)->get();
             if(count($articulo) > 0){
                 return $articulo;
             }else{
@@ -272,5 +308,12 @@ class InventarioController extends Controller
             return redirect()->back()->withErrors($th);
         }
 
+    }
+
+    /**
+     * Convertir datos de los get de las consultas
+     */
+    public function convertToJSON($resultado){
+        return json_decode(json_encode($resultado));
     }
 }

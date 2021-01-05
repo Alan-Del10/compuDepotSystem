@@ -10,5 +10,5 @@ class Categoria extends Model
     public $timestamps = false;
     protected $primaryKey = 'id_categoria';
     public $incrementing = true;
-    protected $fillable = array('descripcion', 'estatus');
+    protected $fillable = array('categoria', 'estatus');
 }
