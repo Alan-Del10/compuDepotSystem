@@ -171,7 +171,7 @@ class ServicioController extends Controller
                 return redirect()->back()->withErrors($validator);
             }else{
                 DB::table('modelo')->insert(
-                    ['modelo' => strtoupper($request->modeloDescripcion),'id_marca' => $request->marcaOption]
+                    ['modelo' => strtoupper($request->modeloDescripcion),'id_marca' => $request->marcaOption, 'estatus' => true]
                 );
 
                 if($request->ajax()){

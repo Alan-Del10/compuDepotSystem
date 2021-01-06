@@ -16,7 +16,7 @@
     <section class="content">
         <div class="container-fluid">
             <!-- form start -->
-            <form action="{{route('Inventario.store')}}" method="POST" class="form-horizontal " id="formInventario">
+            <form action="{{route('Inventario.store')}}" method="POST" class="form-horizontal " id="formInventario" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <section class="col-lg-6 connectedSortable">
@@ -140,7 +140,13 @@
                                     </div>
                                 </div>
                                 <hr>
-
+                                <div class="form-group row" id="onlineImagen" style="display: none">
+                                    <label for="imagen" class="col-sm-2 col-form-label">Imagen</label>
+                                    <div class="custom-file col-sm-10">
+                                        <input type="file" class="custom-file-input" name="imagenProducto" id="imagenProducto" accept="image/png" disabled>
+                                        <label class="custom-file-label" id="labelImagen" for="imagenProducto">Elegir Imagen...</label>
+                                    </div>
+                                </div>
                                 <div class="form-group row" id="onlineTitulo" style="display: none">
                                     <label for="titulo" class="col-sm-2 col-form-label">Título</label>
                                     <div class="col-sm-6">
@@ -453,15 +459,19 @@
             if (checkBox.checked == true){
                 $('#onlineTitulo').show();
                 $('#onlineDescripcion').show();
+                $('#onlineImagen').show();
                 $('#hrOnline').show();
                 $('#titulo').attr('disabled', false);
                 $('#descripcion').attr('disabled', false);
+                $('#imagenProducto').attr('disabled', false);
             } else {
                 $('#onlineTitulo').hide();
                 $('#onlineDescripcion').hide();
                 $('#hrOnline').hide();
+                $('#onlineImagen').hide();
                 $('#titulo').attr('disabled', true);
                 $('#descripcion').attr('disabled', true);
+                $('#imagenProducto').attr('disabled', true);
             }
         }
         //Cargar marcas dependiendo de la categoria
@@ -801,6 +811,11 @@
                 $('#titulo').val("");
             }
         }
+        //Función que cambiar el texto del imput para saber el nombre de las imagenes seleccionadas para guardar en la base de datos
+        $('#imagenProducto').change(function() {
+            var filename = $('#imagenProducto').val().replace(/C:\\fakepath\\/i, '');
+            $('#labelImagen').html(filename);
+        });
         //Funciones para validar datos de los data list
         /*$('#marca,#modelo,#capacidad,#categoria,#color').on('keyup', function(){
             var val = $(this).val();

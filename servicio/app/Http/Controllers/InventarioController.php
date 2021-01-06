@@ -6,6 +6,8 @@ use App\Inventario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Image;
+use Illuminate\Support\Facades\Storage;
 use DateTime;
 
 class InventarioController extends Controller
@@ -31,12 +33,12 @@ class InventarioController extends Controller
      */
     public function create()
     {
-        $modelos = DB::table('modelo')->get();
-        $marcas = DB::table('marca')->get();
+        $modelos = DB::table('modelo')->where('estatus', 1)->get();
+        $marcas = DB::table('marca')->where('estatus', 1)->get();
         $capacidades = DB::table('capacidad')->get();
-        $colores = DB::table('color')->get();
-        $categorias =  DB::table('categoria')->get();
-        $subcategorias = DB::table('sub_categoria')->get();
+        $colores = DB::table('color')->where('estatus', 1)->get();
+        $categorias =  DB::table('categoria')->where('estatus', 1)->get();
+        $subcategorias = DB::table('sub_categoria')->where('estatus', 1)->get();
         return view('Inventario.agregarInventario',  compact('modelos', 'marcas', 'capacidades', 'colores', 'categorias', 'subcategorias'));
     }
 
@@ -111,7 +113,8 @@ class InventarioController extends Controller
                         'precio_min' => $request->precioMin,
                         'precio_max' => $request->precioMax,
                         'id_color' => $request->color,
-                        'venta_online' => $online
+                        'venta_online' => $online,
+                        'imagen' => $request->upc.'.png'
                     ]);
                     return redirect()->back()->with('success', 'Se agregó correctamente el artículo.');
                 }
@@ -193,6 +196,24 @@ class InventarioController extends Controller
                 }else{
                     $online = false;
                 }
+
+                if ($request->has('imagenProducto')) {
+                    $image      = $request->file('imagenProducto');
+                    $fileName   = $request->upc.'.'. $image->getClientOriginalExtension();
+                    $img = Image::make($image->getRealPath());
+                    //dd($img);
+                    $img->resize(120, 120, function ($constraint) {
+                        $constraint->aspectRatio();
+                    });
+
+                    $img->stream(); // <-- Key point
+
+                    if(Storage::disk('local')->exists('public/inventario/'.$request->upc.'.'.$image->getClientOriginalExtension())) {
+                        Storage::disk('local')->delete('public/inventario/'.$request->upc.'.'.$image->getClientOriginalExtension());
+                    }
+                    //dd();
+                    Storage::disk('local')->put('public/inventario'.'/'.$fileName, $img, 'public');
+                }
                 $categoria = DB::table('categoria')->where('categoria', $request->categoria)->get();
                 if(count($categoria) > 0){
                     $categoria = $this->convertToJSON($categoria);
@@ -230,7 +251,8 @@ class InventarioController extends Controller
                     'precio_min' => $request->precioMin,
                     'precio_max' => $request->precioMax,
                     'id_color' => $color[0]->id_color,
-                    'venta_online' => $online
+                    'venta_online' => $online,
+                    'imagen' => $request->upc.'.png'
                 ];
                 if($inventario->update($json_actualizar)){
                     return redirect()->back()->with('message', 'Se modificó correctamente el inventario.');
