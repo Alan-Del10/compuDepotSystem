@@ -64,7 +64,7 @@
                                     <div class="col-sm-4">
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="radiosDetalle" id="radioDefault" value="default" onclick="radioDetalle($(this))" checked>
-                                            <label class="form-check-label" for="radioDefault">Default</label>
+                                            <label class="form-check-label" for="radioDefault">N/A</label>
                                         </div>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="radiosDetalle" id="radioImei" value="imei" onclick="radioDetalle($(this))">
@@ -143,7 +143,7 @@
                                 <div class="form-group row" id="onlineImagen" style="display: none">
                                     <label for="imagen" class="col-sm-2 col-form-label">Imagen</label>
                                     <div class="custom-file col-sm-10">
-                                        <input type="file" class="custom-file-input" name="imagenProducto" id="imagenProducto" accept="image/png" disabled>
+                                        <input type="file" class="custom-file-input" name="imagenProducto" id="imagenProducto" accept="image/png, image/jpeg" disabled>
                                         <label class="custom-file-label" id="labelImagen" for="imagenProducto">Elegir Imagen...</label>
                                     </div>
                                 </div>
@@ -225,6 +225,25 @@
                         </div>
                     </section>
                     <section class="col-lg-6 connectedSortable" >
+                        <div class="card card-success" name="finalizar">
+                            <div class="card-header">
+                                <h3 class="card-title col-11">Finalizar</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-input row">
+                                    <div class="col-sm-1"></div>
+                                    <div class="col-sm-1">
+                                        <input type="checkbox" class="form-check-input" id="checkFinalizar" name="checkFinalizar" disabled onclick="checkFinalizarInventario()">
+                                    </div>
+                                    <label class="form-check-label col-sm-3" for="checkFinalizar">Finalizar Proceso</label>
+                                    <div class="col-sm-4"></div>
+                                    <div class="col-sm-3">
+                                        <input type="submit" value="Agregar Inventario" class="btn btn-success float-right" id="agregarInventario" disabled>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
                         <div class="card card-warning" name="detalle">
                             <div class="card-header">
                                 <h3 class="card-title col-11">Detalle Inventario</h3>
@@ -234,12 +253,11 @@
                             <!-- form start -->
                             <div class="card-body scroll" id="detalleInventario"></div>
                             <!-- /.card-body -->
-                            <div class="card-footer">
-                                <input type="submit" value="Agregar Inventario" class="btn btn-success float-right" id="agregarInventario" disabled>
-                            </div>
-                            <!-- /.card-footer -->
+
                         </div>
                     </section>
+
+                    <!-- /.card-footer -->
                 </div>
             </form>
         </div>
@@ -268,10 +286,6 @@
         var categorias = @json($categorias);
         var upc = "";
         var detalleRadio = 0;
-        //setup before functions
-        var typingTimer;                //timer identifier
-        var doneTypingInterval = 5000;  //time in ms, 5 second for example
-        var $input = $('#myInput');
         //Función para detectar cunado se ingrese un UPC
         $('#upc').on('input', function(){
             upc = $(this).val();
@@ -312,7 +326,8 @@
         //Función para habilitar los campos
         function habilitarFormulario(estado, datosFormulario){
             $('#checkOnline').attr('disabled', false);
-            $('#agregarInventario').attr('disabled', false);
+            //$('#agregarInventario').attr('disabled', false);
+            $('#checkFinalizar').attr('disabled', false);
             $('#agregarDetalle').attr('disabled', false);
             $('#agregarDetalleInventario').attr('disabled', false);
             $('#formInventario').find('.card-body').children().each(function(){
@@ -360,6 +375,12 @@
                     $('#titulo').attr('disabled', false);
                     $('#descripcion').val(datosFormulario[0].descripcion_inventario);
                     $('#descripcion').attr('disabled', false);
+                }else{
+                    $('#checkOnline').prop('checked', false);
+                    $('#titulo').val("");
+                    $('#titulo').attr('disabled', true);
+                    $('#descripcion').val("");
+                    $('#descripcion').attr('disabled', true);
                 }
                 checkVentaOnline();
             }
@@ -399,8 +420,8 @@
             if(detalleRadio == 1){
                 $('#detalleInventario').append(
                     '<div class="form-group row agregado">'+
-                        '<label for="imei" class="col-sm-2 col-form-label">IMEI</label>'+
-                        '<div class="col-sm-2">'+
+                        '<label for="imei" class="col-sm-1 col-form-label">IMEI</label>'+
+                        '<div class="col-sm-3">'+
                             '<input type="text" class="form-control" id="imei" name="detalle['+conteoDetalle+'][imei]" placeholder="IMEI">'+
                         '</div>'+
                         '<label for="liberado" class="col-sm-2 col-form-label">Condición</label>'+
@@ -453,7 +474,7 @@
                 });
             }
         }
-        //Funcion para habílitar lod campos de título y descripción para venta online de los productos
+        //Funcion para habílitar los campos de título y descripción para venta online de los productos
         function checkVentaOnline(){
             var checkBox = document.getElementById("checkOnline");
             if (checkBox.checked == true){
@@ -472,6 +493,15 @@
                 $('#titulo').attr('disabled', true);
                 $('#descripcion').attr('disabled', true);
                 $('#imagenProducto').attr('disabled', true);
+            }
+        }
+        //Funcion para habílitar el botón que envía los datos el controlador
+        function checkFinalizarInventario(){
+            var checkBox = document.getElementById("checkFinalizar");
+            if (checkBox.checked == true){
+                $('#agregarInventario').attr('disabled', false);
+            } else {
+                $('#agregarInventario').attr('disabled', true);
             }
         }
         //Cargar marcas dependiendo de la categoria
@@ -816,30 +846,6 @@
             var filename = $('#imagenProducto').val().replace(/C:\\fakepath\\/i, '');
             $('#labelImagen').html(filename);
         });
-        //Funciones para validar datos de los data list
-        /*$('#marca,#modelo,#capacidad,#categoria,#color').on('keyup', function(){
-            var val = $(this).val();
-            var obj = $('#'+$(this).attr('id')+'Data').find("option[value='" + val + "']");
-            console.log(obj);
-            if(obj != null && obj.length > 0)
-                alert("valid");  // allow form submission
-            else
-                alert("invalid");
-        });
-
-        $('#marca,#modelo,#capacidad,#categoria,#color').on('keydown', function(){
-            var val = $(this).val();
-            var obj = $('#'+$(this).attr('id')+'Data').find("option[value='" + val + "']");
-            console.log(obj);
-            if(obj != null && obj.length > 0)
-                alert("valid");  // allow form submission
-            else
-                alert("invalid");
-        });
-
-        function validarDatalist(){
-
-        }*/
     </script>
 @endsection
 

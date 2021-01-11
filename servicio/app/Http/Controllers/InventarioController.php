@@ -22,8 +22,10 @@ class InventarioController extends Controller
         $inventarios = Inventario::orderby('id_inventario','asc')
         ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
         ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
-        ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')->get();
-        return view('Inventario.inventario', compact('inventarios'));
+        ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')
+        ->leftJoin('color', 'color.id_color', 'inventario.id_color')->get();
+        $categorias =  DB::table('categoria')->where('estatus', 1)->get();
+        return view('Inventario.inventario', compact('inventarios', 'categorias'));
     }
 
     /**
@@ -77,9 +79,10 @@ class InventarioController extends Controller
             //Si encuentra datos erroneos los regresa con un mensaje de error
             if($validator->fails()){
                 $request->flash();
-                return redirect()->back()->withErrors($validator);
+                return redirect()->route('Inventario.create')->withErrors($validator);
             }else{
                 $articulo = Inventario::where('upc', $request->upc)->get();
+                $id_inventario = "";
                 if(count($articulo) == 1){
                     foreach($articulo as $art){
                         $id_inventario = $art->id_inventario;
@@ -92,7 +95,7 @@ class InventarioController extends Controller
                     }else{
                         $online = false;
                     }
-                    Inventario::insert([
+                    $json_agregar = [
                         'upc' => $request->upc,
                         'id_categoria' => $request->categoria,
                         'id_modelo' => $request->modelo,
@@ -115,14 +118,62 @@ class InventarioController extends Controller
                         'id_color' => $request->color,
                         'venta_online' => $online,
                         'imagen' => $request->upc.'.png'
-                    ]);
-                    return redirect()->back()->with('success', 'Se agregó correctamente el artículo.');
+                    ];
+                    if(Inventario::insert($json_agregar)){
+                        $id = DB::getPdo()->lastInsertId();
+                        if($request->radiosDetalle == 'imei' && $request->detalle){
+                            $detalleFull = $request->detalle;
+                            foreach($detalleFull as $detalle){
+                                $comprobarImei = DB::table('detalle_inventario')->where('imei', $detalle['imei'])->get();
+                                if(count($comprobarImei) > 0){
+                                    $request->flash();
+                                    return redirect()->route('Inventario.create')->withErrors('error', 'Los datos que ingresaste ya se han dado de alta anteriormente!');
+                                }else{
+                                    $insertarDetalle = DB::table('detalle_inventario')->insert([
+                                        'imei' => $detalle['imei'],
+                                        'id_inventario' => $id,
+                                        'id_estatus' => 2,
+                                        'liberado' => $detalle['liberado'],
+                                        'fecha_alta' => $fecha_alta
+                                    ]);
+                                    if(!$insertarDetalle){
+                                        $request->flash();
+                                        return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                    }
+                                }
+                            }
+                        }elseif($request->radiosDetalle == 'ns' && $request->detalle){
+                            $detalleFull = $request->detalle;
+                            foreach($detalleFull as $detalle){
+                                $comprobarImei = DB::table('detalle_inventario')->where('ns', $detalle['ns'])->get();
+                                if(count($comprobarImei) > 0){
+                                    $request->flash();
+                                    return redirect()->route('Inventario.create')->withErrors('error', 'Los datos que ingresaste ya se han dado de alta anteriormente!');
+                                }else{
+                                    $insertarDetalle = DB::table('detalle_inventario')->insert([
+                                        'ns' => $detalle['ns'],
+                                        'id_inventario' => $id,
+                                        'id_estatus' => 2,
+                                        'liberado' => $detalle['liberado'],
+                                        'fecha_alta' => $fecha_alta
+                                    ]);
+                                    if(!$insertarDetalle){
+                                        $request->flash();
+                                        return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                    }
+                                }
+                            }
+                        }
+                        return redirect()->route('Inventario.create')->with('success', 'Se agregó correctamente el artículo.');
+                    }else{
+                        $request->flash();
+                        return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                    }
                 }
             }
-
         } catch (\Throwable $th) {
             $request->flash();
-            return redirect()->back()->withErrors($th);
+            return redirect()->route('Inventario.create')->withErrors($th);
         }
     }
 
@@ -188,7 +239,7 @@ class InventarioController extends Controller
             $inventario = Inventario::find($id);
             //Si encuentra datos erroneos los regresa con un mensaje de error
             if($validator->fails()){
-                return redirect()->back()->withErrors($validator);
+                return redirect()->route('Inventario.create')->withErrors($validator);
             }else{
                 $fecha_modificacion = new DateTime();
                 if($request->checkOnline == "on"){
@@ -196,11 +247,12 @@ class InventarioController extends Controller
                 }else{
                     $online = false;
                 }
-
+                $fileName = "";
                 if ($request->has('imagenProducto')) {
                     $image      = $request->file('imagenProducto');
                     $fileName   = $request->upc.'.'. $image->getClientOriginalExtension();
                     $img = Image::make($image->getRealPath());
+                    $extension = $image->getClientOriginalExtension();
                     //dd($img);
                     $img->resize(120, 120, function ($constraint) {
                         $constraint->aspectRatio();
@@ -208,18 +260,24 @@ class InventarioController extends Controller
 
                     $img->stream(); // <-- Key point
 
-                    if(Storage::disk('local')->exists('public/inventario/'.$request->upc.'.'.$image->getClientOriginalExtension())) {
-                        Storage::disk('local')->delete('public/inventario/'.$request->upc.'.'.$image->getClientOriginalExtension());
+                    if(Storage::disk('local')->exists('public/inventario/'.$request->upc.'.'.$extension)) {
+                        Storage::disk('local')->delete('public/inventario/'.$request->upc.'.'.$extension);
                     }
-                    //dd();
                     Storage::disk('local')->put('public/inventario'.'/'.$fileName, $img, 'public');
+                }else{
+                    $verificarImagen = DB::table('inventario')->where('upc', $request->upc)->where('imagen', '!=', null)->get();
+                    if(count($verificarImagen) > 0) {
+                        $img = $this->convertToJSON($verificarImagen);
+                        $fileName = $img[0]->imagen;
+
+                    }
                 }
                 $categoria = DB::table('categoria')->where('categoria', $request->categoria)->get();
                 if(count($categoria) > 0){
                     $categoria = $this->convertToJSON($categoria);
                 }else{
                     $request->flash();
-                    return redirect()->to('Inventario.create')->withErrors('error', 'Algo pasó al intenar modificar los datos!');
+                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar modificar los datos!');
                 }
                 $modelo = DB::table('modelo')->where('modelo', $request->modelo)->get();
                 $modelo = $this->convertToJSON($modelo);
@@ -252,19 +310,80 @@ class InventarioController extends Controller
                     'precio_max' => $request->precioMax,
                     'id_color' => $color[0]->id_color,
                     'venta_online' => $online,
-                    'imagen' => $request->upc.'.png'
+                    'imagen' => $fileName
                 ];
                 if($inventario->update($json_actualizar)){
-                    return redirect()->back()->with('message', 'Se modificó correctamente el inventario.');
+                    if($request->radiosDetalle == 'imei' && $request->detalle){
+                        $detalleFull = $request->detalle;
+                        foreach($detalleFull as $detalle){
+                            $comprobarImei = DB::table('detalle_inventario')->where('imei', $detalle['imei'])->get();
+                            if(count($comprobarImei) > 0){
+                                $modificarDetalle = DB::table('detalle_inventario')->update([
+                                    'imei' => $detalle['imei'],
+                                    'id_inventario' => $id,
+                                    'id_estatus' => 2,
+                                    'liberado' => $detalle['liberado'],
+                                    'fecha_alta' => $fecha_modificacion
+                                ]);
+                                if(!$modificarDetalle){
+                                    $request->flash();
+                                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                }
+                            }else{
+                                $insertarDetalle = DB::table('detalle_inventario')->insert([
+                                    'imei' => $detalle['imei'],
+                                    'id_inventario' => $id,
+                                    'id_estatus' => 2,
+                                    'liberado' => $detalle['liberado'],
+                                    'fecha_alta' => $fecha_modificacion
+                                ]);
+                                if(!$insertarDetalle){
+                                    $request->flash();
+                                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                }
+                            }
+                        }
+                    }elseif($request->radiosDetalle == 'ns' && $request->detalle){
+                        $detalleFull = $request->detalle;
+                        foreach($detalleFull as $detalle){
+                            $comprobarImei = DB::table('detalle_inventario')->where('ns', $detalle['ns'])->get();
+                            if(count($comprobarImei) > 0){
+                                $modificarDetalle = DB::table('detalle_inventario')->update([
+                                    'ns' => $detalle['ns'],
+                                    'id_inventario' => $id,
+                                    'id_estatus' => 2,
+                                    'liberado' => $detalle['liberado'],
+                                    'fecha_alta' => $fecha_modificacion
+                                ]);
+                                if(!$modificarDetalle){
+                                    $request->flash();
+                                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                }
+                            }else{
+                                $insertarDetalle = DB::table('detalle_inventario')->insert([
+                                    'ns' => $detalle['ns'],
+                                    'id_inventario' => $id,
+                                    'id_estatus' => 2,
+                                    'liberado' => $detalle['liberado'],
+                                    'fecha_alta' => $fecha_modificacion
+                                ]);
+                                if(!$insertarDetalle){
+                                    $request->flash();
+                                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                }
+                            }
+                        }
+                    }
+                    return redirect()->route('Inventario.create')->with('message', 'Se modificó correctamente el inventario.');
                 }else{
                     $request->flash();
-                    return redirect()->back()->withErrors('error', 'Algo pasó al intenar modificar los datos!');
+                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar modificar los datos!');
                 }
 
             }
         } catch (\Throwable $th) {
             $request->flash();
-            return redirect()->back()->withErrors($th);
+            return redirect()->route('Inventario.create')->withErrors($th);
         }
     }
 
