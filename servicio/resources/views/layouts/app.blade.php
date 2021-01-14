@@ -449,12 +449,6 @@
                 txtValue = a.textContent || a.innerText;
                 if (txtValue.toUpperCase().indexOf(filter) > -1) {
                     modulo[i].style.display = "";
-                    if(modulo[i].getElementsByTagName("ul")[0].getElementsByTagName("a")){
-                        modulo[i].style.display = "";
-                        console.log(modulo[i].getElementsByTagName("ul")[0].getElementsByTagName("a"));
-                    }else{
-                        console.log("no");
-                    }
                 } else {
                     modulo[i].style.display = "none";
                 }
