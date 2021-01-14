@@ -10,7 +10,7 @@
     <title>{{ config('app.name')}}</title>
 
     <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}"></script>
+    <!--<script src="{{ asset('js/app.js') }}"></script>-->
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -87,6 +87,9 @@
                 </li>
             </ul>
             <!-- Search bar -->
+
+                <input type="text" name="searchBar" id="searchBar" class="form-control" onkeyup="busquedaModulos()" placeholder="Busqueda de módulos">
+
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
                 <!-- Notifications Dropdown Menu -->
@@ -150,7 +153,7 @@
         <!-- /.navbar -->
 
         <!-- Main Sidebar Container -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <aside class="main-sidebar sidebar-dark-primary elevation-4" id="menu-izquierdo">
             <!-- Brand Logo -->
             <a class="brand-link" href="{{ url('/') }}">
                 <img src="{{asset('storage/img/logo.png')}}" alt="AdminLTE Logo" class="brand-image " style="opacity: .8">
@@ -431,6 +434,33 @@
             $('.input-group #search_param').val(param);
         });*/
     });
+
+    function busquedaModulos() {
+        // Declare variables
+        var input, filter, menu, modulo, a, i, txtValue;
+        input = document.getElementById("searchBar");
+        filter = input.value.toUpperCase();
+        menu = document.getElementById("menu-izquierdo");
+        modulo = menu.getElementsByTagName("li");
+        // Loop through all table rows, and hide those who don't match the search query
+        for (i = 0; i < modulo.length; i++) {
+            a = modulo[i].getElementsByTagName("a")[0];
+            if (a) {
+                txtValue = a.textContent || a.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    modulo[i].style.display = "";
+                    if(modulo[i].getElementsByTagName("ul")[0].getElementsByTagName("a")){
+                        modulo[i].style.display = "";
+                        console.log(modulo[i].getElementsByTagName("ul")[0].getElementsByTagName("a"));
+                    }else{
+                        console.log("no");
+                    }
+                } else {
+                    modulo[i].style.display = "none";
+                }
+            }
+        }
+    }
 
 </script>
 </html>
