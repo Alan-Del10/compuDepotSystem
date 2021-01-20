@@ -41,6 +41,14 @@
                                     </div>
                                     <label class="form-check-label col-sm-3" for="checkOnline">Venta online?</label>
                                 </div>
+                                <div class="form-group row">
+                                    <div class="col-12 alert alert-warning alert-dismissible fade show" role="alert" style="display:none" id="alerta-upc">
+                                        <strong>Ops!</strong> Este artículo no está registrado.
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                </div>
                                 <hr>
                                 <div class="form-group row" id="Categoria">
                                     <label for="categoria" class="col-sm-2 col-form-label">Categoria</label>
@@ -298,7 +306,8 @@
                     success: function(data) {
                         if(data.res == false){
                             $('#header-pagina').text('Agregar Inventario');
-                            Swal.fire("Oops", "Ese artículo no existe en el inventario, registralo!", "info");
+                            $('#alerta-upc').show();
+                            //Swal.fire("Oops", "Ese artículo no existe en el inventario, registralo!", "info");
                             habilitarFormulario(false, data);
                         }else{
                             $('#header-pagina').text('Editar Inventario');

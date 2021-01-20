@@ -2348,3 +2348,8 @@
 
 })));
 //# sourceMappingURL=adminlte.js.map
+$('main').on('touchend', function(){
+    if($('body').hasClass('sidebar-open')){
+        $('body').removeClass('sidebar-open').addClass('sidebar-closed sidebar-collapse');
+    }
+});

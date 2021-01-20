@@ -87,9 +87,7 @@
                 </li>
             </ul>
             <!-- Search bar -->
-
-                <input type="text" name="searchBar" id="searchBar" class="form-control" onkeyup="busquedaModulos()" placeholder="Busqueda de módulos">
-
+            <input type="text" name="searchBar" id="searchBar" class="form-control" onkeyup="busquedaModulos()" placeholder="Busqueda de módulos">
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
                 <!-- Notifications Dropdown Menu -->
