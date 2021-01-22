@@ -346,6 +346,12 @@
             });
             if(estado != false){
                 $('#categoria').val(datosFormulario[0].categoria);
+                /*categorias.forEach(categoria => {
+                    if(datosFormulario[0].id_categoria != marca.id_categoria){
+                        console.log(categoria);
+                        $('#categoriaData').append('<option value="'+categoria.categoria+'">'+categoria.categoria+'</option>');
+                    }
+                });*/
                 if(datosFormulario[0].id_categoria != null){
                     $('#marcaData option').remove();
                     marcas.forEach(marca => {

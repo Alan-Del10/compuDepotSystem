@@ -87,7 +87,9 @@
                 </li>
             </ul>
             <!-- Search bar -->
-            <input type="text" name="searchBar" id="searchBar" class="form-control" onkeyup="busquedaModulos()" placeholder="Busqueda de módulos">
+            <input type="text" name="searchBar" list="modulos" id="searchBar" class="form-control" onkeyup="busquedaModulos()" placeholder="Busqueda de módulos">
+            <datalist id="modulos">
+            </datalist>
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
                 <!-- Notifications Dropdown Menu -->
@@ -447,8 +449,11 @@
                 txtValue = a.textContent || a.innerText;
                 if (txtValue.toUpperCase().indexOf(filter) > -1) {
                     modulo[i].style.display = "";
+                    console.log(modulo[i]);
+                    $('#modulos').append('<option value="'+$(a).children('p').text()+'">');
                 } else {
                     modulo[i].style.display = "none";
+                    $('#modulos').children().remove();
                 }
             }
         }

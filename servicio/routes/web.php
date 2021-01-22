@@ -25,6 +25,8 @@ Route::get('/', function () {
 Route::get('/usuarios/registrar', function(){
     return view('auth.register');
 })->middleware('auth')->name('registrarUsuario');
+
+//Auth routes
 Auth::routes();
 
 //Ruta de la vista home
@@ -90,5 +92,8 @@ Route::post('/configuracionNombre','ConfiguracionController@cambiarNombreAplicac
 Route::post('/configuracionLogo','ConfiguracionController@cambiarLogoAplicacion')->name('cambiarLogoAplicacion')->middleware('auth');
 Route::post('/configuracionCorreo','ConfiguracionController@cambiarSMTPAplicacion')->name('cambiarSMTPAplicacion')->middleware('auth');
 
+//Platillas routes
+Route::get('/plantilla/general', function(){
+    return view('Plantillas.plantillaGeneral');
+})->middleware('auth');
 
-Route::post('/agregarVenta', 'VentaController@store');
