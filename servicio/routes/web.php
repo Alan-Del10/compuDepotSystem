@@ -96,4 +96,9 @@ Route::post('/configuracionCorreo','ConfiguracionController@cambiarSMTPAplicacio
 Route::get('/plantilla/general', function(){
     return view('Plantillas.plantillaGeneral');
 })->middleware('auth');
-
+Route::get('/plantilla/agregarEditarConDetalle', function(){
+    return view('Plantillas.agregarEditarConDetalle');
+})->middleware('auth');
+Route::get('/plantilla/agregarEditarSinDetalle', function(){
+    return view('Plantillas.agregarEditarSinDetalle');
+})->middleware('auth');

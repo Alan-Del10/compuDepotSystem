@@ -27,9 +27,9 @@
                             <!-- /.card-header -->
                             <div class="card-body">
                                 <div class="form-group row">
-                                    <label for="upc" class="col-sm-2 col-form-label">UPC</label>
+                                    <label for="upc" class="col-sm-2 col-form-label">UPC/EAN</label>
                                     <div class="col-sm-5">
-                                        <input type="text" class="form-control @error('upc') is-invalid @enderror" name="upc" id="upc" placeholder="UPC" value="{{ old('upc')}}" autofocus>
+                                        <input type="number" class="form-control @error('upc') is-invalid @enderror" name="upc" id="upc" placeholder="UPC" value="{{ old('upc')}}" min="12" max="13" autofocus>
                                     </div>
                                     <div class="col-sm-1"></div>
                                     <div class="col-sm-1">
