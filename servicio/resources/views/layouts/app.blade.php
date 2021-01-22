@@ -361,7 +361,7 @@
                         </li>
                     </ul>
                 </li>
-                </ul>
+                </ul><p></p>
             </nav>
             <!-- /.sidebar-menu -->
             </div>
