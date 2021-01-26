@@ -83,7 +83,7 @@
                     @foreach($sucursales as $sucursal)
                         <tr>
                             <td>{{$sucursal->id_sucursal}}</td>
-                            <td>{{$sucursal->nombre}}</td>
+                            <td>{{$sucursal->sucursal}}</td>
                             <td>{{$sucursal->local}}</td>
                             <td>{{$sucursal->direccion}}</td>
                             <td><a href="{{ route('Sucursal.edit', [$sucursal->id_sucursal])}}" class="btn btn-primary">Editar <i class="far fa-edit"></i></a></td>

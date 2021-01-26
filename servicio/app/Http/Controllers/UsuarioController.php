@@ -15,7 +15,10 @@ class UsuarioController extends Controller
      */
     public function index()
     {
-        $usuarios = DB::table('usuario')->orderby('id','asc')->get();
+        $usuarios = DB::table('usuario')
+        ->leftJoin('tipo_usuario', 'tipo_usuario.id_tipo_usuario', 'usuario.id_tipo_usuario')
+        ->leftJoin('sucursal', 'sucursal.id_sucursal', 'usuario.id_sucursal')
+        ->orderby('id','asc')->get();
         return view('auth.usuarios',compact('usuarios'));
     }
 

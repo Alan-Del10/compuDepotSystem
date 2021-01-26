@@ -18,34 +18,9 @@
         <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-            <div class="card">
-                <div class="row p-3">
-                    <div class="col-2">
-                        <label for="IdServicio">Id Servicio</label>
-                        <input class="form-control" type="text" id="IdServicio" name="IdServicio">
-                    </div>
-                    <div class="col-2">
-                        <label for="nombreCompleto">Nombre</label>
-                        <input  class="form-control" type="text" id="nombreCompleto" name="nombreCompleto">
-                    </div>
-                    <div class="col-2">
-                        <label for="marca">Marca</label>
-                        <input  class="form-control" type="text" id="marca" name="marca">
-                    </div>
-                    <div class="col-2">
-                        <label for="fechaA">Fecha A</label>
-                        <input  class="form-control" type="text" id="fechaA" name="fechaA">
-                    </div>
-                    <div class="col-2">
-                        <label for="fechaB">Fecha B</label>
-                        <input  class="form-control" type="text" id="fechaB" name="fechaB">
-                    </div>
-                    <div class="col-2">
-                        <label for="" class="text-white">a</label><br>
-                        <button id="buscar" class="btn btn-success" >Buscar</button>
-                    </div>
+                <div class="card">
+
                 </div>
-            </div>
             </div>
         </div>
         </div>
@@ -74,6 +49,8 @@
                         <th style="width: 10px">ID</th>
                         <th>Nombre Completo</th>
                         <th>Email</th>
+                        <th>Puesto</th>
+                        <th>Sucursal</th>
                         <th>Acciones</th>
                     </tr>
                     </thead>
@@ -83,6 +60,8 @@
                                 <td>{{$usuario->id}}</td>
                                 <td>{{$usuario->name}}</td>
                                 <td>{{$usuario->email}}</td>
+                                <td>{{$usuario->puesto}}</td>
+                                <td>{{$usuario->sucursal}}</td>
                                 <td><a href="#" class="btn btn-primary">Editar <i class="far fa-edit"></i></a></td>
                             </tr>
                         @endforeach

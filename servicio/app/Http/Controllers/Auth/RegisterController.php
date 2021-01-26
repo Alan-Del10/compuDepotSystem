@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Sucursal;
 
 class RegisterController extends Controller
 {
@@ -25,6 +27,11 @@ class RegisterController extends Controller
     */
 
     use RegistersUsers;
+    /**
+     * Show the application registration form.
+     *
+     * @return \Illuminate\Http\Response
+     */
 
     public function register(Request $request)
     {
@@ -65,6 +72,8 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:usuario'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'tipo_usuario' => ['required', 'string'],
+            'sucursal' => ['required', 'string']
         ]);
     }
 
@@ -76,10 +85,19 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        $id_tipo_usuario = DB::table('tipo_usuario')->where('puesto', $data['tipo_usuario'])->first();
+        $id_sucursal = Sucursal::where('sucursal', $data['sucursal'])->first();
+        /*if($id_tipo_usuario->isEmpty() && $id_sucursal->isEmpty()){
+            return redirect()->back()->withErrors('error', 'El puesto o sucursal están mal!');
+        }*/
+        $id_tipo_usuario = $id_tipo_usuario->id_tipo_usuario;
+        $id_sucursal = $id_sucursal->id_sucursal;
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'id_sucursal' => $id_sucursal,
+            'id_tipo_usuario' => $id_tipo_usuario
         ]);
     }
 }

@@ -27,11 +27,11 @@
                             @csrf
                             @method('PUT')
                             <div class="form-group row">
-                                <label for="nombre" class="col-sm-1 col-form-label">Nombre:</label>
+                                <label for="sucursal" class="col-sm-1 col-form-label">Nombre:</label>
                                 <div class="col-sm-3">
-                                    <input type="text" name="nombre" id="nombre" class="form-control" value="{{old('nombre', $sucursal->nombre)}}">
-                                    @if ($errors->has('nombre'))
-                                        <span class="errormsg">{{ $errors->first('nombre') }}</span>
+                                    <input type="text" name="sucursal" id="sucursal" class="form-control" value="{{old('sucursal', $sucursal->sucursal)}}">
+                                    @if ($errors->has('sucursal'))
+                                        <span class="errormsg">{{ $errors->first('sucursal') }}</span>
                                     @endif
                                 </div>
                                 <div class="col-sm-1"></div>

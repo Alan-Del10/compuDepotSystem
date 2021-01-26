@@ -4,7 +4,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                <h1>Agregar Tipo de Inventario</h1>
+                <h1>Agregar Categoria</h1>
                 </div>
                 <div class="col-sm-6">
 
@@ -18,7 +18,7 @@
             <div class="container-fluid">
                 <div class="card card-info">
                     <div class="card-header">
-                        <h3 class="card-title">Tipo Inventario</h3>
+                        <h3 class="card-title">Categoria</h3>
                     </div>
                     <!-- /.card-header -->
                     <!-- form start -->

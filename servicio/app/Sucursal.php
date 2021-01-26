@@ -10,5 +10,5 @@ class Sucursal extends Model
     public $timestamps = false;
     protected $primaryKey = 'id_sucursal';
     public $incrementing = true;
-    protected $fillable = array('nombre', 'direccion', 'local');
+    protected $fillable = array('sucursal', 'direccion', 'local');
 }

@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Sucursal;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,7 +25,9 @@ Route::get('/', function () {
 });
 
 Route::get('/usuarios/registrar', function(){
-    return view('auth.register');
+    $sucursales=Sucursal::get();
+    $tipo_usuarios = DB::table('tipo_usuario')->get();
+    return view('auth.register', compact('sucursales', 'tipo_usuarios'));
 })->middleware('auth')->name('registrarUsuario');
 
 //Auth routes
@@ -95,10 +99,10 @@ Route::post('/configuracionCorreo','ConfiguracionController@cambiarSMTPAplicacio
 //Platillas routes
 Route::get('/plantilla/general', function(){
     return view('Plantillas.plantillaGeneral');
-})->middleware('auth');
+})->middleware('auth')->name('plantillaGeneral');
 Route::get('/plantilla/agregarEditarConDetalle', function(){
     return view('Plantillas.agregarEditarConDetalle');
-})->middleware('auth');
+})->middleware('auth')->name('agregarEditarConDetalle');
 Route::get('/plantilla/agregarEditarSinDetalle', function(){
     return view('Plantillas.agregarEditarSinDetalle');
-})->middleware('auth');
+})->middleware('auth')->name('agregarEditarSinDetalle');

@@ -43,7 +43,7 @@ class SucursalController extends Controller
         try {
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
-                'nombre' => 'required|max:200',
+                'sucursal' => 'required|max:200',
                 'local' => 'nullable|max:45',
                 'direccion' => 'nullable|max:200'
             ]);
@@ -53,7 +53,7 @@ class SucursalController extends Controller
                 return redirect()->back()->withErrors($validator);
             }else{
                 Sucursal::insert([
-                    'nombre' => $request->nombre,
+                    'sucursal' => $request->sucursal,
                     'local' => $request->local,
                     'direccion' => $request->direccion
                 ]);
@@ -102,7 +102,7 @@ class SucursalController extends Controller
             $data = $request->except('_method','_token');
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($data, [
-                'nombre' => 'required|max:200',
+                'sucursal' => 'required|max:200',
                 'local' => 'nullable|max:45',
                 'direccion' => 'nullable|max:200'
             ]);

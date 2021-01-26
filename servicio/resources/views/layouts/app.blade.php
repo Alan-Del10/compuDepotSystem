@@ -296,7 +296,7 @@
                         <li class="nav-item">
                             <a href="{{route('TipoInventario.index')}}" class="nav-link">
                             <i class="fas fa-thumbtack nav-icon"></i>
-                            <p>Tipo Inventario</p>
+                            <p>Categorias</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -339,6 +339,35 @@
                         Perfil
                     </p>
                     </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-pager"></i>
+                        <p>
+                            Plantillas
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{route('plantillaGeneral')}}" class="nav-link">
+                                <i class="fas fa-clipboard-list nav-icon"></i>
+                                <p>Listado General</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{route("agregarEditarConDetalle")}}" class="nav-link">
+                                <i class="fas fa-plus nav-icon"></i>
+                                <p>Agregar/Editar Con Detalle</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{route('agregarEditarSinDetalle')}}" class="nav-link">
+                                <i class="fas fa-plus-circle nav-icon"></i>
+                                <p>Agregar/Editar Sin Detalle</p>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">
@@ -426,6 +455,9 @@
 <script src="{{asset('dist/js/pages/dashboard.js')}}"></script>
 <script>
     $(document).ready(function(e){
+        if($('body').hasClass('sidebar-collapse')){
+            $('#searchBar').hide();
+        }
         /*$('.search-panel .dropdown-menu').find('a').click(function(e) {
             e.preventDefault();
             var param = $(this).attr("href").replace("#","");

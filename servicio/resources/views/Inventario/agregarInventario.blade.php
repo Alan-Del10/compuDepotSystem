@@ -28,11 +28,12 @@
                             <div class="card-body">
                                 <div class="form-group row">
                                     <label for="upc" class="col-sm-2 col-form-label">UPC/EAN</label>
-                                    <div class="col-sm-5">
-                                        <input type="number" class="form-control @error('upc') is-invalid @enderror" name="upc" id="upc" placeholder="UPC" value="{{ old('upc')}}" min="12" max="13" autofocus>
+                                    <div class="col-sm-10 input-group">
+                                        <input type="number" class="form-control @error('upc') is-invalid @enderror" name="upc" id="upc" placeholder="UPC" value="{{ old('upc')}}" minlength="12" maxlength="13" autofocus>
                                     </div>
-                                    <div class="col-sm-1"></div>
-                                    <div class="col-sm-1">
+                                </div>
+                                <div class="form-check row">
+                                    <div class="col-sm-12">
                                         @if(old('checkOnline') == true)
                                             <input type="checkbox" class="form-check-input" id="checkOnline" name="checkOnline" disabled onclick="checkVentaOnline()" checked>
                                         @else
@@ -42,17 +43,17 @@
                                     <label class="form-check-label col-sm-3" for="checkOnline">Venta online?</label>
                                 </div>
                                 <div class="form-group row">
-                                    <div class="col-12 alert alert-warning alert-dismissible fade show" role="alert" style="display:none" id="alerta-upc">
+                                    <div class="col-12 alert alert-warning fade show" style="display:none" id="alerta-upc">
                                         <strong>Ops!</strong> Este artículo no está registrado.
-                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
+                                        <button type="button" id="boton-alerta" class="close">
+                                            <span >&times;</span>
                                         </button>
                                     </div>
                                 </div>
                                 <hr>
                                 <div class="form-group row" id="Categoria">
                                     <label for="categoria" class="col-sm-2 col-form-label">Categoria</label>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-5 input-group">
                                         <input type="text" list="categoriaData" class="form-control @error('categoria') is-invalid @enderror" id="categoria" name="categoria" value="{{old('categoria')}}" placeholder="Seleccionar Categoria" disabled/>
                                         <datalist id="categoriaData">
                                         @foreach($categorias as $categoria)
@@ -64,11 +65,10 @@
                                             @endforeach
                                         @endforeach
                                         </datalist>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-primary" id="agregarCategoria" disabled><i class="fas fa-plus"></i></button>
+                                        </div>
                                     </div>
-                                    <div class="col-sm-1">
-                                        <button type="button" class="btn btn-primary" id="agregarCategoria" disabled><i class="fas fa-plus"></i></button>
-                                    </div>
-                                    <div class="col-sm-1"></div>
                                     <div class="col-sm-4">
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="radiosDetalle" id="radioDefault" value="default" onclick="radioDetalle($(this))" checked>
@@ -86,65 +86,71 @@
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-sm-2 col-form-label">Marca</label>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-5 input-group">
                                         <input type="text" list="marcaData" class="form-control @error('marca') is-invalid @enderror" id="marca" name="marca" value="{{old('marca')}}" placeholder="Seleccionar Marca" disabled/>
                                         <datalist id="marcaData">
                                             @foreach($marcas as $marca)
                                                 <option value="{{$marca->marca}}">{{$marca->marca}}</option>
                                             @endforeach
                                         </datalist>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-primary" id="agregarMarca" disabled><i class="fas fa-plus"></i></button>
+                                        </div>
                                     </div>
-                                    <div class="col-sm-1">
-                                        <button type="button" class="btn btn-primary" id="agregarMarca" disabled><i class="fas fa-plus"></i></button>
-                                    </div>
-                                    <div class="col-sm-1"></div>
-                                    <div class="col-sm-1">
+                                    <div class="col-sm-3">
+                                        <div class="form-check form-check-inline">
                                         @if(old('checkBateria') == true)
                                             <input type="checkbox" class="form-check-input" id="checkBateria" name="checkBateria" disabled onclick="checkVidaBateria()" checked>
                                         @else
                                             <input type="checkbox" class="form-check-input" id="checkBateria" name="checkBateria" disabled onclick="checkVidaBateria()">
                                         @endif
+                                            <label class="form-check-label" for="checkBateria">Vida de bateria?</label>
+                                        </div>
                                     </div>
-                                    <label class="form-check-label col-sm-3" for="checkBateria">Vida de bateria?</label>
                                 </div>
                                 <div class="form-group row">
                                     <label for="modelo" class="col-sm-2 col-form-label">Modelo</label>
-                                    <div class="col-sm-9">
+                                    <div class="col-sm-10 input-group">
                                         <input type="text" list="modeloData" class="form-control @error('modelo') is-invalid @enderror" id="modelo" name="modelo" value="{{old('modelo')}}" placeholder="Seleccionar Modelo" disabled/>
                                         <datalist id="modeloData">
                                             @foreach($modelos as $modelo)
                                                 <option value="{{$modelo->modelo}}">{{$modelo->modelo}}</option>
                                             @endforeach
                                         </datalist>
-                                    </div>
-                                    <div class="col-sm-1">
-                                        <button type="button" class="btn btn-primary" id="agregarModelo" disabled><i class="fas fa-plus"></i></button>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-primary" id="agregarModelo" disabled><i class="fas fa-plus"></i></button>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label for="color" class="col-sm-2 col-form-label">Color</label>
-                                    <div class="col-sm-3">
+                                    <div class="col-sm-4 input-group">
                                         <input type="text" list="colorData" class="form-control @error('color') is-invalid @enderror" id="color" name="color" value="{{old('color')}}" placeholder="Seleccionar Color" disabled/>
                                         <datalist id="colorData">
                                             @foreach($colores as $color)
                                                 <option value="{{$color->color}}">{{$color->color}}</option>
                                             @endforeach
                                         </datalist>
-                                    </div>
-                                    <div class="col-sm-1">
-                                        <button type="button" class="btn btn-primary" id="agregarColor" disabled><i class="fas fa-plus"></i></button>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-primary" id="agregarColor" disabled><i class="fas fa-plus"></i></button>
+                                        </div>
                                     </div>
                                     <label for="capacidad" class="col-sm-2 col-form-label">Capacidad</label>
-                                    <div class="col-sm-3">
+                                    <div class="col-sm-4 input-group">
                                         <input type="text" list="capacidadData" class="form-control @error('capacidad') is-invalid @enderror" id="capacidad" name="capacidad" value="{{old('capacidad')}}" placeholder="Seleccionar Capacidad" disabled/>
                                         <datalist id="capacidadData">
                                             @foreach($capacidades as $capacidad)
                                                 <option value="{{$capacidad->tipo}}">{{$capacidad->tipo}}</option>
                                             @endforeach
                                         </datalist>
-                                    </div>
-                                    <div class="col-sm-1">
-                                        <button type="button" class="btn btn-primary" id="agregarCapacidad" disabled><i class="fas fa-plus"></i></button>
+                                        <div class="input-group-append">
+                                            <select name="labelCapacidad" id="labelCapacidad" class="custom-select" disabled>
+                                                <option value="MB">MB</option>
+                                                <option value="GB">GB</option>
+                                                <option value="TB">TB</option>
+                                            </select>
+                                            <button type="button" class="btn btn-primary" id="agregarCapacidad" disabled><i class="fas fa-plus"></i></button>
+                                        </div>
                                     </div>
                                 </div>
                                 <hr>
@@ -154,6 +160,7 @@
                                         <input type="file" class="custom-file-input" name="imagenProducto" id="imagenProducto" accept="image/png, image/jpeg" disabled>
                                         <label class="custom-file-label" id="labelImagen" for="imagenProducto">Elegir Imagen...</label>
                                     </div>
+                                    <img src="" class="rounded mx-auto d-block" alt="" id="imagen">
                                 </div>
                                 <div class="form-group row" id="onlineTitulo" style="display: none">
                                     <label for="titulo" class="col-sm-2 col-form-label">Título</label>
@@ -239,13 +246,13 @@
                             </div>
                             <div class="card-body">
                                 <div class="form-input row">
-                                    <div class="col-sm-1"></div>
-                                    <div class="col-sm-1">
-                                        <input type="checkbox" class="form-check-input" id="checkFinalizar" name="checkFinalizar" disabled onclick="checkFinalizarInventario()">
+                                    <div class="col-sm-6">
+                                        <div class="form-check form-check-inline">
+                                            <input type="checkbox" class="form-check-input" id="checkFinalizar" name="checkFinalizar" disabled onclick="checkFinalizarInventario()">
+                                            <label class="form-check-label" for="checkFinalizar">Finalizar Proceso</label>
+                                        </div>
                                     </div>
-                                    <label class="form-check-label col-sm-3" for="checkFinalizar">Finalizar Proceso</label>
-                                    <div class="col-sm-4"></div>
-                                    <div class="col-sm-3">
+                                    <div class="col-sm-6">
                                         <input type="submit" value="Agregar Inventario" class="btn btn-success float-right" id="agregarInventario" disabled>
                                     </div>
                                 </div>
@@ -264,7 +271,6 @@
 
                         </div>
                     </section>
-
                     <!-- /.card-footer -->
                 </div>
             </form>
@@ -298,13 +304,14 @@
         $('#upc').on('input', function(){
             upc = $(this).val();
             upc = upc.toString();
-            if(upc.length == 12){
+            if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);
+            if(upc.length == 12 || upc.length == 13){
                 $.ajax({
                     type: "get",
                     url: "{{route('verificarUPC')}}",
                     data:{'upc' : $(this).val()},
                     success: function(data) {
-                        if(data.res == false){
+                        if(data[0].res == false){
                             $('#header-pagina').text('Agregar Inventario');
                             $('#alerta-upc').show();
                             //Swal.fire("Oops", "Ese artículo no existe en el inventario, registralo!", "info");
@@ -319,7 +326,13 @@
                         Swal.fire("Oops", "No se pudo agregar revisa correctamente la info!", "error");
                     }
                 });
+            }else{
+
             }
+        });
+        //Función que desactiva la alerta de artículo no existente
+        $('#boton-alerta').on('click', function(){
+            $('#alerta-upc').hide();
         });
         //Función para desabilitar los campos
         function deshabilitarFormulario(estado){
@@ -345,50 +358,56 @@
                 }
             });
             if(estado != false){
-                $('#categoria').val(datosFormulario[0].categoria);
+                $('#categoria').val(datosFormulario[0][0].categoria);
                 /*categorias.forEach(categoria => {
                     if(datosFormulario[0].id_categoria != marca.id_categoria){
                         console.log(categoria);
                         $('#categoriaData').append('<option value="'+categoria.categoria+'">'+categoria.categoria+'</option>');
                     }
                 });*/
-                if(datosFormulario[0].id_categoria != null){
+                if(datosFormulario[0][0].id_categoria != null){
                     $('#marcaData option').remove();
                     marcas.forEach(marca => {
-                        if(datosFormulario[0].id_categoria == marca.id_categoria){
+                        if(datosFormulario[0][0].id_categoria == marca.id_categoria){
                             console.log(marca);
                             $('#marcaData').append('<option value="'+marca.marca+'">'+marca.marca+'</option>');
                         }
                     });
                 }
-                $('#marca').val(datosFormulario[0].marca);
-                if(datosFormulario[0].id_marca != null){
+                $('#marca').val(datosFormulario[0][0].marca);
+                if(datosFormulario[0][0].id_marca != null){
                     $('#modeloData option').remove();
                     modelos.forEach(modelo => {
-                        if(datosFormulario[0].id_marca == modelo.id_marca){
+                        if(datosFormulario[0][0].id_marca == modelo.id_marca){
                             console.log(modelo);
                             $('#modeloData').append('<option value="'+modelo.modelo+'">'+modelo.modelo+'</option>');
                         }
                     });
                 }
-                $('#modelo').val(datosFormulario[0].modelo);
-                $('#color').val(datosFormulario[0].color);
-                $('#capacidad').val(datosFormulario[0].tipo);
-                $('#costo').val(datosFormulario[0].costo);
-                $('#stock').val(datosFormulario[0].stock);
-                $('#stockMin').val(datosFormulario[0].stock_min);
-                $('#precioMin').val(datosFormulario[0].precio_min);
-                $('#precioMax').val(datosFormulario[0].precio_max);
-                $('#publico').val(datosFormulario[0].precio_publico);
-                $('#mayoreo').val(datosFormulario[0].precio_mayoreo);
-                $('#largo').val(datosFormulario[0].largo);
-                $('#alto').val(datosFormulario[0].alto);
-                $('#ancho').val(datosFormulario[0].ancho);
-                if(datosFormulario[0].venta_online == 1){
+                if(datosFormulario[0][0].imagen != null){
+                    imagen = '{{URL::asset('storage/inventario/')}}' + '/';
+                    imagen += datosFormulario[0][0].imagen;
+                    $('#imagen').attr("src", imagen);
+                    $('#labelImagen').html(datosFormulario[0][0].imagen);
+                }
+                $('#modelo').val(datosFormulario[0][0].modelo);
+                $('#color').val(datosFormulario[0][0].color);
+                $('#capacidad').val(datosFormulario[0][0].tipo);
+                $('#costo').val(datosFormulario[0][0].costo);
+                $('#stock').val(datosFormulario[0][0].stock);
+                $('#stockMin').val(datosFormulario[0][0].stock_min);
+                $('#precioMin').val(datosFormulario[0][0].precio_min);
+                $('#precioMax').val(datosFormulario[0][0].precio_max);
+                $('#publico').val(datosFormulario[0][0].precio_publico);
+                $('#mayoreo').val(datosFormulario[0][0].precio_mayoreo);
+                $('#largo').val(datosFormulario[0][0].largo);
+                $('#alto').val(datosFormulario[0][0].alto);
+                $('#ancho').val(datosFormulario[0][0].ancho);
+                if(datosFormulario[0][0].venta_online == 1){
                     $('#checkOnline').prop('checked', 'checked');
-                    $('#titulo').val(datosFormulario[0].titulo_inventario);
+                    $('#titulo').val(datosFormulario[0][0].titulo_inventario);
                     $('#titulo').attr('disabled', false);
-                    $('#descripcion').val(datosFormulario[0].descripcion_inventario);
+                    $('#descripcion').val(datosFormulario[0][0].descripcion_inventario);
                     $('#descripcion').attr('disabled', false);
                 }else{
                     $('#checkOnline').prop('checked', false);
@@ -396,6 +415,68 @@
                     $('#titulo').attr('disabled', true);
                     $('#descripcion').val("");
                     $('#descripcion').attr('disabled', true);
+                }
+                if(datosFormulario[1][0].imei){
+                    $('#radioImei').prop("checked", true);
+                    detalleRadio = 1;
+                }else if(datosFormulario[1][0].ns){
+                    $('#radioSerie').prop("checked", true);
+                    detalleRadio = 2;
+                }else{
+                    detalleRadio = 0;
+                }
+                if(datosFormulario[1].length > 0){
+                    $.each(datosFormulario[1], function(key, value){
+                        if(value['imei']){
+                            $('#detalleInventario').append(
+                                '<div class="form-group row agregado">'+
+                                    '<label for="imei" class="col-sm-1 col-form-label">IMEI</label>'+
+                                    '<div class="col-sm-3">'+
+                                        '<input type="text" class="form-control" id="imei" name="detalle['+key+'][imei]" placeholder="IMEI" value="'+value['imei']+'">'+
+                                    '</div>'+
+                                    '<label for="liberado" class="col-sm-2 col-form-label">Condición</label>'+
+                                    '<div class="col-sm-2">'+
+                                        '<select class="form-control" id="liberado" name="detalle['+key+'][liberado]">'+
+                                            '<option value="1">Liberado</option>'+
+                                            '<option value="2">No Liberado</option>'+
+                                        '</select>'+
+                                    '</div>'+
+                                    '<label for="vida" class="col-sm-2 col-form-label">Vida Bateria</label>'+
+                                    '<div class="col-sm-2 input-group">'+
+                                        '<input type="number" class="form-control vida" id="vida" name="detalle['+key+'][vida]" placeholder="Vida" disabled>'+
+                                        '<div class="input-group-append">'+
+                                            '<span class="input-group-text">%</span>'+
+                                        '</div>'+
+                                    '</div>'+
+                                '</div>'+
+                                '<hr>'
+                            );
+                        }else if(value['ns']){
+                            $('#detalleInventario').append(
+                                '<div class="form-group row agregado">'+
+                                    '<label for="ns" class="col-sm-2 col-form-label">N/S</label>'+
+                                    '<div class="col-sm-2">'+
+                                        '<input type="text" class="form-control" id="ns" name="detalle['+key+'][ns]" placeholder="N/S" value="'+value['ns']+'">'+
+                                    '</div>'+
+                                    '<label for="liberado" class="col-sm-2 col-form-label">Condición</label>'+
+                                    '<div class="col-sm-2">'+
+                                        '<select name="liberado"  class="form-control" id="liberado" name="detalle['+key+'][liberado]">'+
+                                            '<option value="1">Liberado</option>'+
+                                            '<option value="2">No Liberado</option>'+
+                                        '</select>'+
+                                    '</div>'+
+                                    '<label for="vida" class="col-sm-2 col-form-label">Vida Bateria</label>'+
+                                    '<div class="col-sm-2 input-group">'+
+                                        '<input type="number" class="form-control" name="detalle['+key+'][vida]" id="vida" placeholder="Vida" disabled>'+
+                                        '<div class="input-group-append">'+
+                                            '<span class="input-group-text">%</span>'+
+                                        '</div>'+
+                                    '</div>'+
+                                '</div>'+
+                                '<hr>'
+                            );
+                        }
+                    });
                 }
                 checkVentaOnline();
             }
@@ -447,8 +528,11 @@
                             '</select>'+
                         '</div>'+
                         '<label for="vida" class="col-sm-2 col-form-label">Vida Bateria</label>'+
-                        '<div class="col-sm-2">'+
+                        '<div class="col-sm-2 input-group">'+
                             '<input type="number" class="form-control vida" id="vida" name="detalle['+conteoDetalle+'][vida]" placeholder="Vida" disabled>'+
+                            '<div class="input-group-append">'+
+                                '<span class="input-group-text">%</span>'+
+                            '</div>'+
                         '</div>'+
                     '</div>'+
                     '<hr>'
@@ -468,8 +552,11 @@
                             '</select>'+
                         '</div>'+
                         '<label for="vida" class="col-sm-2 col-form-label">Vida Bateria</label>'+
-                        '<div class="col-sm-2">'+
-                            '<input type="number" class="form-control" name="detalle['+conteoDetalle+'][vida]" id="vida" placeholder="Vida" disabled>'+
+                        '<div class="col-sm-2 input-group">'+
+                            '<input type="number" class="form-control vida" id="vida" name="detalle['+conteoDetalle+'][vida]" placeholder="Vida" disabled>'+
+                            '<div class="input-group-append">'+
+                                '<span class="input-group-text">%</span>'+
+                            '</div>'+
                         '</div>'+
                     '</div>'+
                     '<hr>'

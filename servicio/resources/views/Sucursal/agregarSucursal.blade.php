@@ -26,9 +26,9 @@
                         <form action="{{route('Sucursal.store')}}" method="POST" class="form-horizontal" >
                             @csrf
                             <div class="form-group row">
-                                <label for="nombre" class="col-sm-1 col-form-label">Nombre:</label>
+                                <label for="sucursal" class="col-sm-1 col-form-label">Nombre:</label>
                                 <div class="col-sm-3">
-                                    <input type="text" name="nombre" id="nombre" class="form-control">
+                                    <input type="text" name="sucursal" id="sucursal" class="form-control">
                                 </div>
                                 <div class="col-sm-1"></div>
                                 <label for="local" class="col-sm-1 col-form-label">Local:</label>

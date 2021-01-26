@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class TipoInventario extends Model
 {
-    protected $table = 'tipo_inventario';
+    protected $table = 'categoria';
     public $timestamps = false;
-    protected $primaryKey = 'id_tipo_inventario';
+    protected $primaryKey = 'id_categoria';
     public $incrementing = true;
-    protected $fillable = array('descripcion');
+    protected $fillable = array('categoria', 'estatus');
 }

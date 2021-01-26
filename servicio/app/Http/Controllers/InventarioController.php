@@ -55,7 +55,7 @@ class InventarioController extends Controller
         try {
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
-                'upc' => 'required|numeric',
+                'upc' => 'required|numeric|max:13|min:12',
                 'categoria' => 'required',
                 'modelo' => 'required',
                 'color' => 'required',
@@ -216,7 +216,7 @@ class InventarioController extends Controller
             $data = $request->except('_method','_token');
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
-                'upc' => 'required|numeric',
+                'upc' => 'required|numeric|max:13|min:12',
                 'categoria' => 'required',
                 'modelo' => 'required',
                 'color' => 'required',
@@ -409,8 +409,12 @@ class InventarioController extends Controller
             leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')->
             leftJoin('color', 'color.id_color', 'inventario.id_color')->
             leftJoin('capacidad', 'capacidad.id_capacidad', 'inventario.id_capacidad')->where('upc', $request->upc)->get();
+            foreach($articulo as $art){
+                $id_inventario = $art->id_inventario;
+            }
+            $detalle = DB::table('detalle_inventario')->where('id_inventario', $id_inventario)->get();
             if(count($articulo) > 0){
-                return $articulo;
+                return [$articulo, $detalle];
             }else{
                 return ['res'=>false];
             }

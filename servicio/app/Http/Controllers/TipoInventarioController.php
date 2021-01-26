@@ -15,8 +15,8 @@ class TipoInventarioController extends Controller
      */
     public function index()
     {
-        $tiposInventario = TipoInventario::orderby('id_tipo_inventario','asc')->get();
-        return view('TipoInventario.tipoInventario', compact('tiposInventario'));
+        $categorias = TipoInventario::orderby('id_categoria','asc')->get();
+        return view('TipoInventario.tipoInventario', compact('categorias'));
     }
 
     /**

@@ -52,6 +52,48 @@
                         </div>
 
                         <div class="form-group row">
+                            <label for="sucursal" class="col-md-4 col-form-label text-md-right">{{ __('Sucursal') }}</label>
+
+                            <div class="col-md-6 input-group">
+                                <input id="sucursal" list="sucursalData" type="text" class="form-control @error('sucursal') is-invalid @enderror" name="sucursal" value="{{ old('sucursal') }}" required autocomplete="sucursal" placeholder="Selecciona una Sucursal">
+                                <datalist id="sucursalData">
+                                    @foreach($sucursales as $sucursal)
+                                    <option value="{{$sucursal->sucursal}}">{{$sucursal->sucursal}}</option>
+                                    @endforeach
+                                </datalist>
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-primary" id="agregarSucursal"><i class="fas fa-plus"></i></button>
+                                </div>
+                                @error('sucursal')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="tipo_usuario" class="col-md-4 col-form-label text-md-right">{{ __('Tipo Usuario') }}</label>
+
+                            <div class="col-md-6 input-group">
+                                <input id="tipo_usuario" list="tipo_usuarioData" type="text" class="form-control @error('tipo_usuario') is-invalid @enderror" name="tipo_usuario" value="{{ old('tipo_usuario') }}" required autocomplete="tipo_usuario" placeholder="Selecciona un Puesto">
+                                <datalist id="tipo_usuarioData">
+                                    @foreach($tipo_usuarios as $tipo_usuario)
+                                    <option value="{{$tipo_usuario->puesto}}">{{$tipo_usuario->puesto}}</option>
+                                    @endforeach
+                                </datalist>
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-primary" id="agregarSucursal"><i class="fas fa-plus"></i></button>
+                                </div>
+                                @error('tipo_usuario')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
                             <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
 
                             <div class="col-md-6">
