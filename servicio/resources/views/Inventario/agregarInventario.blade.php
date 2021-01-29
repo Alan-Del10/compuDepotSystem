@@ -613,7 +613,7 @@
                 marcas.forEach(marca => {
                     if($(this).val() == marca.id_categoria){
                         console.log(marca);
-                        $('#marca').append('<option value="'+marca.id_marca+'">'+marca.descripcion+'</option>');
+                        $('#marca').append('<option value="'+marca.marca+'">'+marca.marca+'</option>');
                     }
                 });
             }
@@ -625,7 +625,7 @@
                 modelos.forEach(modelo => {
                     if($(this).val() == modelo.id_marca){
                         console.log(modelo);
-                        $('#modelo').append('<option value="'+modelo.id_modelo+'">'+modelo.descripcion+'</option>');
+                        $('#modelo').append('<option value="'+modelo.modelo+'">'+modelo.modelo+'</option>');
                     }
                 });
             }
@@ -635,7 +635,7 @@
             //sacar una cadena de options para el sweet alert
             var cadenaOption = '<select class="form-control" id="categoriaOption">';//inicializo variable para el options del sweet alert
             categorias.forEach(categoria => {
-                cadenaOption = cadenaOption +'<option value="'+categoria.id_categoria+'">'+categoria.descripcion+'</option>';
+                cadenaOption = cadenaOption +'<option value="'+categoria.categoria+'">'+categoria.categoria+'</option>';
             });
             cadenaOption = cadenaOption + '</select>';
             Swal.fire({
@@ -665,7 +665,7 @@
                         url: "{{route('agregarMarca')}}",
                         data:{'marcaDescripcion' : marcaDescripcion},
                         success: function(response){
-                            $('#marca').append('<option value="'+response[0].id_marca+'" selected>'+response[0].descripcion+'</option>')
+                            $('#marca').append('<option value="'+response[0].marca+'" selected>'+response[0].marca+'</option>')
                             console.log(response);
                         },
                         error: function(e){
@@ -705,7 +705,7 @@
             //sacar una cadena de options para el sweet alert
             var cadenaOption = '<select class="form-control" id="marcaOption">';//inicializo variable para el options del sweet alert
             marcas.forEach(marca => {
-                cadenaOption = cadenaOption +'<option value="'+marca.id_marca+'">'+marca.descripcion+'</option>';
+                cadenaOption = cadenaOption +'<option value="'+marca.marca+'">'+marca.marca+'</option>';
             });
             cadenaOption = cadenaOption + '</select>';
 
@@ -739,7 +739,7 @@
                             url: "{{route('agregarModelo')}}",
                             data:{'modeloDescripcion' : modeloDescripcion,'marcaOption' : marcaOption },
                             success: function(response){
-                                $('#modelo').append('<option value="'+response[0].id_modelo+'" selected>'+response[0].descripcion+'</option>')
+                                $('#modelo').append('<option value="'+response[0].modelo+'" selected>'+response[0].modelo+'</option>')
                                 console.log(response);
                             },
                             error: function(e){
@@ -813,7 +813,7 @@
                             Swal.fire({
                                 html: response.responseText
                             })*/
-                            $('#categoria').append('<option value="'+response[0].id_categoria+'" selected>'+response[0].descripcion+'</option>')
+                            $('#categoria').append('<option value="'+response[0].categoria+'" selected>'+response[0].categoria+'</option>')
                             console.log(response);
                         },
                         error: function(e){
@@ -863,7 +863,7 @@
                             Swal.fire({
                                 html: response.responseText
                             })*/
-                            $('#color').append('<option value="'+response[0].id_color+'" selected>'+response[0].descripcion+'</option>')
+                            $('#color').append('<option value="'+response[0].color+'" selected>'+response[0].color+'</option>')
                             console.log(response);
                         },
                         error: function(e){
@@ -919,7 +919,7 @@
                             Swal.fire({
                                 html: response.responseText
                             })*/
-                            $('#capacidad').append('<option value="'+response[0].id_capacidad+'" selected>'+response[0].tipo+'</option>')
+                            $('#capacidad').append('<option value="'+response[0].tipo+'" selected>'+response[0].tipo+'</option>')
                             console.log(response);
                         },
                         error: function(e){

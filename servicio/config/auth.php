@@ -49,23 +49,34 @@ return [
 
         'admin' => [
             'driver' => 'session',
-            'provideer' => 'users'
+            'provider' => 'admins',
+        ],
+
+        'sub_admin' => [
+            'driver' => 'session',
+            'provider' => 'admins',
         ],
 
         'tecnico' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'tecnicos',
         ],
 
         'vendedor' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'vendedores',
         ],
 
         'servicio_cliente' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'servicio_clientes',
         ],
+
+        'personalizado' => [
+            'driver' => 'session',
+            'provider' => 'personalizados',
+        ],
+
     ],
 
     /*
@@ -93,17 +104,27 @@ return [
 
         'admins' => [
             'driver' => 'eloquent',
-            'table' => App\User::class,
+            'model' => App\Admin::class,
         ],
 
         'tecnicos' => [
             'driver' => 'eloquent',
-            'table' => App\User::class,
+            'model' => App\User::class,
         ],
 
         'vendedores' => [
             'driver' => 'eloquent',
-            'table' => App\User::class,
+            'model' => App\User::class,
+        ],
+
+        'servicio_clientes' => [
+            'driver' => 'eloquent',
+            'model' => App\User::class,
+        ],
+
+        'personalizados' => [
+            'driver' => 'eloquent',
+            'model' => App\User::class,
         ],
 
         // 'users' => [

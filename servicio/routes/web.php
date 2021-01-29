@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 |
 */
 
+
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/home');
@@ -25,7 +26,7 @@ Route::get('/', function () {
 });
 
 Route::get('/usuarios/registrar', function(){
-    $sucursales=Sucursal::get();
+    $sucursales = Sucursal::get();
     $tipo_usuarios = DB::table('tipo_usuario')->get();
     return view('auth.register', compact('sucursales', 'tipo_usuarios'));
 })->middleware('auth')->name('registrarUsuario');
@@ -34,6 +35,12 @@ Route::get('/usuarios/registrar', function(){
 Auth::routes();
 
 //Ruta de la vista home
+Route::group(['guard' => 'admin'], function () {
+    Route::get('/home/hola', function(){
+        $name = Auth::user();
+        return "Hola {$name}";
+    })->middleware('auth:vendedor');
+});
 Route::get('/home','InicioController@index')->name('home')->middleware('auth');
 
 //Ruta de la vista de dashboard
@@ -57,7 +64,7 @@ Route::get('/servicio/{id}/estatus','ServicioController@estatusServicio')->name(
 Route::get('/servicio/{id_servicio}/reciboServicio','ServicioController@reciboServicio')->name('reciboServicio')->middleware('auth');
 
 //Usuario routes
-Route::resource('Usuario', UsuarioController::class)->middleware('auth');
+Route::resource('Usuario', UsuarioController::class)->middleware('auth:admin');
 
 //Cliente routes
 Route::resource('Cliente', ClienteController::class)->middleware('auth');
@@ -72,7 +79,7 @@ Route::resource('Articulo', ArticuloController::class)->middleware('auth');
 Route::resource('TipoInventario', TipoInventarioController::class)->middleware('auth');
 
 //Inventario routes
-Route::resource('Inventario', InventarioController::class)->middleware('auth');
+Route::resource('Inventario', InventarioController::class)->middleware('auth:admin,sub_admin');
 Route::get('/inventario/verificarUPC', 'InventarioController@verificarUPC')->name('verificarUPC')->middleware('auth');
 Route::get('/inventario/agregarCapacidad','InventarioController@agregarCapacidad')->name('agregarCapacidad')->middleware('auth');
 
@@ -91,10 +98,10 @@ Route::resource('Sucursal', SucursalController::class)->middleware('auth');
 Route::resource('Venta', VentaController::class)->middleware('auth');
 
 //Configuracion routes
-Route::resource('Configuracion', ConfiguracionController::class)->middleware('auth');
-Route::post('/configuracionNombre','ConfiguracionController@cambiarNombreAplicacion')->name('cambiarNombreAplicacion')->middleware('auth');
-Route::post('/configuracionLogo','ConfiguracionController@cambiarLogoAplicacion')->name('cambiarLogoAplicacion')->middleware('auth');
-Route::post('/configuracionCorreo','ConfiguracionController@cambiarSMTPAplicacion')->name('cambiarSMTPAplicacion')->middleware('auth');
+Route::resource('Configuracion', ConfiguracionController::class)->middleware('auth:admin');
+Route::post('/configuracionNombre','ConfiguracionController@cambiarNombreAplicacion')->name('cambiarNombreAplicacion')->middleware('auth:admin');
+Route::post('/configuracionLogo','ConfiguracionController@cambiarLogoAplicacion')->name('cambiarLogoAplicacion')->middleware('auth:admin');
+Route::post('/configuracionCorreo','ConfiguracionController@cambiarSMTPAplicacion')->name('cambiarSMTPAplicacion')->middleware('auth:admin');
 
 //Platillas routes
 Route::get('/plantilla/general', function(){
