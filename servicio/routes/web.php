@@ -67,10 +67,10 @@ Route::get('/servicio/{id_servicio}/reciboServicio','ServicioController@reciboSe
 Route::resource('Usuario', UsuarioController::class)->middleware('auth:admin');
 
 //Cliente routes
-Route::resource('Cliente', ClienteController::class)->middleware('auth');
+Route::resource('Cliente', ClienteController::class)->middleware('auth:servicio_cliente');
 
 //Sucursal routes
-Route::resource('Sucursal', SucursalController::class)->middleware('auth');
+Route::resource('Sucursal', SucursalController::class)->middleware('auth:admin,sub_admin');
 
 //Articulo routes
 Route::resource('Articulo', ArticuloController::class)->middleware('auth');
@@ -79,7 +79,7 @@ Route::resource('Articulo', ArticuloController::class)->middleware('auth');
 Route::resource('TipoInventario', TipoInventarioController::class)->middleware('auth');
 
 //Inventario routes
-Route::resource('Inventario', InventarioController::class)->middleware('auth:admin,sub_admin');
+Route::resource('Inventario', InventarioController::class)->middleware('auth:admin');
 Route::get('/inventario/verificarUPC', 'InventarioController@verificarUPC')->name('verificarUPC')->middleware('auth');
 Route::get('/inventario/agregarCapacidad','InventarioController@agregarCapacidad')->name('agregarCapacidad')->middleware('auth');
 
@@ -97,6 +97,10 @@ Route::resource('Sucursal', SucursalController::class)->middleware('auth');
 //Venta routes
 Route::resource('Venta', VentaController::class)->middleware('auth');
 
+//Permisos routes
+Route::resource('Permisos', PermisosController::class)->middleware('auth');
+Route::get('/permisos/listado', 'PermisosController@index')->middleware('auth');
+
 //Configuracion routes
 Route::resource('Configuracion', ConfiguracionController::class)->middleware('auth:admin');
 Route::post('/configuracionNombre','ConfiguracionController@cambiarNombreAplicacion')->name('cambiarNombreAplicacion')->middleware('auth:admin');
@@ -113,3 +117,8 @@ Route::get('/plantilla/agregarEditarConDetalle', function(){
 Route::get('/plantilla/agregarEditarSinDetalle', function(){
     return view('Plantillas.agregarEditarSinDetalle');
 })->middleware('auth')->name('agregarEditarSinDetalle');
+
+
+$routeList = Route::getRoutes();
+
+    //dd($routeList);

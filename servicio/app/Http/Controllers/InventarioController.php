@@ -55,7 +55,7 @@ class InventarioController extends Controller
         try {
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
-                'upc' => 'required|numeric|max:13|min:12',
+                'upc' => 'required|numeric|digits_between:12,14',
                 'categoria' => 'required',
                 'modelo' => 'required',
                 'color' => 'required',
@@ -79,7 +79,7 @@ class InventarioController extends Controller
             //Si encuentra datos erroneos los regresa con un mensaje de error
             if($validator->fails()){
                 $request->flash();
-                return redirect()->route('Inventario.create')->withErrors($validator);
+                return redirect()->back()->withErrors($validator);
             }else{
                 $articulo = Inventario::where('upc', $request->upc)->get();
                 $id_inventario = "";
@@ -87,7 +87,8 @@ class InventarioController extends Controller
                     foreach($articulo as $art){
                         $id_inventario = $art->id_inventario;
                     }
-                    $this->update($request, $id_inventario);
+                    return redirect()->back()->with('success', 'Este artículo ya existe!');
+                    //$this->update($request, $id_inventario);
                 }else{
                     $fecha_alta = new DateTime();
                     if($request->checkOnline == "on"){
@@ -95,10 +96,20 @@ class InventarioController extends Controller
                     }else{
                         $online = false;
                     }
+                    $categoria = DB::table('categoria')->where('categoria', $request->categoria)->get();
+                    $categoria = $this->comprobarConsultaDB($categoria);
+                    $modelo = DB::table('modelo')->where('modelo', $request->modelo)->get();
+                    $modelo = $this->comprobarConsultaDB($modelo);
+                    $marca = DB::table('marca')->where('marca', $request->marca)->get();
+                    $marca = $this->comprobarConsultaDB($marca);
+                    $color = DB::table('color')->where('color', $request->color)->get();
+                    $color = $this->comprobarConsultaDB($color);
+                    $capacidad = DB::table('capacidad')->where('tipo', $request->capacidad)->get();
+                    $capacidad = $this->comprobarConsultaDB($capacidad);
                     $json_agregar = [
                         'upc' => $request->upc,
-                        'id_categoria' => $request->categoria,
-                        'id_modelo' => $request->modelo,
+                        'id_categoria' => $categoria[0]->id_categoria,
+                        'id_modelo' => $modelo[0]->id_modelo,
                         'titulo_inventario' => $request->titulo,
                         'descripcion_inventario' => $request->descripcion,
                         'peso' => $request->peso,
@@ -107,7 +118,7 @@ class InventarioController extends Controller
                         'alto' => $request->alto,
                         'ancho' => $request->ancho,
                         'fecha_alta' => date_format($fecha_alta, 'Y-m-d H:i:s'),
-                        'id_capacidad' => $request->capacidad,
+                        'id_capacidad' => $capacidad[0]->id_capacidad,
                         'costo' => $request->costo,
                         'stock' => $request->stock,
                         'stock_min' => $request->stockMin,
@@ -115,7 +126,7 @@ class InventarioController extends Controller
                         'precio_mayoreo' => $request->mayoreo,
                         'precio_min' => $request->precioMin,
                         'precio_max' => $request->precioMax,
-                        'id_color' => $request->color,
+                        'id_color' => $color[0]->id_color,
                         'venta_online' => $online,
                         'imagen' => $request->upc.'.png'
                     ];
@@ -127,7 +138,7 @@ class InventarioController extends Controller
                                 $comprobarImei = DB::table('detalle_inventario')->where('imei', $detalle['imei'])->get();
                                 if(count($comprobarImei) > 0){
                                     $request->flash();
-                                    return redirect()->route('Inventario.create')->withErrors('error', 'Los datos que ingresaste ya se han dado de alta anteriormente!');
+                                    return redirect()->back()->withErrors('error', 'Los datos que ingresaste ya se han dado de alta anteriormente!');
                                 }else{
                                     $insertarDetalle = DB::table('detalle_inventario')->insert([
                                         'imei' => $detalle['imei'],
@@ -138,7 +149,7 @@ class InventarioController extends Controller
                                     ]);
                                     if(!$insertarDetalle){
                                         $request->flash();
-                                        return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                        return redirect()->back()->withErrors('error', 'Algo pasó al intenar agregar los datos!');
                                     }
                                 }
                             }
@@ -148,7 +159,7 @@ class InventarioController extends Controller
                                 $comprobarImei = DB::table('detalle_inventario')->where('ns', $detalle['ns'])->get();
                                 if(count($comprobarImei) > 0){
                                     $request->flash();
-                                    return redirect()->route('Inventario.create')->withErrors('error', 'Los datos que ingresaste ya se han dado de alta anteriormente!');
+                                    return redirect()->back()->withErrors('error', 'Los datos que ingresaste ya se han dado de alta anteriormente!');
                                 }else{
                                     $insertarDetalle = DB::table('detalle_inventario')->insert([
                                         'ns' => $detalle['ns'],
@@ -159,21 +170,22 @@ class InventarioController extends Controller
                                     ]);
                                     if(!$insertarDetalle){
                                         $request->flash();
-                                        return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                        return redirect()->back()->withErrors('error', 'Algo pasó al intenar agregar los datos!');
                                     }
                                 }
                             }
                         }
-                        return redirect()->route('Inventario.create')->with('success', 'Se agregó correctamente el artículo.');
+
+                        return redirect()->back()->with('success', 'Se agregó correctamente el artículo.');
                     }else{
                         $request->flash();
-                        return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                        return redirect()->back()->withErrors('error', 'Algo pasó al intenar agregar los datos!');
                     }
                 }
             }
         } catch (\Throwable $th) {
             $request->flash();
-            return redirect()->route('Inventario.create')->withErrors($th);
+            return redirect()->back()->withErrors($th);
         }
     }
 
@@ -196,10 +208,22 @@ class InventarioController extends Controller
      */
     public function edit($id)
     {
-        $inventario = Inventario::find($id);
-        $modelos = DB::table('modelo')->get();
-        $marcas = DB::table('marca')->get();
-        return view('Inventario.modificarInventario', compact('inventario', 'modelos', 'marcas'));
+        $inventario = Inventario::where('upc',$id)
+        ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')
+        ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
+        ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
+        ->leftJoin('color', 'color.id_color', 'inventario.id_color')
+        ->leftJoin('capacidad', 'capacidad.id_capacidad', 'inventario.id_capacidad')->get();
+        $detalle_inventario = DB::table('detalle_inventario')->select('detalle_inventario.*')
+        ->leftJoin('inventario', 'inventario.id_inventario', 'detalle_inventario.id_inventario')->where('upc', $id)->get();
+        //dd($detalle_inventario);
+        $modelos = DB::table('modelo')->where('estatus', 1)->get();
+        $marcas = DB::table('marca')->where('estatus', 1)->get();
+        $capacidades = DB::table('capacidad')->get();
+        $colores = DB::table('color')->where('estatus', 1)->get();
+        $categorias =  DB::table('categoria')->where('estatus', 1)->get();
+        $subcategorias = DB::table('sub_categoria')->where('estatus', 1)->get();
+        return view('Inventario.modificarInventario', compact('inventario', 'detalle_inventario', 'modelos', 'marcas', 'capacidades', 'colores', 'categorias', 'subcategorias'));
     }
 
     /**
@@ -216,7 +240,7 @@ class InventarioController extends Controller
             $data = $request->except('_method','_token');
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
-                'upc' => 'required|numeric|max:13|min:12',
+                'upc' => 'required|numeric|digits_between:12,14',
                 'categoria' => 'required',
                 'modelo' => 'required',
                 'color' => 'required',
@@ -239,7 +263,7 @@ class InventarioController extends Controller
             $inventario = Inventario::find($id);
             //Si encuentra datos erroneos los regresa con un mensaje de error
             if($validator->fails()){
-                return redirect()->route('Inventario.create')->withErrors($validator);
+                return redirect()->back()->withErrors($validator);
             }else{
                 $fecha_modificacion = new DateTime();
                 if($request->checkOnline == "on"){
@@ -273,20 +297,15 @@ class InventarioController extends Controller
                     }
                 }
                 $categoria = DB::table('categoria')->where('categoria', $request->categoria)->get();
-                if(count($categoria) > 0){
-                    $categoria = $this->convertToJSON($categoria);
-                }else{
-                    $request->flash();
-                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar modificar los datos!');
-                }
+                $categoria = $this->comprobarConsultaDB($categoria);
                 $modelo = DB::table('modelo')->where('modelo', $request->modelo)->get();
-                $modelo = $this->convertToJSON($modelo);
+                $modelo = $this->comprobarConsultaDB($modelo);
                 $marca = DB::table('marca')->where('marca', $request->marca)->get();
-                $marca = $this->convertToJSON($marca);
+                $marca = $this->comprobarConsultaDB($marca);
                 $color = DB::table('color')->where('color', $request->color)->get();
-                $color = $this->convertToJSON($color);
+                $color = $this->comprobarConsultaDB($color);
                 $capacidad = DB::table('capacidad')->where('tipo', $request->capacidad)->get();
-                $capacidad = $this->convertToJSON($capacidad);
+                $capacidad = $this->comprobarConsultaDB($capacidad);
                 //Validamos que se haya modificado la información y regresamos un mensaje sobre el estado
                 $json_actualizar = [
                     'upc' => $request->upc,
@@ -327,7 +346,7 @@ class InventarioController extends Controller
                                 ]);
                                 if(!$modificarDetalle){
                                     $request->flash();
-                                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                    return redirect()->back()->withErrors('error', 'Algo pasó al intenar agregar los datos!');
                                 }
                             }else{
                                 $insertarDetalle = DB::table('detalle_inventario')->insert([
@@ -339,7 +358,7 @@ class InventarioController extends Controller
                                 ]);
                                 if(!$insertarDetalle){
                                     $request->flash();
-                                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                    return redirect()->back()->withErrors('error', 'Algo pasó al intenar agregar los datos!');
                                 }
                             }
                         }
@@ -357,7 +376,7 @@ class InventarioController extends Controller
                                 ]);
                                 if(!$modificarDetalle){
                                     $request->flash();
-                                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                    return redirect()->back()->withErrors('error', 'Algo pasó al intenar agregar los datos!');
                                 }
                             }else{
                                 $insertarDetalle = DB::table('detalle_inventario')->insert([
@@ -369,21 +388,21 @@ class InventarioController extends Controller
                                 ]);
                                 if(!$insertarDetalle){
                                     $request->flash();
-                                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar agregar los datos!');
+                                    return redirect()->back()->withErrors('error', 'Algo pasó al intenar agregar los datos!');
                                 }
                             }
                         }
                     }
-                    return redirect()->route('Inventario.create')->with('message', 'Se modificó correctamente el inventario.');
+                    return redirect()->back()->with('success', 'Se modificó correctamente el inventario.');
                 }else{
                     $request->flash();
-                    return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar modificar los datos!');
+                    return redirect()->back()->withErrors('error', 'Algo pasó al intenar modificar los datos!');
                 }
 
             }
         } catch (\Throwable $th) {
             $request->flash();
-            return redirect()->route('Inventario.create')->withErrors($th);
+            return redirect()->back()->withErrors($th);
         }
     }
 
@@ -404,16 +423,16 @@ class InventarioController extends Controller
      */
     public function verificarUPC(Request $request){
         try {
-            $articulo = Inventario::leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')->
+            $articulo = DB::table('inventario')->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')->
             leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')->
             leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')->
             leftJoin('color', 'color.id_color', 'inventario.id_color')->
             leftJoin('capacidad', 'capacidad.id_capacidad', 'inventario.id_capacidad')->where('upc', $request->upc)->get();
-            foreach($articulo as $art){
-                $id_inventario = $art->id_inventario;
-            }
-            $detalle = DB::table('detalle_inventario')->where('id_inventario', $id_inventario)->get();
             if(count($articulo) > 0){
+                foreach($articulo as $art){
+                    $id_inventario = $art->id_inventario;
+                }
+                $detalle = DB::table('detalle_inventario')->where('id_inventario', $id_inventario)->get();
                 return [$articulo, $detalle];
             }else{
                 return ['res'=>false];
@@ -460,5 +479,17 @@ class InventarioController extends Controller
      */
     public function convertToJSON($resultado){
         return json_decode(json_encode($resultado));
+    }
+
+    /**
+     * Comprobar consulta
+     */
+    public function comprobarConsultaDB($data){
+        if(count($data) > 0){
+            return $this->convertToJSON($data);
+        }else{
+            $data->flash();
+            return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar insertar los datos!');
+        }
     }
 }

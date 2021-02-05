@@ -29,7 +29,7 @@
                                 <div class="form-group row">
                                     <label for="upc" class="col-sm-2 col-form-label">UPC/EAN</label>
                                     <div class="col-sm-10 input-group">
-                                        <input type="number" class="form-control @error('upc') is-invalid @enderror" name="upc" id="upc" placeholder="UPC" value="{{ old('upc')}}" minlength="12" maxlength="13" autofocus>
+                                        <input type="number" class="form-control @error('upc') is-invalid @enderror" name="upc" id="upc" placeholder="UPC" value="{{ old('upc')}}" minlength="12" maxlength="14" autofocus>
                                     </div>
                                 </div>
                                 <div class="form-check row">
@@ -69,7 +69,7 @@
                                             <button type="button" class="btn btn-primary" id="agregarCategoria" disabled><i class="fas fa-plus"></i></button>
                                         </div>
                                     </div>
-                                    <div class="col-sm-4">
+                                    <div class="col-sm-5">
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="radiosDetalle" id="radioDefault" value="default" onclick="radioDetalle($(this))" checked>
                                             <label class="form-check-label" for="radioDefault">N/A</label>
@@ -97,7 +97,7 @@
                                             <button type="button" class="btn btn-primary" id="agregarMarca" disabled><i class="fas fa-plus"></i></button>
                                         </div>
                                     </div>
-                                    <div class="col-sm-3">
+                                    <div class="col-sm-5">
                                         <div class="form-check form-check-inline">
                                         @if(old('checkBateria') == true)
                                             <input type="checkbox" class="form-check-input" id="checkBateria" name="checkBateria" disabled onclick="checkVidaBateria()" checked>
@@ -285,7 +285,7 @@
                 @endforeach
             </ul>
         </div>
-    @elseif (Session::has('message'))
+    @elseif (Session::has('success'))
         <div class="alert alert-success">
             <ul>
                 {{Session::get('success')}}
@@ -305,20 +305,35 @@
             upc = $(this).val();
             upc = upc.toString();
             if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);
-            if(upc.length == 12 || upc.length == 13){
+            if(upc.length == 12 || upc.length == 13 || upc.length == 14){
                 $.ajax({
                     type: "get",
                     url: "{{route('verificarUPC')}}",
                     data:{'upc' : $(this).val()},
                     success: function(data) {
-                        if(data[0].res == false){
+                        console.log(data);
+                        if(data.res == false){
                             $('#header-pagina').text('Agregar Inventario');
                             $('#alerta-upc').show();
                             //Swal.fire("Oops", "Ese artículo no existe en el inventario, registralo!", "info");
                             habilitarFormulario(false, data);
                         }else{
-                            $('#header-pagina').text('Editar Inventario');
-                            habilitarFormulario(true, data);
+                            Swal.fire({
+                                title: 'Este artículo ya existe!',
+                                text: "Puede editar este artículo dando clic en el botón!",
+                                icon: 'warning',
+                                showCancelButton: false,
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'Entendido!'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    var url = '{{ route("Inventario.edit", ":id") }}';
+                                    url = url.replace(':id', upc);
+                                    window.location.href = url;
+                                }
+                            })
+                            /*$('#header-pagina').text('Editar Inventario');
+                            habilitarFormulario(true, data);*/
                         }
                     },
                     error: function(data) {
@@ -384,7 +399,7 @@
                         }
                     });
                 }
-                if(datosFormulario[0][0].imagen != null){
+                if(datosFormulario[0][0].imagen){
                     imagen = '{{URL::asset('storage/inventario/')}}' + '/';
                     imagen += datosFormulario[0][0].imagen;
                     $('#imagen').attr("src", imagen);
@@ -403,25 +418,38 @@
                 $('#largo').val(datosFormulario[0][0].largo);
                 $('#alto').val(datosFormulario[0][0].alto);
                 $('#ancho').val(datosFormulario[0][0].ancho);
+                console.log(datosFormulario);
                 if(datosFormulario[0][0].venta_online == 1){
                     $('#checkOnline').prop('checked', 'checked');
+                    $('#onlineTitulo').show();
+                    $('#onlineDescripcion').show();
+                    $('#onlineImagen').show();
+                    $('#hrOnline').show();
+                    $('#imagenProducto').attr('disabled', false);
                     $('#titulo').val(datosFormulario[0][0].titulo_inventario);
                     $('#titulo').attr('disabled', false);
                     $('#descripcion').val(datosFormulario[0][0].descripcion_inventario);
                     $('#descripcion').attr('disabled', false);
                 }else{
                     $('#checkOnline').prop('checked', false);
+                    $('#onlineTitulo').hide();
+                    $('#onlineDescripcion').hide();
+                    $('#onlineImagen').hide();
+                    $('#hrOnline').hide();
+                    $('#imagenProducto').attr('disabled', true);
                     $('#titulo').val("");
                     $('#titulo').attr('disabled', true);
                     $('#descripcion').val("");
                     $('#descripcion').attr('disabled', true);
                 }
-                if(datosFormulario[1][0].imei){
-                    $('#radioImei').prop("checked", true);
-                    detalleRadio = 1;
-                }else if(datosFormulario[1][0].ns){
-                    $('#radioSerie').prop("checked", true);
-                    detalleRadio = 2;
+                if(datosFormulario[1].length > 0){
+                    if(datosFormulario[1][0].imei){
+                        $('#radioImei').prop("checked", true);
+                        detalleRadio = 1;
+                    }else if(datosFormulario[1][0].ns){
+                        $('#radioSerie').prop("checked", true);
+                        detalleRadio = 2;
+                    }
                 }else{
                     detalleRadio = 0;
                 }
@@ -621,11 +649,11 @@
         //Cargar modelos dependiendo de la marca
         $('#marca').change(function(){
             if($(this).val() != null){
-                $('#modelo option').remove();
+                $('#modeloData option').remove();
                 modelos.forEach(modelo => {
                     if($(this).val() == modelo.id_marca){
                         console.log(modelo);
-                        $('#modelo').append('<option value="'+modelo.modelo+'">'+modelo.modelo+'</option>');
+                        $('#modeloData').append('<option value="'+modelo.modelo+'">'+modelo.modelo+'</option>');
                     }
                 });
             }
@@ -659,13 +687,16 @@
             }).then((result) => {
             if(result.isConfirmed){
                 marcaDescripcion = document.getElementById('marcaDescripcion').value;
+                categoriaOption = document.getElementById('categoriaOption').value;
                 if(marcaDescripcion != null || marcaDescripcion != ''){
                     $.ajax({
                         type: "get",
                         url: "{{route('agregarMarca')}}",
-                        data:{'marcaDescripcion' : marcaDescripcion},
+                        data:{'marcaDescripcion' : marcaDescripcion,
+                            'categoriaOption' : categoriaOption},
                         success: function(response){
-                            $('#marca').append('<option value="'+response[0].marca+'" selected>'+response[0].marca+'</option>')
+                            $('#marca').val(response[0].marca);
+                            $('#marcaData').append('<option value="'+response[0].marca+'">'+response[0].marca+'</option>');
                             console.log(response);
                         },
                         error: function(e){
@@ -739,7 +770,8 @@
                             url: "{{route('agregarModelo')}}",
                             data:{'modeloDescripcion' : modeloDescripcion,'marcaOption' : marcaOption },
                             success: function(response){
-                                $('#modelo').append('<option value="'+response[0].modelo+'" selected>'+response[0].modelo+'</option>')
+                                $('#modelo').val(response[0].modelo);
+                                $('#modeloData').append('<option value="'+response[0].modelo+'">'+response[0].modelo+'</option>')
                                 console.log(response);
                             },
                             error: function(e){
@@ -813,7 +845,8 @@
                             Swal.fire({
                                 html: response.responseText
                             })*/
-                            $('#categoria').append('<option value="'+response[0].categoria+'" selected>'+response[0].categoria+'</option>')
+                            $('#categoriaData').append('<option value="'+response[0].categoria+'">'+response[0].categoria+'</option>');
+                            $('#categoria').val(response[0].categoria);
                             console.log(response);
                         },
                         error: function(e){
@@ -863,7 +896,8 @@
                             Swal.fire({
                                 html: response.responseText
                             })*/
-                            $('#color').append('<option value="'+response[0].color+'" selected>'+response[0].color+'</option>')
+                            $('#color').val(response[0].color);
+                            $('#colorData').append('<option value="'+response[0].color+'">'+response[0].color+'</option>')
                             console.log(response);
                         },
                         error: function(e){
@@ -919,7 +953,8 @@
                             Swal.fire({
                                 html: response.responseText
                             })*/
-                            $('#capacidad').append('<option value="'+response[0].tipo+'" selected>'+response[0].tipo+'</option>')
+                            $('#capacidad').val(response[0].tipo);
+                            $('#capacidadData').append('<option value="'+response[0].tipo+'">'+response[0].tipo+'</option>')
                             console.log(response);
                         },
                         error: function(e){

@@ -136,9 +136,14 @@ class ServicioController extends Controller
             if($validator->fails()){
                 return redirect()->back()->withErrors($validator);
             }else{
+                $categoria = DB::table('categoria')->where('categoria', $request->categoriaOption)->get();
+                if(count($categoria) == 0){
+                    return redirect()->back()->withErrors('error', 'No su pudo agregar la marca!');
+                }
+
                 DB::table('marca')->insert(
                     ['marca' => strtoupper($request->marcaDescripcion),
-                    'id_categoria' => $request->categoria]
+                    'id_categoria' => $categoria[0]->id_categoria]
                 );
 
                 if($request->ajax()){
@@ -163,15 +168,19 @@ class ServicioController extends Controller
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
                 'modeloDescripcion' => 'required|max:50',
-                'marcaOption' => 'required|numeric'
+                'marcaOption' => 'required'
             ]);
 
             //Si encuentra datos erroneos los regresa con un mensaje de error
             if($validator->fails()){
                 return redirect()->back()->withErrors($validator);
             }else{
+                $marca = DB::table('marca')->where('marca', $request->marcaOption)->get();
+                if(count($marca) == 0){
+                    return redirect()->back()->withErrors('error', 'No su pudo agregar el modelo!');
+                }
                 DB::table('modelo')->insert(
-                    ['modelo' => strtoupper($request->modeloDescripcion),'id_marca' => $request->marcaOption, 'estatus' => true]
+                    ['modelo' => strtoupper($request->modeloDescripcion),'id_marca' => $marca[0]->marca, 'estatus' => true]
                 );
 
                 if($request->ajax()){
@@ -278,7 +287,6 @@ class ServicioController extends Controller
         }
 
     }
-
 
     public function agregarTipo(Request $request)
     {

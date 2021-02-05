@@ -134,7 +134,24 @@
         <!-- /.row -->
         <!-- /.row -->
         </div><!-- /.container-fluid -->
+        <!-- Callback-->
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @elseif (Session::has('message'))
+            <div class="alert alert-success">
+                <ul>
+                    {{Session::get('success')}}
+                </ul>
+            </div>
+        @endif
     </section>
+
     <!-- /.content -->
     <script>
         var inventarios = @json($inventarios);
