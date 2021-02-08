@@ -76,7 +76,7 @@
                                 <td>{{$inventario->marca}}</td>
                                 <td>{{$inventario->modelo}}</td>
                                 <td>{{$inventario->color}}</td>
-                                <td><a href="{{ route('Inventario.edit',$inventario->id_inventario)}}" class="btn btn-primary"><i class="far fa-edit"></i> Editar</a></td>
+                                <td><a href="{{ route('Inventario.edit',$inventario->upc)}}" class="btn btn-primary"><i class="far fa-edit"></i> Editar</a></td>
                             </tr>
                             @endforeach
                         </tbody>

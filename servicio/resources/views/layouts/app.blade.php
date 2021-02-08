@@ -46,7 +46,7 @@
     <style>
         .scroll {
             overflow-y: scroll;
-            max-height: 70.85vh;
+            max-height: 52vh;
         }
 
         /* Hide scrollbar for Chrome, Safari and Opera */
@@ -213,14 +213,14 @@
 
                     <li class="nav-item">
                         <a href="{{route("Venta.index")}}" class="nav-link" id="ventas">
-                        <i class="fas fa-mobile nav-icon"></i>
-                        <p>Ventas Smartphones</p>
+                        <i class="fas fa-clipboard-list nav-icon"></i>
+                        <p>Listado de Ventas</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="pages/layout/fixed-sidebar.html" class="nav-link">
-                        <i class="fas fa-mobile nav-icon"></i>
-                        <p>Ventas Equipo de Cómputo</p>
+                        <a href="{{route("Venta.create")}}" class="nav-link">
+                        <i class="fas fa-plus nav-icon"></i>
+                        <p>Realizar Venta</p>
                         </a>
                     </li>
                     </ul>

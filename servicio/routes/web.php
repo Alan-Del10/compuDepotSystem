@@ -67,7 +67,7 @@ Route::get('/servicio/{id_servicio}/reciboServicio','ServicioController@reciboSe
 Route::resource('Usuario', UsuarioController::class)->middleware('auth:admin');
 
 //Cliente routes
-Route::resource('Cliente', ClienteController::class)->middleware('auth:servicio_cliente');
+Route::resource('Cliente', ClienteController::class)->middleware('auth:servicio_cliente,admin');
 
 //Sucursal routes
 Route::resource('Sucursal', SucursalController::class)->middleware('auth:admin,sub_admin');

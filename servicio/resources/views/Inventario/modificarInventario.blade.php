@@ -171,7 +171,7 @@
                                 <div class="form-group row" id="onlineTitulo">
                                     <label for="titulo" class="col-sm-2 col-form-label">Título</label>
                                     <div class="col-sm-6">
-                                        <input type="text" class="form-control @error('titulo') is-invalid @enderror" name="titulo" id="titulo" placeholder="Título" value="{{$invetario[0]->titulo_inventario}}" >
+                                        <input type="text" class="form-control @error('titulo') is-invalid @enderror" name="titulo" id="titulo" placeholder="Título" value="{{$inventario[0]->titulo_inventario}}" >
                                     </div>
                                     <div class="col-sm-1"></div>
                                     <div class="col-sm-1">
