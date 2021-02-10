@@ -48,9 +48,9 @@
                             <!-- /.card-header -->
                             <div class="card-body">
                                 <div class="form-group row">
-                                    <label for="busqueda" class="col-sm-2 col-form-label">Busqueda</label>
+                                    <label for="upc" class="col-sm-2 col-form-label">Busqueda</label>
                                     <div class="col-sm-10 input-group">
-                                        <input type="search" class="form-control @error('busqueda') is-invalid @enderror" name="busqueda" id="busqueda" placeholder="Busqueda por UPC/EAN de Inventario" value="{{ old('busqueda')}}" autofocus>
+                                        <input type="number" class="form-control" name="busqueda" id="upc" placeholder="Busqueda por UPC/EAN de Inventario" minlength="12" maxlength="14" autofocus>
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -63,33 +63,20 @@
                                 </div>
                                 <hr>
                                 <div class="form-group row" id="ticket">
-                                    <table class="table table-bordered">
+                                    <table class="table table-bordered table-sm">
                                         <thead>
                                             <tr>
                                                 <th scope="col">UPC/EAN</th>
-                                                <th scope="col">Marca</th>
-                                                <th scope="col">Modelo</th>
-                                                <th scope="col">Color</th>
+                                                <th scope="col">Título</th>
+                                                <th scope="col" class="d-none d-lg-table-cell">Marca</th>
+                                                <th scope="col" class="d-none d-lg-table-cell">Modelo</th>
+                                                <th scope="col" class="d-none d-lg-table-cell">Color</th>
+                                                <th scope="col">Cantidad</th>
+                                                <th scope="col">Acciones</th>
                                             </tr>
                                         </thead>
-                                        <tbody class="scroll">
-                                            <tr>
-                                                <th scope="row">1</th>
-                                                <td>Mark</td>
-                                                <td>Otto</td>
-                                                <td>@mdo</td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">2</th>
-                                                <td>Jacob</td>
-                                                <td>Thornton</td>
-                                                <td>@fat</td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">3</th>
-                                                <td colspan="2">Larry the Bird</td>
-                                                <td>@twitter</td>
-                                            </tr>
+                                        <tbody class="scroll" id="ticketTabla">
+
                                         </tbody>
                                     </table>
                                 </div>
@@ -127,6 +114,53 @@
                                 <hr>
                             </div>
                             <!-- /.card-body -->
+                        </div>
+                        <div class="row">
+                            <div class="col-6 col-sm-4">
+                                <div class="card card-danger" name="subtotal">
+                                    <div class="card-header">
+                                        <h3 class="card-title col-10">Subtotal</h3>
+                                    </div>
+                                    <!-- /.card-header -->
+                                    <!-- form start -->
+                                    <div class="card-body" id="subtotal">
+                                        <div class="form-group row">
+                                            <h2>$0</h2>
+                                        </div>
+                                    </div>
+                                    <!-- /.card-body -->
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-4">
+                                <div class="card card-dark" name="iva">
+                                    <div class="card-header">
+                                        <h3 class="card-title col-10">IVA</h3>
+                                    </div>
+                                    <!-- /.card-header -->
+                                    <!-- form start -->
+                                    <div class="card-body" id="iva">
+                                        <div class="form-group row">
+                                            <h2>$0</h2>
+                                        </div>
+                                    </div>
+                                    <!-- /.card-body -->
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <div class="card card-primary" name="total">
+                                    <div class="card-header">
+                                        <h3 class="card-title col-10">Total</h3>
+                                    </div>
+                                    <!-- /.card-header -->
+                                    <!-- form start -->
+                                    <div class="card-body" id="total">
+                                        <div class="form-group row agregado">
+                                            <h2>$0</h2>
+                                        </div>
+                                    </div>
+                                    <!-- /.card-body -->
+                                </div>
+                            </div>
                         </div>
                         <div class="card card-success" name="finalizar">
                             <div class="card-header">
@@ -170,6 +204,17 @@
     @endif
     <!-- /Callback-->
     <script>
+        //Variables globales
+        let subtotal = 0.0;
+        let iva = 0.0;
+        let total = 0.0;
+        /*$(document).ready(function(){
+            Swal.fire(
+                'Good job!',
+                'You clicked the button!',
+                'success'
+            )
+        });*/
         //Función para detectar cunado se ingrese un UPC
         $('#upc').on('input', function(){
             upc = $(this).val();
@@ -181,14 +226,36 @@
                     url: "{{route('verificarUPC')}}",
                     data:{'upc' : $(this).val()},
                     success: function(data) {
-                        console.log(data);
+                        //console.log(data);
                         if(data.res == false){
-                            $('#header-pagina').text('Agregar Inventario');
                             $('#alerta-upc').show();
                             //Swal.fire("Oops", "Ese artículo no existe en el inventario, registralo!", "info");
-                            habilitarFormulario(false, data);
+                            //habilitarFormulario(false, data);
                         }else{
-                            Swal.fire({
+                            $('#upc').val("");
+                            cantidades = "";
+                            for(let i = 1; i < data[0][0].stock + 1; i++){
+                                cantidades += '<option value="'+i+'">'+i+'</option>';
+                            }
+
+                            $('#ticketTabla').append(
+                                '<tr>'+
+                                    '<td scope="row">'+data[0][0].upc+'</td>'+
+                                    '<td>'+data[0][0].titulo_inventario+'</td>'+
+                                    '<td class="d-none d-lg-table-cell">'+data[0][0].marca+'</td>'+
+                                    '<td class="d-none d-lg-table-cell">'+data[0][0].modelo+'</td>'+
+                                    '<td class="d-none d-lg-table-cell">'+data[0][0].color+'</td>'+
+                                    '<td>'+
+                                        '<select name="cantidad" id="cantidad" class="form-control form-control-sm" onchange="cambiarCantidadProducto($(this).parent().parent())">'+
+                                            cantidades+
+                                        '</select>'+
+                                    '</td>'+
+                                    '<td><a href="#" class="btn btn-danger form-control form-control-sm" onclick="quitarProducto($(this).parent().parent())"><i class="far fa-trash-alt"></i></a></td>'+
+                                    '<td class="d-none" id="precio">'+data[0][0].precio_publico+'</td>'+
+                                '</tr>'
+                            );
+                            obtenerTotal(1, data[0][0].precio_publico, 0);
+                            /*Swal.fire({
                                 title: 'Este artículo ya existe!',
                                 text: "Puede editar este artículo dando clic en el botón!",
                                 icon: 'warning',
@@ -201,7 +268,7 @@
                                     url = url.replace(':id', upc);
                                     window.location.href = url;
                                 }
-                            })
+                            })*/
                             /*$('#header-pagina').text('Editar Inventario');
                             habilitarFormulario(true, data);*/
                         }
@@ -239,6 +306,57 @@
                 '<hr>'
             );
         });
+        //Función para sumar o restar el total del ticket
+        function obtenerTotal(cantidad_pza, cantidad, tipo){
+            valor = cantidad_pza * cantidad;
+            if(tipo == 0){
+                subtotal += valor;
+                iva = subtotal * .16;
+                total = subtotal + iva;
+                $('#subtotal h2').html('$'+subtotal);
+                $('#iva h2').html('$'+iva);
+                $('#total h2').html('$'+total);
+            }else if(tipo == 1){
+                subtotal -= valor;
+                iva = subtotal * .16;
+                total = subtotal + iva;
+                $('#subtotal h2').html('$'+subtotal);
+                $('#iva h2').html('$'+iva);
+                $('#total h2').html('$'+total);
+            }
+        }
+        //Función para comprobar la existencia d eun producto en el ticket, tiene error en el return
+        function comprobarProducto(producto){
+            $.each($('#ticketTabla').find('tr'), function(i, x){
+                cantidad = $(this).children().find('#cantidad option').length;
+                index = $(this).children().find('#cantidad').prop('selectedIndex');
+                select = $(this).children().find('#cantidad');
+                if($(this).children().eq(0).text() == producto){
+                    console.log(index);
+                    console.log(cantidad);
+                    if((index + 1) < cantidad){
+                        console.log(select.val(index + 1));
+                        return 1;
+                    }else{
+                        return 0;
+                    }
+                }
+            });
+        }
+        //Función que quita productos del ticket
+        function quitarProducto(elem){
+            elem.remove();
+            cant_pza = elem.children().find('#cantidad').prop('selectedIndex');
+            cant = elem.children().eq(7).text();
+            obtenerTotal(cant_pza + 1, cant, 1);
+        }
+
+        //Función que quita productos del ticket
+        function cambiarCantidadProducto(elem){
+            cant_pza = elem.children().find('#cantidad').prop('selectedIndex');
+            cant = elem.children().eq(7).text();
+            obtenerTotal(cant_pza, cant, 0);
+        }
     </script>
 @endsection
 

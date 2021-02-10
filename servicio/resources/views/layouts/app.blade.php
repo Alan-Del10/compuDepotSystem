@@ -46,7 +46,7 @@
     <style>
         .scroll {
             overflow-y: scroll;
-            max-height: 52vh;
+            max-height: 35vh;
         }
 
         /* Hide scrollbar for Chrome, Safari and Opera */
@@ -114,11 +114,11 @@
                         <i class="fas fa-expand-arrows-alt"></i>
                     </a>
                 </li>
-                <li class="nav-item">
+                <!--<li class="nav-item">
                     <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
                         <i class="fas fa-th-large"></i>
                     </a>
-                </li>
+                </li>-->
                 <!-- Authentication Links -->
                 @guest
                     <li class="nav-item">
@@ -131,14 +131,23 @@
                     @endif
                 @else
                     <li class="nav-item dropdown">
-                        <a id="navbarDropdownUser" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a id="navbarDropdownUser" class="nav-link dropdown-toggle d-none d-lg-block d-xl-block d-md-block" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             {{ Auth::user()->name }}
                         </a>
+                        <a id="navbarDropdownUser" class="nav-link dropdown-toggle d-block d-sm-none" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user"></i>
+                        </a>
+
 
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownUser">
+                            <a class="dropdown-item" href="#">
+                                <i class="dropdown-icon far fa-user-circle"></i>
+                                Perfil
+                            </a>
                             <a class="dropdown-item" href="{{ route('logout') }}"
                                 onclick="event.preventDefault();
                                                 document.getElementById('logout-form').submit();">
+                                <i class="dropdown-icon fas fa-sign-out-alt"></i>
                                 {{ __('Logout') }}
                             </a>
 
@@ -202,7 +211,7 @@
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                    <i class="nav-icon fas fa-layer-group"></i>
+                    <i class="nav-icon fas fa-shopping-bag"></i>
                     <p>
                         Ventas
                         <i class="fas fa-angle-left right"></i>
@@ -333,14 +342,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="pages/gallery.html" class="nav-link">
-                    <i class="nav-icon far fa-user-circle"></i>
-                    <p>
-                        Perfil
-                    </p>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-pager"></i>
                         <p>
@@ -454,19 +455,6 @@
 <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
 <script src="{{asset('dist/js/pages/dashboard.js')}}"></script>
 <script>
-    $(document).ready(function(e){
-        if($('body').hasClass('sidebar-collapse')){
-            $('#searchBar').hide();
-        }
-        /*$('.search-panel .dropdown-menu').find('a').click(function(e) {
-            e.preventDefault();
-            var param = $(this).attr("href").replace("#","");
-            var concept = $(this).html();
-            $('.search-panel span#search_concept').html(concept);
-            $('.input-group #search_param').val(param);
-        });*/
-    });
-
     function busquedaModulos() {
         // Declare variables
         var input, filter, menu, modulo, a, i, txtValue;
@@ -482,10 +470,10 @@
                 if (txtValue.toUpperCase().indexOf(filter) > -1) {
                     modulo[i].style.display = "";
                     console.log(modulo[i]);
-                    $('#modulos').append('<option value="'+$(a).children('p').text()+'">');
+                    //$('#modulos').append('<option value="'+$(a).children('p').text()+'">');
                 } else {
                     modulo[i].style.display = "none";
-                    $('#modulos').children().remove();
+                    //$('#modulos').children().remove();
                 }
             }
         }

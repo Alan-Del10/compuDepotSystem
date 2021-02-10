@@ -32,7 +32,8 @@ class VentaController extends Controller
     public function create(Request $request)
     {
         $formas_pago = FormaPago::where('estatus', true)->get();
-        return view('Venta.agregarVenta',compact('formas_pago'));
+        $clientes = Cliente::get();
+        return view('Venta.agregarVenta',compact('formas_pago', 'clientes'));
     }
 
     /**
@@ -43,6 +44,7 @@ class VentaController extends Controller
      */
     public function store(Request $request)
     {
+        dd($request);
         Venta::create($request->all());
             return redirect('agregarVenta');
     }
