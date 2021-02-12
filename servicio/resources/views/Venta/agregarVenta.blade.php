@@ -16,7 +16,7 @@
     <section class="content">
         <div class="container-fluid">
             <!-- form start -->
-            <form action="{{route('Venta.store')}}" method="POST" class="form-horizontal " id="formVenta" enctype="multipart/form-data">
+            <div action="{{route('Venta.store')}}" method="POST" class="form-horizontal " id="formVenta" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <section class="col-lg-7 connectedSortable">
@@ -31,7 +31,9 @@
                                     <div class="col-sm-9 input-group">
                                         <input type="text" list="clienteData" class="form-control @error('cliente') is-invalid @enderror" id="cliente" name="cliente" value="{{old('cliente')}}" placeholder="Seleccionar Cliente"/>
                                         <datalist id="clienteData">
-
+                                            @foreach ($clientes as $cliente)
+                                            <option value="{{$cliente->id_cliente}} {{$cliente->nombre_completo}}">{{$cliente->nombre_completo}}</option>
+                                            @endforeach
                                         </datalist>
                                         <div class="input-group-append">
                                             <button type="button" class="btn btn-primary" id="agregarCliente"><i class="fas fa-plus"></i></button>
@@ -72,6 +74,7 @@
                                                 <th scope="col" class="d-none d-lg-table-cell">Modelo</th>
                                                 <th scope="col" class="d-none d-lg-table-cell">Color</th>
                                                 <th scope="col">Cantidad</th>
+                                                <th scope="col">Precio</th>
                                                 <th scope="col">Acciones</th>
                                             </tr>
                                         </thead>
@@ -96,7 +99,7 @@
                                 <div class="form-group row agregado">
                                     <label for="forma" class="col-sm-2 col-form-label">Forma</label>
                                     <div class="col-sm-4">
-                                        <input type="text" list="formaData" class="form-control" id="forma" name="detalle[][forma]" placeholder="Forma">
+                                        <input type="text" list="formaData" class="form-control" id="forma" placeholder="Forma">
                                         <datalist id="formaData">
                                             @foreach ($formas_pago as $forma)
                                             <option value="{{$forma->forma_pago}}">{{$forma->forma_pago}}</option>
@@ -108,7 +111,7 @@
                                         <div class="input-group-prepend">
                                             <div class="input-group-text">$</div>
                                         </div>
-                                        <input type="number" class="form-control vida" id="pago" name="detalle[][pago]" placeholder="Cantidad">
+                                        <input type="number" class="form-control vida" id="pago" placeholder="Cantidad">
                                     </div>
                                 </div>
                                 <hr>
@@ -124,9 +127,7 @@
                                     <!-- /.card-header -->
                                     <!-- form start -->
                                     <div class="card-body" id="subtotal">
-                                        <div class="form-group row">
-                                            <h2>$0</h2>
-                                        </div>
+                                        <h2>$0</h2>
                                     </div>
                                     <!-- /.card-body -->
                                 </div>
@@ -139,9 +140,7 @@
                                     <!-- /.card-header -->
                                     <!-- form start -->
                                     <div class="card-body" id="iva">
-                                        <div class="form-group row">
-                                            <h2>$0</h2>
-                                        </div>
+                                        <h2>$0</h2>
                                     </div>
                                     <!-- /.card-body -->
                                 </div>
@@ -154,9 +153,7 @@
                                     <!-- /.card-header -->
                                     <!-- form start -->
                                     <div class="card-body" id="total">
-                                        <div class="form-group row agregado">
-                                            <h2>$0</h2>
-                                        </div>
+                                        <h2>$0</h2>
                                     </div>
                                     <!-- /.card-body -->
                                 </div>
@@ -170,12 +167,12 @@
                                 <div class="form-input row">
                                     <div class="col-sm-6">
                                         <div class="form-check form-check-inline">
-                                            <input type="checkbox" class="form-check-input" id="checkFinalizar" name="checkFinalizar" disabled onclick="checkFinalizarInventario()">
+                                            <input type="checkbox" class="form-check-input" id="checkFinalizar" name="checkFinalizar"  onclick="checkFinalizarVenta()">
                                             <label class="form-check-label" for="checkFinalizar">Finalizar Venta</label>
                                         </div>
                                     </div>
                                     <div class="col-sm-6">
-                                        <input type="submit" value="Realizar Venta" class="btn btn-success float-right" id="agregarVenta" disabled>
+                                        <input type="submit" value="Realizar Venta" class="btn btn-success float-right" disabled id="agregarVenta" onclick="finalizarVenta()" >
                                     </div>
                                 </div>
                             </div>
@@ -183,7 +180,7 @@
                     </section>
                     <!-- /.card-footer -->
                 </div>
-            </form>
+            </div>
         </div>
     </section>
     <!-- Callback-->
@@ -208,13 +205,7 @@
         let subtotal = 0.0;
         let iva = 0.0;
         let total = 0.0;
-        /*$(document).ready(function(){
-            Swal.fire(
-                'Good job!',
-                'You clicked the button!',
-                'success'
-            )
-        });*/
+        let cliente = 0;
         //Función para detectar cunado se ingrese un UPC
         $('#upc').on('input', function(){
             upc = $(this).val();
@@ -240,18 +231,18 @@
 
                             $('#ticketTabla').append(
                                 '<tr>'+
-                                    '<td scope="row">'+data[0][0].upc+'</td>'+
+                                    '<td scope="row" id="upc_art">'+data[0][0].upc+'</td>'+
                                     '<td>'+data[0][0].titulo_inventario+'</td>'+
                                     '<td class="d-none d-lg-table-cell">'+data[0][0].marca+'</td>'+
                                     '<td class="d-none d-lg-table-cell">'+data[0][0].modelo+'</td>'+
                                     '<td class="d-none d-lg-table-cell">'+data[0][0].color+'</td>'+
                                     '<td>'+
-                                        '<select name="cantidad" id="cantidad" class="form-control form-control-sm" onchange="cambiarCantidadProducto($(this).parent().parent())">'+
+                                        '<select id="cantidad" class="form-control form-control-sm" onchange="cambiarCantidadProducto($(this).parent().parent())" disabled>'+
                                             cantidades+
                                         '</select>'+
                                     '</td>'+
+                                    '<td id="precio" class="precio">'+data[0][0].precio_publico+'</td>'+
                                     '<td><a href="#" class="btn btn-danger form-control form-control-sm" onclick="quitarProducto($(this).parent().parent())"><i class="far fa-trash-alt"></i></a></td>'+
-                                    '<td class="d-none" id="precio">'+data[0][0].precio_publico+'</td>'+
                                 '</tr>'
                             );
                             obtenerTotal(1, data[0][0].precio_publico, 0);
@@ -288,7 +279,7 @@
                 '<div class="form-group row agregado">'+
                     '<label for="forma" class="col-sm-2 col-form-label">Forma</label>'+
                     '<div class="col-sm-4">'+
-                        '<input type="text" list="formaData" class="form-control" id="forma" name="detalle[][forma]" placeholder="Forma">'+
+                        '<input type="text" list="formaData" class="form-control" id="forma" name="formas_pago[][forma]" placeholder="Forma">'+
                         '<datalist id="formaData">'+
                             '@foreach ($formas_pago as $forma)'+
                             '<option value="{{$forma->forma_pago}}">{{$forma->forma_pago}}</option>'+
@@ -300,7 +291,7 @@
                         '<div class="input-group-prepend">'+
                             '<div class="input-group-text">$</div>'+
                         '</div>'+
-                        '<input type="number" class="form-control vida" id="pago" name="detalle[][pago]" placeholder="Cantidad">'+
+                        '<input type="number" class="form-control vida" id="pago" name="formas_pago[][pago]" placeholder="Cantidad">'+
                     '</div>'+
                 '</div>'+
                 '<hr>'
@@ -347,15 +338,79 @@
         function quitarProducto(elem){
             elem.remove();
             cant_pza = elem.children().find('#cantidad').prop('selectedIndex');
-            cant = elem.children().eq(7).text();
+            cant = elem.find('#precio').text();
+            console.log(cant);
             obtenerTotal(cant_pza + 1, cant, 1);
         }
 
-        //Función que quita productos del ticket
+        //Función que módifica los totales al cambiar de cantidad productos del ticket
         function cambiarCantidadProducto(elem){
             cant_pza = elem.children().find('#cantidad').prop('selectedIndex');
-            cant = elem.children().eq(7).text();
+            cant = elem.parent().find('#precio').text();
             obtenerTotal(cant_pza, cant, 0);
+        }
+
+        //Función para habílitar el botón que envía los datos el controlador
+        function checkFinalizarVenta(){
+            var checkBox = document.getElementById("checkFinalizar");
+            if (checkBox.checked == true){
+                $('#agregarVenta').attr('disabled', false);
+            } else {
+                $('#agregarVenta').attr('disabled', true);
+            }
+        }
+
+        //Función que envía el formulario al controlador
+        function finalizarVenta(){
+            let ticket = [];
+            let formas_pago = [];
+            let cliente = $('#cliente').val();
+            $.each($('#ticketTabla').children(), function(i,x){
+                ticket.push(
+                    {
+                        'upc' : $(this).find('#upc_art').text(),
+                        'piezas' : $(this).children().find('#cantidad').val(),
+                        'precio' : $(this).find('#precio').text()
+
+                    }
+                );
+            });
+            $.each($('#formaPago').children(), function(i, x){
+                formas_pago.push(
+                    {
+                        'forma' : $(this).children().find('#forma').val(),
+                        'pago' : $(this).children().find('#pago').val()
+                    }
+                );
+            });
+            $.ajax({
+                type: "post",
+                url: "{{route('Venta.store')}}",
+                data:{
+                    'cliente' : cliente,
+                    'ticket' : ticket,
+                    'formas_pago' : formas_pago,
+                    'totales' :
+                        {
+                            'subtotal' : subtotal,
+                            'iva' : iva,
+                            'total' : total
+                        }
+                },
+                dataType: 'JSON',
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                },
+                success: function(response){
+                    console.log(response);
+                },
+                error: function(e){
+                    console.log(e);
+                    Swal.fire({
+                        html: e.responseText
+                    })
+                }
+            });
         }
     </script>
 @endsection

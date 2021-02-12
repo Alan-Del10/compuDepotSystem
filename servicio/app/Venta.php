@@ -10,5 +10,5 @@ class Venta extends Model
     public $timestamps = false;
     protected $primaryKey = 'id_venta';
     public $incrementing = true;
-    protected $fillable = array('id_venta','fecha_venta','estatus','subtotal','total','saldo','id_cliente','id_sucursal','id_usuario','id_forma_de_pago');
+    protected $fillable = array('fecha_venta','estatus','subtotal','iva','total','id_cliente','id_sucursal','id_usuario');
 }

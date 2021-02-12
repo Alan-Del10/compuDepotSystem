@@ -10,6 +10,8 @@ use App\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use DateTime;
+use Illuminate\Support\Facades\Auth;
 
 class VentaController extends Controller
 {
@@ -44,9 +46,88 @@ class VentaController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request);
-        Venta::create($request->all());
-            return redirect('agregarVenta');
+        //dd($request);
+        //Venta::create($request->all());
+        try {
+            //Validamos los campos de la base de datos, para no aceptar información erronea
+            //dd($request->totales['subtotal']);
+            /*$validator = Validator::make($request->all(), [
+                'totales["subtotal"]' => 'required|numeric',
+                'totales["iva"]' => 'required|numeric',
+                'totales["total"]' => 'required|numeric',
+                'totales["cliente"]' => 'required'
+            ]);
+
+            //Si encuentra datos erroneos los regresa con un mensaje de error
+            if($validator->fails()){
+                $request->flash();
+                return $validator;
+            }else{*/
+                $fecha_venta = new DateTime();
+                $usuario = Auth::user();
+                $pos = strpos($request->cliente, " ", 0);
+                $id_cliente = substr($request->cliente, 0, $pos);
+                $cliente = DB::table('cliente')->where('id_cliente', $id_cliente)->get();
+                if(count($cliente) > 0){
+                    $cliente = $cliente[0]->id_cliente;
+                }
+
+                $json_agregar = [
+                    'fecha_venta' => date_format($fecha_venta, 'Y-m-d H:i:s'),
+                    'subtotal' => $request->totales['subtotal'],
+                    'iva' => $request->totales['iva'],
+                    'total' => $request->totales['total'],
+                    'id_cliente' => $cliente,
+                    'id_sucursal' => $usuario->id_sucursal,
+                    'id_usuario' => $usuario->id,
+                    'estatus' => true
+                ];
+                if(Venta::insert($json_agregar)){
+                    $id = DB::getPdo()->lastInsertId();
+                    foreach($request->ticket as $detalle){
+                        $inventario = DB::table('inventario')->where('upc', $detalle['upc'])->get();
+                        if(count($inventario) > 0){
+                            $id_inventario = $inventario[0]->id_inventario;
+                            $precio = $inventario[0]->precio_publico;
+                        }
+                        $json_detalle = [
+                            'id_venta' => $id,
+                            'id_inventario' => $id_inventario,
+                            'cantidad' => $detalle['piezas'],
+                            'precio_momento' => $precio
+                        ];
+                        if(!DB::table('detalle_venta')->insert($json_detalle)){
+                            $request->flash();
+                            return redirect()->back()->withErrors('error', 'Algo pasó al intenar realizar la venta!');
+                        }else{
+                            foreach($request->formas_pago as $forma){
+                                $forma_pago = DB::table('forma_de_pago')->where('forma_pago', $forma['forma'])->get();
+                                if(count($forma_pago) > 0){
+                                    $id_forma_pago = $forma_pago[0]->id_forma_de_pago;
+                                }
+                                $json_pago = [
+                                    'id_venta' => $id,
+                                    'id_forma_de_pago' => $id_forma_pago,
+                                    'monto' => $forma['pago']
+                                ];
+                                //dd($json_pago);
+                                if(!DB::table('venta_pago')->insert($json_pago)){
+                                    $request->flash();
+                                    return redirect()->back()->withErrors('error', 'Algo pasó al intenar realizar la venta!');
+                                }
+                            }
+                        }
+                    }
+                    return redirect()->back()->with('success', 'Se realizó correctamente la venta!.');
+                }else{
+                    $request->flash();
+                    return redirect()->back()->withErrors('error', 'Algo pasó al intenar realizar la venta!');
+                }
+            //}
+        } catch (\Throwable $th) {
+            $request->flash();
+            return redirect()->back()->withErrors($th);
+        }
     }
 
     /**

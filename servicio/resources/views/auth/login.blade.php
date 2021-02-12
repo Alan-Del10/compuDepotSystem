@@ -145,14 +145,14 @@ body {
 					<img src="/storage/img/logo.png" alt="Avatar">
 				</div>
 
-                    <h4 class="modal-header center">{{ __('Login') }}</h4>
+                    <h4 class="modal-header center">{{ __('Inicio de Sesión') }}</h4>
 
                     <div class="card-body">
                         <form method="POST" action="{{ route('login') }}">
                             @csrf
 
                             <div class="form-group row">
-                                <label for="email" class="col-md-4 col-form-label text-md-center">{{ __('E-Mail') }}</label>
+                                <label for="email" class="col-md-4 col-form-label text-md-center">{{ __('Correo') }}</label>
 
                                 <div class="col-md-6">
                                     <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
@@ -166,7 +166,7 @@ body {
                             </div>
 
                             <div class="form-group row">
-                                <label for="password" class="col-md-4 col-form-label text-md-center">{{ __('Password') }}</label>
+                                <label for="password" class="col-md-4 col-form-label text-md-center">{{ __('Contraseña') }}</label>
 
                                 <div class="col-md-6">
                                     <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
@@ -185,7 +185,7 @@ body {
                                         <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
 
                                         <label class="form-check-label" for="remember">
-                                            {{ __('Remember Me') }}
+                                            {{ __('Mantener iniciada la sesión?') }}
                                         </label>
                                     </div>
                                 </div>
@@ -194,7 +194,7 @@ body {
                             <div class="form-group row mb-0">
                                 <div class="col-md-8 offset-md-4">
                                     <button type="submit" class="btn btn-primary">
-                                        {{ __('Login') }}
+                                        {{ __('Accesar') }}
                                     </button>
                                    <br>
                                    <br>

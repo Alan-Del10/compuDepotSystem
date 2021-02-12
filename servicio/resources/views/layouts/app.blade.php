@@ -131,8 +131,14 @@
                     @endif
                 @else
                     <li class="nav-item dropdown">
-                        <a id="navbarDropdownUser" class="nav-link dropdown-toggle d-none d-lg-block d-xl-block d-md-block" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a id="navbarDropdownUser" class="nav-link dropdown-toggle d-none d-lg-block d-xl-block" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             {{ Auth::user()->name }}
+                        </a>
+                        <a id="navbarDropdownUser" class="nav-link dropdown-toggle d-none d-md-block d-lg-none" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{ Auth::user()->name }}
+                        </a>
+                        <a id="navbarDropdownUser" class="nav-link dropdown-toggle d-none d-sm-block d-md-none" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user"></i>
                         </a>
                         <a id="navbarDropdownUser" class="nav-link dropdown-toggle d-block d-sm-none" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-user"></i>
