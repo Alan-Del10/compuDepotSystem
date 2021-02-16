@@ -146,7 +146,7 @@
 
 
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownUser">
-                            <a class="dropdown-item" href="#">
+                            <a class="dropdown-item" href="{{ route('perfilUsuario')}}">
                                 <i class="dropdown-icon far fa-user-circle"></i>
                                 Perfil
                             </a>

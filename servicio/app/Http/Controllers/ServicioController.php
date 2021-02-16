@@ -33,12 +33,12 @@ class ServicioController extends Controller
     public function create()
     {
         $companias = DB::table('compania')->orderby('descripcion','asc')->where('estatus',1)->get();
-        $colores = DB::table('color')->orderby('descripcion','asc')->where('estatus',1)->get();
+        $colores = DB::table('color')->orderby('color','asc')->where('estatus',1)->get();
         $tipos = DB::table('tipo_servicio')->orderby('descripcion','asc')->where('estatus',1)->get();
         $conceptos = DB::table('concepto_servicio')->orderby('descripcion','asc')->where('estatus',1)->get();
         $estatus = DB::table('estatus')->orderby('descripcion','asc')->where('estatus',1)->get();
-        $marcas = DB::table('marca')->orderby('descripcion','asc')->where('estatus',1)->get();
-        $modelos = DB::table('modelo')->orderby('descripcion','asc')->where('estatus',1)->get();
+        $marcas = DB::table('marca')->orderby('marca','asc')->where('estatus',1)->get();
+        $modelos = DB::table('modelo')->orderby('modelo','asc')->where('estatus',1)->get();
         $formasPagos = DB::table('forma_de_pago')->orderby('id_forma_de_pago','asc')->where('estatus',1)->get();
         $clientes = DB::table('cliente')->get();
         return view('Servicio.agregarServicio',compact('companias','colores','tipos','conceptos','estatus','marcas','modelos','formasPagos','clientes'));
@@ -76,12 +76,12 @@ class ServicioController extends Controller
     {
         $servicio = DB::table('servicio')->where('id_servicio',$id)->get();
         $companias = DB::table('compania')->orderby('descripcion','asc')->where('estatus',1)->get();
-        $colores = DB::table('color')->orderby('descripcion','asc')->where('estatus',1)->get();
+        $colores = DB::table('color')->orderby('color','asc')->where('estatus',1)->get();
         $tipos = DB::table('tipo_servicio')->orderby('descripcion','asc')->where('estatus',1)->get();
         $conceptos = DB::table('concepto_servicio')->orderby('descripcion','asc')->where('estatus',1)->get();
         $estatus = DB::table('estatus')->orderby('descripcion','asc')->where('estatus',1)->get();
-        $marcas = DB::table('marca')->orderby('descripcion','asc')->where('estatus',1)->get();
-        $modelos = DB::table('modelo')->orderby('descripcion','asc')->where('estatus',1)->get();
+        $marcas = DB::table('marca')->orderby('marca','asc')->where('estatus',1)->get();
+        $modelos = DB::table('modelo')->orderby('modelo','asc')->where('estatus',1)->get();
         $formasPagos = DB::table('forma_de_pago')->orderby('id_forma_de_pago','asc')->where('estatus',1)->get();
         $pagos = DB::table('servicio_pago')->where('id_servicio',$id)->get();
         return view('Servicio.modificarServicio',compact('companias','servicio','colores','tipos','conceptos','estatus','marcas','modelos','formasPagos' ,'pagos'));

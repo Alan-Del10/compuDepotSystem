@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class ClienteController extends Controller
 {
@@ -37,16 +38,32 @@ class ClienteController extends Controller
      */
     public function store(Request $request)
     {
-        $data = json_decode ($request->array,true);
+        try{
+            $data = json_decode ($request->array,true);
 
-        $res = Cliente::insert(
-            [
-                'id_cliente' => $data[0]['cliente'],
-                'id_estatus' => strtoupper($data[0]['estatus']),
-                'lugar' => strtoupper($data[0]['lugar']),
-                'fecha_servicio' => date('Y-m-d')
-            ]
-        );
+            $res = Cliente::insert(
+                [
+                    'nombre_completo' => strtoupper($request->nombre),
+                    'telefono' => $request->telefono,
+                    'whatsapp' => $request->whatsapp,
+                    'correo' => $request->correo,
+                    'id_tipo_cliente' => $request->tipo_cliente
+                ]
+            );
+            if ($res){
+                if($request->ajax()){
+                    $id = DB::getPdo()->lastInsertId();
+                    $cliente = DB::table('cliente')->where('id_cliente', $id)->get();
+                    return $cliente;
+                }else{
+                    return redirect()->back()->with('message', 'El cliente se agregó correctamente!');
+                }
+            }else{
+                return ['res'=>'error', 'message'=>'Hubo un error al intentar agregar al cliente. Verifíca que el cliente no exista ya en el sistema!'];
+            }
+        } catch (\Throwable $th) {
+            return error_log($th);
+        }
     }
 
     /**

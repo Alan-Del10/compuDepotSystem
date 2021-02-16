@@ -29,7 +29,7 @@ Route::get('/usuarios/registrar', function(){
     $sucursales = Sucursal::get();
     $tipo_usuarios = DB::table('tipo_usuario')->get();
     return view('auth.register', compact('sucursales', 'tipo_usuarios'));
-})->middleware('auth')->name('registrarUsuario');
+})->middleware('auth:root,admin')->name('registrarUsuario');
 
 //Auth routes
 Auth::routes();
@@ -64,22 +64,24 @@ Route::get('/servicio/{id}/estatus','ServicioController@estatusServicio')->name(
 Route::get('/servicio/{id_servicio}/reciboServicio','ServicioController@reciboServicio')->name('reciboServicio')->middleware('auth');
 
 //Usuario routes
-Route::resource('Usuario', UsuarioController::class)->middleware('auth:admin');
+Route::resource('Usuario', UsuarioController::class)->middleware('auth:root,admin');
+Route::get('/usuario/perfil', 'UsuarioController@showPerfil')->name('perfilUsuario')->middleware('auth:root,admin');
+Route::put('/usuario/perfil/update/{id}', 'UsuarioController@updatePerfil')->name('updatePerfil')->middleware('auth:root,admin');
 
 //Cliente routes
-Route::resource('Cliente', ClienteController::class)->middleware('auth:servicio_cliente,admin');
+Route::resource('Cliente', ClienteController::class)->middleware('auth:root,servicio_cliente,admin,sub_admin');
 
 //Sucursal routes
-Route::resource('Sucursal', SucursalController::class)->middleware('auth:admin,sub_admin');
+Route::resource('Sucursal', SucursalController::class)->middleware('auth:root,admin,sub_admin');
 
 //Articulo routes
 Route::resource('Articulo', ArticuloController::class)->middleware('auth');
 
 //Tipo Inventario routes
-Route::resource('TipoInventario', TipoInventarioController::class)->middleware('auth');
+Route::resource('TipoInventario', TipoInventarioController::class)->middleware('auth:root,admin,sub_admin,servicio_cliente,vendedor');
 
 //Inventario routes
-Route::resource('Inventario', InventarioController::class)->middleware('auth:admin');
+Route::resource('Inventario', InventarioController::class)->middleware('auth:root,admin,sub_admin,vendedor,servicio_clinte');
 Route::get('/inventario/verificarUPC', 'InventarioController@verificarUPC')->name('verificarUPC')->middleware('auth');
 Route::get('/inventario/agregarCapacidad','InventarioController@agregarCapacidad')->name('agregarCapacidad')->middleware('auth');
 
@@ -95,17 +97,17 @@ Route::resource('Sucursal', SucursalController::class)->middleware('auth');
 //Route::get('/home', 'HomeController@index')->name('home');
 
 //Venta routes
-Route::resource('Venta', VentaController::class)->middleware('auth');
+Route::resource('Venta', VentaController::class)->middleware('auth:root,admin,sub,admin,vendedor,servicio_cliente');
 
 //Permisos routes
 Route::resource('Permisos', PermisosController::class)->middleware('auth');
 Route::get('/permisos/listado', 'PermisosController@index')->middleware('auth');
 
 //Configuracion routes
-Route::resource('Configuracion', ConfiguracionController::class)->middleware('auth:admin');
-Route::post('/configuracionNombre','ConfiguracionController@cambiarNombreAplicacion')->name('cambiarNombreAplicacion')->middleware('auth:admin');
-Route::post('/configuracionLogo','ConfiguracionController@cambiarLogoAplicacion')->name('cambiarLogoAplicacion')->middleware('auth:admin');
-Route::post('/configuracionCorreo','ConfiguracionController@cambiarSMTPAplicacion')->name('cambiarSMTPAplicacion')->middleware('auth:admin');
+Route::resource('Configuracion', ConfiguracionController::class)->middleware('auth:root,admin');
+Route::post('/configuracionNombre','ConfiguracionController@cambiarNombreAplicacion')->name('cambiarNombreAplicacion')->middleware('auth:root,admin');
+Route::post('/configuracionLogo','ConfiguracionController@cambiarLogoAplicacion')->name('cambiarLogoAplicacion')->middleware('auth:root,admin');
+Route::post('/configuracionCorreo','ConfiguracionController@cambiarSMTPAplicacion')->name('cambiarSMTPAplicacion')->middleware('auth:root,admin');
 
 //Platillas routes
 Route::get('/plantilla/general', function(){

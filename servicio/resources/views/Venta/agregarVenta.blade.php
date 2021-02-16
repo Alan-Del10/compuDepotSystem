@@ -36,8 +36,51 @@
                                             @endforeach
                                         </datalist>
                                         <div class="input-group-append">
-                                            <button type="button" class="btn btn-primary" id="agregarCliente"><i class="fas fa-plus"></i></button>
+                                            <button type="button" class="btn btn-primary" id="habilitarFormCliente"><i class="fas fa-plus"></i></button>
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row" id="mensajeCliente" style="display:none">
+                                    <div class="alert alert-success form-control">
+                                        <ul>
+
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div id="formCliente" style="display: none">
+                                    <hr>
+                                    <div class="form-group row">
+                                        <label for="nombre" class="col-sm-3 col-form-label">Nombre Completo</label>
+                                        <div class="col-sm-3 input-group">
+                                            <input type="text" class="form-control" id="nombre" placeholder="Nombre Completo"/>
+                                        </div>
+                                        <label for="telefono" class="col-sm-2 col-form-label">Teléfono</label>
+                                        <div class="col-sm-2 input-group">
+                                            <input type="number" class="form-control" id="telefono" minlength="7" maxlength="10" placeholder="Teléfono"/>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <div class="form-check form-check-inline">
+                                                <input type="checkbox" class="form-check-input" id="checkWhatsapp" onclick="checkWhatsapp()" checked>
+                                                <label class="form-check-label" for="checkWhatsapp">Whatsapp?</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="correo" class="col-sm-3 col-form-label">Correo</label>
+                                        <div class="col-sm-3 input-group">
+                                            <input type="email" class="form-control" id="correo" placeholder="Correo electrónico"/>
+                                        </div>
+                                        <label for="tipo_cliente" class="col-sm-2 col-form-label">Tipo Cliente</label>
+                                        <div class="col-sm-4 input-group">
+                                            <select id="tipo_cliente" class="form-control">
+                                                @foreach($tipos_clientes as $tipo_cliente)
+                                                    <option value="{{$tipo_cliente->id_tipo_cliente}}">{{$tipo_cliente->descripcion}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <input type="button" class="btn btn-success form-control" onclick="agregarCliente()" value="Agregar Cliente">
                                     </div>
                                 </div>
                             </div>
@@ -65,6 +108,11 @@
                                 </div>
                                 <hr>
                                 <div class="form-group row" id="ticket">
+                                    <div class="col-12 alert alert-danger" id="mensajeTicket" style="display:none">
+                                        <ul>
+                                            <li>No tienes productos en el ticket!</li>
+                                        </ul>
+                                    </div>
                                     <table class="table table-bordered table-sm">
                                         <thead>
                                             <tr>
@@ -96,7 +144,14 @@
                             <!-- /.card-header -->
                             <!-- form start -->
                             <div class="card-body scroll" id="formaPago">
-                                <div class="form-group row agregado">
+                                <div class="form-group row">
+                                    <div class="col-12 alert alert-danger" id="mensajeFormas" style="display:none">
+                                        <ul>
+                                            <li>No tienes formas de pago para realizar esta venta!</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="form-group row" id="agregado">
                                     <label for="forma" class="col-sm-2 col-form-label">Forma</label>
                                     <div class="col-sm-4">
                                         <input type="text" list="formaData" class="form-control" id="forma" placeholder="Forma">
@@ -111,10 +166,9 @@
                                         <div class="input-group-prepend">
                                             <div class="input-group-text">$</div>
                                         </div>
-                                        <input type="number" class="form-control vida" id="pago" placeholder="Cantidad">
+                                        <input type="number" class="form-control vida" id="pago" step="0.01" onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 46 && event.charCode <= 57" placeholder="Cantidad">
                                     </div>
                                 </div>
-                                <hr>
                             </div>
                             <!-- /.card-body -->
                         </div>
@@ -181,7 +235,13 @@
                     <!-- /.card-footer -->
                 </div>
             </div>
+            <div class="alert alert-success" id="mensajeVenta" style="display:none">
+                <ul>
+                    Venta realizada correctamente!
+                </ul>
+            </div>
         </div>
+
     </section>
     <!-- Callback-->
     @if ($errors->any())
@@ -199,6 +259,7 @@
             </ul>
         </div>
     @endif
+
     <!-- /Callback-->
     <script>
         //Variables globales
@@ -276,7 +337,8 @@
         //Agregar Formulario en Formas de pago
         $('#agregarFormaPago').on('click', function(){
             $('#formaPago').append(
-                '<div class="form-group row agregado">'+
+                '<hr>'+
+                '<div class="form-group row" id="agregado">'+
                     '<label for="forma" class="col-sm-2 col-form-label">Forma</label>'+
                     '<div class="col-sm-4">'+
                         '<input type="text" list="formaData" class="form-control" id="forma" name="formas_pago[][forma]" placeholder="Forma">'+
@@ -291,10 +353,10 @@
                         '<div class="input-group-prepend">'+
                             '<div class="input-group-text">$</div>'+
                         '</div>'+
-                        '<input type="number" class="form-control vida" id="pago" name="formas_pago[][pago]" placeholder="Cantidad">'+
+                        '<input type="number" class="form-control vida" id="pago" step="0.01" name="formas_pago[][pago]" onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 46 && event.charCode <= 57" placeholder="Cantidad">'+
                     '</div>'+
-                '</div>'+
-                '<hr>'
+                '</div>'
+
             );
         });
         //Función para sumar o restar el total del ticket
@@ -342,14 +404,12 @@
             console.log(cant);
             obtenerTotal(cant_pza + 1, cant, 1);
         }
-
         //Función que módifica los totales al cambiar de cantidad productos del ticket
         function cambiarCantidadProducto(elem){
             cant_pza = elem.children().find('#cantidad').prop('selectedIndex');
             cant = elem.parent().find('#precio').text();
             obtenerTotal(cant_pza, cant, 0);
         }
-
         //Función para habílitar el botón que envía los datos el controlador
         function checkFinalizarVenta(){
             var checkBox = document.getElementById("checkFinalizar");
@@ -359,9 +419,19 @@
                 $('#agregarVenta').attr('disabled', true);
             }
         }
-
         //Función que envía el formulario al controlador
         function finalizarVenta(){
+            $('#mensajeVenta').hide();
+            clienteValidacion = true;
+            ticketValidacion = true;
+            formasPagoValidacion = true;
+            if(!$('#cliente').val()){
+                $('#cliente').addClass('is-invalid');
+                clienteValidacion = false;
+            }else{
+                $('#cliente').removeClass('is-invalid');
+                clienteValidacion = true;
+            }
             let ticket = [];
             let formas_pago = [];
             let cliente = $('#cliente').val();
@@ -375,7 +445,7 @@
                     }
                 );
             });
-            $.each($('#formaPago').children(), function(i, x){
+            $.each($('#formaPago').find('#agregado'), function(i, x){
                 formas_pago.push(
                     {
                         'forma' : $(this).children().find('#forma').val(),
@@ -383,34 +453,163 @@
                     }
                 );
             });
-            $.ajax({
-                type: "post",
-                url: "{{route('Venta.store')}}",
-                data:{
-                    'cliente' : cliente,
-                    'ticket' : ticket,
-                    'formas_pago' : formas_pago,
-                    'totales' :
-                        {
-                            'subtotal' : subtotal,
-                            'iva' : iva,
-                            'total' : total
-                        }
-                },
-                dataType: 'JSON',
-                headers: {
-                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                },
-                success: function(response){
-                    console.log(response);
-                },
-                error: function(e){
-                    console.log(e);
-                    Swal.fire({
-                        html: e.responseText
-                    })
+            if(ticket.length == 0){
+                $('#mensajeTicket').show();
+                ticketValidacion = false;
+            }else{
+                $('#mensajeTicket').hide();
+                ticketValidacion = true;
+            }
+            if(!formas_pago[0].forma || !formas_pago[0].pago){
+                $('#mensajeFormas').show();
+                formasPagoValidacion = false;
+            }else{
+                $('#mensajeFormas').hide();
+                formasPagoValidacion = true;
+            }
+            if(clienteValidacion == true && ticketValidacion == true && formasPagoValidacion == true){
+                $.ajax({
+                    type: "post",
+                    url: "{{route('Venta.store')}}",
+                    data:{
+                        'cliente' : cliente,
+                        'ticket' : ticket,
+                        'formas_pago' : formas_pago,
+                        'totales' :
+                            {
+                                'subtotal' : subtotal,
+                                'iva' : iva,
+                                'total' : total
+                            }
+                    },
+                    dataType: 'JSON',
+                    headers: {
+                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                    },
+                    success: function(response){
+                        $('#mensajeVenta').show();
+                        limpiarFormulario();
+                    },
+                    error: function(e){
+                        console.log(e);
+                        Swal.fire({
+                            html: e.responseText
+                        })
+                    }
+                });
+            }
+
+        }
+        //Función que limpia el formulario
+        function limpiarFormulario(){
+            $('#cliente').val("");
+            subtotal = 0;
+            total = 0;
+            iva = 0;
+            $('#subtotal h2').html('$'+subtotal);
+            $('#iva h2').html('$'+iva);
+            $('#total h2').html('$'+total);
+            $.each($('#ticketTabla').children(), function(i,x){
+                $(this).remove();
+            });
+            $.each($('#formaPago').find('#agregado'), function(i, x){
+                $(this).remove();
+            });
+            $('#formaPago').append(
+                '<div class="form-group row" id="agregado">'+
+                    '<label for="forma" class="col-sm-2 col-form-label">Forma</label>'+
+                    '<div class="col-sm-4">'+
+                        '<input type="text" list="formaData" class="form-control" id="forma" name="formas_pago[][forma]" placeholder="Forma">'+
+                        '<datalist id="formaData">'+
+                            '@foreach ($formas_pago as $forma)'+
+                            '<option value="{{$forma->forma_pago}}">{{$forma->forma_pago}}</option>'+
+                            '@endforeach'+
+                        '</datalist>'+
+                    '</div>'+
+                    '<label for="vida" class="col-sm-2 col-form-label">Pago</label>'+
+                    '<div class="col-sm-4 input-group">'+
+                        '<div class="input-group-prepend">'+
+                            '<div class="input-group-text">$</div>'+
+                        '</div>'+
+                        '<input type="number" class="form-control vida" id="pago" step="0.01" name="formas_pago[][pago]" onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 46 && event.charCode <= 57" placeholder="Cantidad">'+
+                    '</div>'+
+                '</div>'
+            );
+        }
+        //Función que agrega campos para dar de alta un cliente
+        $('#habilitarFormCliente').on('click', function(){
+            if($('#formCliente').is(":visible")){
+                $('#formCliente').hide();
+            }else{
+                $('#formCliente').show();
+            }
+        });
+        //Función para dar de alta un cliente
+        function agregarCliente(){
+            estatus = 0;
+            $('#formCliente').find('.form-group').find('input').each(function(){
+                if(!$(this).val()){
+                    $(this).addClass('is-invalid');
+                    estatus += 1;
+                }else{
+                    $(this).removeClass('is-invalid');
+                    if(estatus > 0){
+                        estatus -= 1;
+                    }
                 }
             });
+            if(estatus == 0){
+                let nombre = $('#nombre').val();
+                let telefono = $('#telefono').val();
+                const cb = document.getElementById('checkWhatsapp');
+                let whatsapp = 1;
+                if(cb.value == 'on')
+                    whatsapp = 1;
+                else
+                    whatsapp = 0;
+
+                let correo = $('#correo').val();
+                let tipo_cliente = $('#tipo_cliente').val();
+                $.ajax({
+                    type: "post",
+                    url: "{{route('Cliente.store')}}",
+                    data:{
+                        'nombre' : nombre,
+                        'telefono' : telefono,
+                        'whatsapp' : whatsapp,
+                        'correo' : correo,
+                        'tipo_cliente' : tipo_cliente
+                    },
+                    dataType: 'JSON',
+                    headers: {
+                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                    },
+                    success: function(response){
+                        if(response.res){
+                            $('#mensajeCliente').show();
+                            $('#mensajeCliente').removeClass('alert-success').addClass('alert-danger');
+                            $('#mensajeCliente ul').text('El cliente no pudo ser dado de alta!');
+                        }else{
+                            $('#mensajeCliente').show();
+                            if($('#mensajeCliente').hasClass('alert-danger')){
+                                $('#mensajeCliente').removeClass('alert-danger').addClass('alert-success');
+                            }
+                            $('#mensajeCliente ul').text('Cliente dado de alta con éxito!');
+                            $('#cliente').val(response[0].nombre_completo);
+                            $('#formCliente').find('.form-group').find('input').each(function(){
+                                $(this).val("");
+                            });
+                            $('#formCliente').hide();
+                        }
+                    },
+                    error: function(e){
+                        $('#mensajeCliente').show();
+                        $('#mensajeCliente').removeClass('alert-success').addClass('alert-danger');
+                        $('#mensajeCliente ul').text('El cliente no pudo ser dado de alta!');
+                        console.log(e);
+                    }
+                });
+            }
         }
     </script>
 @endsection

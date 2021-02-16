@@ -35,7 +35,8 @@ class VentaController extends Controller
     {
         $formas_pago = FormaPago::where('estatus', true)->get();
         $clientes = Cliente::get();
-        return view('Venta.agregarVenta',compact('formas_pago', 'clientes'));
+        $tipos_clientes = DB::table('tipo_cliente')->where('estatus', true)->get();
+        return view('Venta.agregarVenta',compact('formas_pago', 'clientes', 'tipos_clientes'));
     }
 
     /**
@@ -118,7 +119,7 @@ class VentaController extends Controller
                             }
                         }
                     }
-                    return redirect()->back()->with('success', 'Se realizó correctamente la venta!.');
+                    return ['response'=>'success', 'message'=>'Se realizó correctamente la venta!.'];
                 }else{
                     $request->flash();
                     return redirect()->back()->withErrors('error', 'Algo pasó al intenar realizar la venta!');

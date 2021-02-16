@@ -62,7 +62,7 @@
                                 <td>{{$usuario->email}}</td>
                                 <td>{{$usuario->puesto}}</td>
                                 <td>{{$usuario->sucursal}}</td>
-                                <td><a href="#" class="btn btn-primary">Editar <i class="far fa-edit"></i></a></td>
+                                <td><a href="{{ route('Usuario.edit', $usuario->id)}}" class="btn btn-primary">Editar <i class="far fa-edit"></i></a></td>
                             </tr>
                         @endforeach
                     </tbody>

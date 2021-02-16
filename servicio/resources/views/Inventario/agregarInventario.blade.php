@@ -978,7 +978,7 @@
                 $('#titulo').val("");
             }
         }
-        //Función que cambiar el texto del imput para saber el nombre de las imagenes seleccionadas para guardar en la base de datos
+        //Función que cambiar el texto del input para saber el nombre de las imagenes seleccionadas para guardar en la base de datos
         $('#imagenProducto').change(function() {
             var filename = $('#imagenProducto').val().replace(/C:\\fakepath\\/i, '');
             $('#labelImagen').html(filename);

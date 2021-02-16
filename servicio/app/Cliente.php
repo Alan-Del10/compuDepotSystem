@@ -10,5 +10,5 @@ class Cliente extends Model
     public $timestamps = false;
     protected $primaryKey = 'id_cliente';
     public $incrementing = true;
-    protected $fillable = array('nombre_completo', 'telefono', 'whatsapp', 'correo', 'direccion');
+    protected $fillable = array('nombre_completo', 'telefono', 'whatsapp', 'correo', 'id_tipo_cliente');
 }

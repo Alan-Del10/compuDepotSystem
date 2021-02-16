@@ -12,7 +12,6 @@
         </div>
         </div><!-- /.container-fluid -->
 
-
         <!-- Main content -->
         <section class="content">
             <div class="container-fluid">
@@ -87,7 +86,7 @@
                                 <select class="form-control" id="color">
                                     <option value="0">Seleccionar</option>
                                     @foreach($colores as $color)
-                                        <option value="{{$color->id_color}}">{{$color->descripcion}}</option>
+                                        <option value="{{$color->id_color}}">{{$color->color}}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -141,7 +140,7 @@
                                 <select class="form-control" id="marca">
                                     <option value="0">Seleccionar</option>
                                     @foreach($marcas as $marca)
-                                        <option value="{{$marca->id_marca}}">{{$marca->descripcion}}</option>
+                                        <option value="{{$marca->id_marca}}">{{$marca->marca}}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -181,9 +180,7 @@
                             </div>
                         </div>
                         <div class=" pagos">
-
                         </div>
-
                         <hr>
                         <div class="form-group row">
                             <label for="notas" class="col-sm-2 col-form-label">Notas</label>
@@ -298,7 +295,7 @@
                         '<div class="col-sm-2">'+
                             '<select name="formaPago" id="formaPago" class="form-control formaPago">'+
                                 '@foreach($formasPagos as $formaPago)'+
-                                '<option value="{{$formaPago->id_forma_de_pago}}">{{$formaPago->descripcion}}</option>'+
+                                '<option value="{{$formaPago->id_forma_de_pago}}">{{$formaPago->forma_pago}}</option>'+
                                 '@endforeach'+
                             '</select>'+
                         '</div>'+
