@@ -77,7 +77,7 @@
                             <label for="tipo_usuario" class="col-md-4 col-form-label text-md-right">{{ __('Tipo Usuario') }}</label>
 
                             <div class="col-md-6 input-group">
-                                <input id="tipo_usuario" list="tipo_usuarioData" type="text" class="form-control @error('tipo_usuario') is-invalid @enderror" name="tipo_usuario" value="{{ $usuario[0]->puesto}}" required autocomplete="tipo_usuario" placeholder="Selecciona un Puesto" {{ $usuario[0]->puesto == "Super Usuario" ? "disabled" : "" }} >
+                                <input id="tipo_usuario" list="tipo_usuarioData" type="text" class="form-control @error('tipo_usuario') is-invalid @enderror" name="tipo_usuario" value="{{ $usuario[0]->puesto}}" required autocomplete="tipo_usuario" placeholder="Selecciona un Puesto"  >
                                 <datalist id="tipo_usuarioData">
                                 @foreach($tipo_usuarios as $tipo_usuario)
                                     <option value="{{$tipo_usuario->puesto}}">{{$tipo_usuario->puesto}}</option>

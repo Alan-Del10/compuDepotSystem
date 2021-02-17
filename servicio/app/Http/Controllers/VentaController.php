@@ -12,6 +12,13 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use DateTime;
 use Illuminate\Support\Facades\Auth;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
+use Mike42\Escpos\PrintConnectors\FilePrintConnector;
+use Mike42\Escpos\CapabilityProfile;
+use Mike42\Escpos\Printer;
+use Mike42\Escpos\EscposImage;
+use Image;
+use Illuminate\Support\Facades\Storage;
 
 class VentaController extends Controller
 {
@@ -119,6 +126,7 @@ class VentaController extends Controller
                             }
                         }
                     }
+                    $this->imprimirTicketVenta($id);
                     return ['response'=>'success', 'message'=>'Se realizó correctamente la venta!.'];
                 }else{
                     $request->flash();
@@ -201,5 +209,61 @@ class VentaController extends Controller
         } catch (\Throwable $th) {
             return redirect()->back()->withErrors($th);
         }
+    }
+    public function imprimirTicketVenta($id_venta){
+
+        $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'cliente.*', 'usuario.*')
+        ->where('id_venta', $id_venta)
+        ->leftJoin('usuario', 'usuario.id', 'venta.id_usuario')
+        ->leftJoin('sucursal', 'sucursal.id_sucursal', 'venta.id_sucursal')
+        ->leftJoin('cliente', 'cliente.id_cliente', 'venta.id_cliente')->get();
+        $detalle_venta = DB::table('detalle_venta')->where('id_venta', $id_venta)
+        ->leftJoin('inventario', 'inventario.id_inventario', 'detalle_venta.id_inventario')->get();
+        $pago_venta = DB::table('venta_pago')->where('id_venta', $id_venta)
+        ->leftJoin('forma_de_pago', 'forma_de_pago.id_forma_de_pago', 'venta_pago.id_forma_de_pago')->get();
+        $profile = CapabilityProfile::load("SP2000");
+        $ruta = "smb://".gethostname()."/Tickets3";
+        $img = EscposImage::load("../public/storage/sucursales/".$venta[0]->logo, false);
+        //$img = EscposImage::load("../public/storage/img/logo.png", false);
+        $connector = new WindowsPrintConnector($ruta);
+        $impresora = new Printer($connector,$profile);
+        $impresora->setJustification(Printer::JUSTIFY_CENTER);
+
+        $impresora->bitImage($img, Printer::IMG_DOUBLE_WIDTH | Printer::IMG_DOUBLE_HEIGHT);
+        $impresora->text("\n");
+        $impresora->setTextSize(2, 2);
+        $impresora->text($venta[0]->sucursal."\n");
+        $impresora->setTextSize(1, 1);
+        $impresora->text($venta[0]->direccion_sucursal."\n");
+        $impresora->text("_______________________\n");
+        $impresora->setTextSize(1, 2);
+        $impresora->text("Datos Del Cliente\n");
+        $impresora->setTextSize(1, 1);
+        $impresora->text($venta[0]->nombre_completo."\n");
+        $impresora->text("Dirección: ".$venta[0]->direccion."\n");
+        $impresora->text("Tel: ".$venta[0]->telefono."\n");
+        $impresora->text("Email: ".$venta[0]->correo."\n");
+        $impresora->text("_______________________\n");
+        $impresora->setJustification(Printer::JUSTIFY_LEFT);
+        $impresora->setTextSize(1, 1);
+        $impresora->text("Producto                  Prec.\n");
+        foreach($detalle_venta as $detalle){
+            $impresora->text($detalle->cantidad." ".$detalle->titulo_inventario." ".$detalle->precio_momento."\n");
+        }
+        $impresora->setTextSize(1, 1);
+        $impresora->text("  SUBTOTAL                ".$venta[0]->subtotal."\n");
+        $impresora->setJustification(Printer::JUSTIFY_RIGHT);
+        $impresora->text("________\n");
+        $impresora->setJustification(Printer::JUSTIFY_LEFT);
+        $impresora->text("  IVA(%16)                ".$venta[0]->iva."\n");
+        $impresora->text("  TOTAL $                 ".$venta[0]->total."\n");
+        $impresora->setJustification(Printer::JUSTIFY_CENTER);
+        $impresora->text("_______________________\n");
+        $impresora->setJustification(Printer::JUSTIFY_LEFT);
+        $impresora->text("Atendid@ por: ".$venta[0]->name."\n");
+        $impresora->text("Fecha: ".$venta[0]->fecha_venta."\n");
+        $impresora->text("Ticket No. ".$venta[0]->id_venta."\n");
+        $impresora->feed(4);
+        $impresora->close();
     }
 }

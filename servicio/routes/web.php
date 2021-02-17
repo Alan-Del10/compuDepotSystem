@@ -98,6 +98,7 @@ Route::resource('Sucursal', SucursalController::class)->middleware('auth');
 
 //Venta routes
 Route::resource('Venta', VentaController::class)->middleware('auth:root,admin,sub,admin,vendedor,servicio_cliente');
+Route::get('/venta/ticket', 'VentaController@imprimirTicketVenta')->middleware('auth:root,admin,sub,admin,vendedor,servicio_cliente');
 
 //Permisos routes
 Route::resource('Permisos', PermisosController::class)->middleware('auth');

@@ -55,13 +55,13 @@
                                             <input type="text" class="form-control" id="nombre" placeholder="Nombre Completo"/>
                                         </div>
                                         <label for="telefono" class="col-sm-2 col-form-label">Teléfono</label>
-                                        <div class="col-sm-2 input-group">
+                                        <div class="col-10 col-sm-3 input-group">
                                             <input type="number" class="form-control" id="telefono" minlength="7" maxlength="10" placeholder="Teléfono"/>
                                         </div>
-                                        <div class="col-sm-2">
+                                        <div class="col-2 col-sm-1">
                                             <div class="form-check form-check-inline">
                                                 <input type="checkbox" class="form-check-input" id="checkWhatsapp" onclick="checkWhatsapp()" checked>
-                                                <label class="form-check-label" for="checkWhatsapp">Whatsapp?</label>
+                                                <label class="form-check-label" for="checkWhatsapp"><i class="fab fa-whatsapp"></i></label>
                                             </div>
                                         </div>
                                     </div>
@@ -538,6 +538,7 @@
         }
         //Función que agrega campos para dar de alta un cliente
         $('#habilitarFormCliente').on('click', function(){
+            $('#cliente').val("");
             if($('#formCliente').is(":visible")){
                 $('#formCliente').hide();
             }else{

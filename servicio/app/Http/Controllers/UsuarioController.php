@@ -94,10 +94,12 @@ class UsuarioController extends Controller
                 'sucursal' => 'nullable|string'
             ]);
             $usuario = User::find($id);
-            $id_tipo_usuario = DB::table('tipo_usuario')->where('puesto', $data['tipo_usuario'])->first();
-            $id_sucursal = Sucursal::where('sucursal', $data['sucursal'])->first();
-            $id_tipo_usuario = $id_tipo_usuario->id_tipo_usuario;
-            $id_sucursal = $id_sucursal->id_sucursal;
+            $id_tipo_usuario = DB::table('tipo_usuario')->where('puesto', $request->tipo_usuario)->get();
+            $id_sucursal = DB::table('sucursal')->where('sucursal', $request->sucursal)->get();
+            $id_tipo_usuario = $id_tipo_usuario[0]->id_tipo_usuario;
+            $id_sucursal = $id_sucursal[0]->id_sucursal;
+
+
             if(!$request->password == true){
                 $json = [
                     'name' => $request->name,

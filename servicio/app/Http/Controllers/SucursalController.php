@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Session;
+use Image;
+use Illuminate\Support\Facades\Storage;
 
 class SucursalController extends Controller
 {
@@ -47,7 +49,25 @@ class SucursalController extends Controller
                 'local' => 'nullable|max:45',
                 'direccion' => 'nullable|max:200'
             ]);
+            $fileName = "";
+            if ($request->has('imagenSucursal')) {
+                $image      = $request->file('imagenSucursal');
+                $fileName   = $request->sucursal.'.'. $image->getClientOriginalExtension();
+                dd($fileName);
+                $img = Image::make($image->getRealPath());
+                $extension = $image->getClientOriginalExtension();
+                //dd($img);
+                $img->resize(120, 120, function ($constraint) {
+                    $constraint->aspectRatio();
+                });
 
+                $img->stream(); // <-- Key point
+
+                if(Storage::disk('local')->exists('public/sucursales/'.$request->sucursal.'.'.$extension)) {
+                    Storage::disk('local')->delete('public/sucursales/'.$request->sucursal.'.'.$extension);
+                }
+                Storage::disk('local')->put('public/sucursales'.'/'.$fileName, $img, 'public');
+            }
             //Si encuentra datos erroneos los regresa con un mensaje de error
             if($validator->fails()){
                 return redirect()->back()->withErrors($validator);
@@ -55,7 +75,8 @@ class SucursalController extends Controller
                 Sucursal::insert([
                     'sucursal' => $request->sucursal,
                     'local' => $request->local,
-                    'direccion' => $request->direccion
+                    'direccion' => $request->direccion,
+                    'logo' => $fileName
                 ]);
                 return redirect()->back()->with('message', 'Se agregó correctamente la sucursal.');
             }
@@ -106,13 +127,44 @@ class SucursalController extends Controller
                 'local' => 'nullable|max:45',
                 'direccion' => 'nullable|max:200'
             ]);
+            $fileName = "";
+            if ($request->has('imagenSucursal')) {
+                $image      = $request->file('imagenSucursal');
+                $fileName   = $request->sucursal.'.'. $image->getClientOriginalExtension();
+                $img = Image::make($image->getRealPath());
+                $extension = $image->getClientOriginalExtension();
+
+                $img->resize(120, 120, function ($constraint) {
+                    $constraint->aspectRatio();
+                });
+
+                $img->stream(); // <-- Key point
+                if(Storage::disk('local')->exists('public/sucursales/'.$request->sucursal.'.'.$extension)) {
+                    Storage::disk('local')->delete('public/sucursales/'.$request->sucursal.'.'.$extension);
+                }
+                Storage::disk('local')->put('public/sucursales'.'/'.$fileName, $img, 'public');
+            }else{
+                $verificarImagen = DB::table('sucursal')->where('sucursal', $request->sucursal)->where('logo', '!=', null)->get();
+                if(count($verificarImagen) > 0) {
+                    $img = $this->convertToJSON($verificarImagen);
+                    $fileName = $img[0]->imagen;
+
+                }
+            }
             $sucursal = Sucursal::find($id);
             //Si encuentra datos erroneos los regresa con un mensaje de error
             if($validator->fails()){
                 return redirect()->back()->withErrors($validator);
             }else{
                 //Validamos que se haya modificado la información y regresamos un mensaje sobre el estado
-                if($sucursal->update($data)){
+                $json_actualizar = [
+                    'sucursal' => $request->sucursal,
+                    'local' => $request->local,
+                    'direccion' => $request->direccion,
+                    'logo' => $fileName
+                ];
+
+                if($sucursal->update($json_actualizar)){
                     return redirect()->back()->with('message', 'Se modificó correctamente la sucursal.');
                 }else{
                     return redirect()->back()->withErrors('error', 'Algo pasó al intenar modificar los datos');
