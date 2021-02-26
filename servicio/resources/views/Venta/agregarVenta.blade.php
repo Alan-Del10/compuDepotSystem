@@ -302,11 +302,11 @@
                                             cantidades+
                                         '</select>'+
                                     '</td>'+
-                                    '<td id="precio" class="precio">'+data[0][0].precio_publico+'</td>'+
+                                    '<td id="precio" class="precio">'+data[0][0].precio_max+'</td>'+
                                     '<td><a href="#" class="btn btn-danger form-control form-control-sm" onclick="quitarProducto($(this).parent().parent())"><i class="far fa-trash-alt"></i></a></td>'+
                                 '</tr>'
                             );
-                            obtenerTotal(1, data[0][0].precio_publico, 0);
+                            obtenerTotal(1, data[0][0].precio_max, 0);
                             /*Swal.fire({
                                 title: 'Este artículo ya existe!',
                                 text: "Puede editar este artículo dando clic en el botón!",

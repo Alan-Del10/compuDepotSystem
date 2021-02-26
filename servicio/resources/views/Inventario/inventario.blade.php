@@ -40,7 +40,7 @@
         </div>
         <div class="container-fluid">
         <div class="row">
-            <div class="col-md-7">
+            <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">
                     <div class="row">
@@ -50,7 +50,7 @@
                         <div class="col-5">
                         </div>
                         <div class="col-3">
-                            <a id="agregarInventario" href='{{route("Inventario.create")}}' class="btn btn-info">Agregar/Editar Inventario <i class="far fa-plus-square"></i></a>
+                            <a id="agregarInventario" href='{{route("Inventario.create")}}' class="btn btn-info btn-sm">Agregar Inventario <i class="far fa-plus-square"></i></a>
                         </div>
                     </div>
 
@@ -65,6 +65,7 @@
                             <th>Marca</th>
                             <th>Modelo</th>
                             <th>Color</th>
+                            <th>Stock</th>
                             <th>Acciones</th>
                         </tr>
                         </thead>
@@ -76,7 +77,8 @@
                                 <td>{{$inventario->marca}}</td>
                                 <td>{{$inventario->modelo}}</td>
                                 <td>{{$inventario->color}}</td>
-                                <td><a href="{{ route('Inventario.edit',$inventario->upc)}}" class="btn btn-primary"><i class="far fa-edit"></i> Editar</a></td>
+                                <td>{{$inventario->stock}}</td>
+                                <td><small><a href="{{ route('Inventario.edit',$inventario->id_inventario)}}" class="btn btn-primary btn-sm"><i class="far fa-edit"></i> Editar</a></small></td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -85,8 +87,9 @@
                     <!-- /.card-body -->
                 </div>
                 <!-- /.card -->
+                {{ $inventarios->onEachSide(5)->links('pagination::bootstrap-4') }}
             </div>
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Especificaciones del Producto</h3>
@@ -95,7 +98,11 @@
                     <div class="card-body p-0">
                         <div class="row">
                             <div class="col-sm-6">
-                                <img src="{{asset('storage/icon/box.png')}}" alt="Producto" id="imagen" class="img-fluid rounded mx-auto d-block">
+                                <picture>
+                                    <source type="image/png" srcset="{{asset('storage/icon/box.png')}}" alt="Producto" id="imagen">
+                                    <source type="image/webp" srcset="{{asset('storage/icon/box.webp')}}" alt="Producto" id="imagen">
+                                    <img src="box.jpg" alt="Producto" id="imagen2" class="img-fluid rounded mx-auto d-block">
+                                </picture>
                                 <div class="card-header">
                                     <b>Datos Online</b>
                                 </div>
@@ -109,7 +116,6 @@
                                     <b>Precios</b>
                                 </div>
                                 <ul class="list-group list-group-flush">
-                                    <li class="list-group-item" id="publico">Precio Público:</li>
                                     <li class="list-group-item" id="mayoreo">Precio Mayoreo:</li>
                                     <li class="list-group-item" id="minimo">Precio Mínimo:</li>
                                     <li class="list-group-item" id="maximo">Precio Máximo:</li>
@@ -127,6 +133,30 @@
                     </div>
                     <!-- /.card-body -->
                 </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Compatibilidad de modelos</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th>Marca</th>
+                                        <th>Modelo</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="tablaCompatibilidad">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- /.card-body -->
+                </div>
                 <!-- /.card -->
             </div>
             <!-- /.col -->
@@ -135,6 +165,7 @@
         <!-- /.row -->
         </div><!-- /.container-fluid -->
         <!-- Callback-->
+
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul>
@@ -155,14 +186,17 @@
     <!-- /.content -->
     <script>
         var inventarios = @json($inventarios);
+        var compatibilidades = @json($compatibilidades);
+        console.log(compatibilidades);
         var arr = [];
         arr = inventarios;
         $('.items').on('click', function(){
-            inventarios.forEach(inventario => {
+            inventarios.data.forEach(inventario => {
                 if($(this).children().eq(0).text() == inventario.upc){
                     imagen = '{{URL::asset('storage/inventario/')}}' + '/';
                     imagen += inventario.imagen;
-                    $('#imagen').attr("src", imagen);
+                    $('#imagen').attr("srcset", imagen);
+                    $('#imagen2').attr("src", inventario.imagen);
                     $('#titulo').text("Título: " + inventario.titulo_inventario);
                     $('#descripcion').text("Descripción: " + inventario.descripcion_inventario);
                     $('#publico').text("Precio Público: $" + inventario.precio_publico);
@@ -171,6 +205,17 @@
                     $('#maximo').text("Precio Máximo: $" + inventario.precio_max);
                     $('#costo_actual').text('Costo Actual: $' + inventario.costo);
                     $('#costo_anterior').text('Costo Anterior: $' + inventario.costo);
+                }
+
+            });
+            compatibilidades.forEach(compatibilidad => {
+                if($(this).children().eq(0).text() == compatibilidad.upc){
+                    $('#tablaCompatibilidad').append(
+                        '<tr class="items">'+
+                            '<td>'+compatibilidad.marca+'</td>'+
+                            '<td>'+compatibilidad.modelo+'</td>'+
+                        '</tr>'
+                    );
                 }
             });
         });

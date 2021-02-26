@@ -38,7 +38,7 @@ class ServicioController extends Controller
         $conceptos = DB::table('concepto_servicio')->orderby('descripcion','asc')->where('estatus',1)->get();
         $estatus = DB::table('estatus')->orderby('descripcion','asc')->where('estatus',1)->get();
         $marcas = DB::table('marca')->orderby('marca','asc')->where('estatus',1)->get();
-        $modelos = DB::table('modelo')->orderby('modelo','asc')->where('estatus',1)->get();
+        $modelos = DB::table('modelo')->orderby('modelo','asc')->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')->where('estatus',1)->get();
         $formasPagos = DB::table('forma_de_pago')->orderby('id_forma_de_pago','asc')->where('estatus',1)->get();
         $clientes = DB::table('cliente')->get();
         return view('Servicio.agregarServicio',compact('companias','colores','tipos','conceptos','estatus','marcas','modelos','formasPagos','clientes'));
@@ -118,13 +118,15 @@ class ServicioController extends Controller
         $conceptos = DB::table('concepto_servicio')->orderby('descripcion','asc')->get();
         $estatus = DB::table('estatus')->orderby('descripcion','asc')->get();
         $marcas = DB::table('marca')->orderby('marca','asc')->get();
-        $modelos = DB::table('modelo')->orderby('modelo','asc')->get();
+        $modelos = DB::table('modelo')->orderby('modelo','asc')->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')->get();
         $formasPagos = DB::table('forma_de_pago')->orderby('id_forma_de_pago','asc')->get();
-        return view('Servicio.datosServicio',compact('companias','colores','tipos','conceptos','estatus','marcas','modelos','formasPagos'));
+        $categorias = DB::table('categoria')->get();
+        return view('Servicio.datosServicio',compact('companias','colores','tipos','conceptos','estatus','marcas','modelos','formasPagos','categorias'));
     }
 
     public function agregarMarca(Request $request)
     {
+
         try {
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
@@ -163,7 +165,6 @@ class ServicioController extends Controller
 
     public function agregarModelo(Request $request)
     {
-
         try {
             //Validamos los campos de la base de datos, para no aceptar información erronea
             $validator = Validator::make($request->all(), [
@@ -176,20 +177,27 @@ class ServicioController extends Controller
                 return redirect()->back()->withErrors($validator);
             }else{
                 $marca = DB::table('marca')->where('marca', $request->marcaOption)->get();
+
                 if(count($marca) == 0){
                     return redirect()->back()->withErrors('error', 'No su pudo agregar el modelo!');
                 }
-                DB::table('modelo')->insert(
-                    ['modelo' => strtoupper($request->modeloDescripcion),'id_marca' => $marca[0]->marca, 'estatus' => true]
-                );
+                $json = [
+                    'modelo' => strtoupper($request->modeloDescripcion),
+                    'id_marca' => $marca[0]->id_marca,
+                    'estatus' => 1
+                ];
+                if(DB::table('modelo')->insert($json)){
+                    //DB::table('modelo')->insert($json);
 
-                if($request->ajax()){
-                    $id = DB::getPdo()->lastInsertId();
-                    $modelo = DB::table('modelo')->where('id_modelo', $id)->get();
-                    return $modelo;
-                }else{
-                    return redirect()->back()->with('success', 'Se agregó correctamente el modelo.');
+                    if($request->ajax()){
+                        $id = DB::getPdo()->lastInsertId();
+                        $modelo = DB::table('modelo')->where('id_modelo', $id)->get();
+                        return $modelo;
+                    }else{
+                        return redirect()->back()->with('success', 'Se agregó correctamente el modelo.');
+                    }
                 }
+
             }
 
         } catch (\Throwable $th) {

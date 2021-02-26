@@ -332,6 +332,36 @@
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-cash-register"></i>
+                    <p>
+                        Corte de Caja
+                        <i class="fas fa-angle-left right"></i>
+                        <span class="badge badge-info right">6</span>
+                    </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{route('CorteCaja.index')}}" class="nav-link">
+                            <i class="fas fa-clipboard-list nav-icon"></i>
+                            <p>Listado de Cortes</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{route("CorteCaja.create")}}" class="nav-link">
+                            <i class="fas fa-plus nav-icon"></i>
+                            <p>Agregar Corte de Caja Inicial</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{route("CorteCaja.create")}}" class="nav-link">
+                            <i class="fas fa-plus nav-icon"></i>
+                            <p>Agregar Corte de Caja Inicial</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
                     <i class="nav-icon fas fa-truck-loading"></i>
                     <p>
                         Proveedores

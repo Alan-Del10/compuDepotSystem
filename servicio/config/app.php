@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', $_SERVER['HTTP_HOST']),
+    'url' => env('APP_URL', 'localhost'),
 
     'asset_url' => env('ASSET_URL', null),
 
@@ -163,6 +163,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         Milon\Barcode\BarcodeServiceProvider::class,
         'Intervention\Image\ImageServiceProvider',
+        'Rawilk\Printing\PrintingServiceProvider',
         /*
          * Package Service Providers...
          */
@@ -229,7 +230,7 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'DNS1D' => Milon\Barcode\Facades\DNS1DFacade::class,
         'DNS2D' => Milon\Barcode\Facades\DNS2DFacade::class,
-        'Image' => 'Intervention\Image\Facades\Image',
+        'Image' => 'Intervention\Image\Facades\Image'
     ],
 
 ];

@@ -81,9 +81,12 @@ Route::resource('Articulo', ArticuloController::class)->middleware('auth');
 Route::resource('TipoInventario', TipoInventarioController::class)->middleware('auth:root,admin,sub_admin,servicio_cliente,vendedor');
 
 //Inventario routes
-Route::resource('Inventario', InventarioController::class)->middleware('auth:root,admin,sub_admin,vendedor,servicio_clinte');
+Route::resource('Inventario', InventarioController::class)->middleware('auth:root,admin,sub_admin,vendedor,servicio_cliente');
 Route::get('/inventario/verificarUPC', 'InventarioController@verificarUPC')->name('verificarUPC')->middleware('auth');
 Route::get('/inventario/agregarCapacidad','InventarioController@agregarCapacidad')->name('agregarCapacidad')->middleware('auth');
+Route::get('/inventario/agregarProveedor','InventarioController@agregarProveedor')->name('agregarProveedorInventario')->middleware('auth');
+Route::get('/inventario/etiqueta','InventarioController@imprimirEtiqueta')->name('etiquetaInventario')->middleware('auth');
+
 
 
 //Capacidad routes
@@ -97,8 +100,11 @@ Route::resource('Sucursal', SucursalController::class)->middleware('auth');
 //Route::get('/home', 'HomeController@index')->name('home');
 
 //Venta routes
-Route::resource('Venta', VentaController::class)->middleware('auth:root,admin,sub,admin,vendedor,servicio_cliente');
-Route::get('/venta/ticket', 'VentaController@imprimirTicketVenta')->middleware('auth:root,admin,sub,admin,vendedor,servicio_cliente');
+Route::resource('Venta', VentaController::class)->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');
+Route::get('/venta/ticket', 'VentaController@imprimirTicketVentaV2')->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');
+
+//Corte de Caja routes
+Route::resource('CorteCaja', CorteCajaController::class)->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');
 
 //Permisos routes
 Route::resource('Permisos', PermisosController::class)->middleware('auth');

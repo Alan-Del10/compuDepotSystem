@@ -18,34 +18,17 @@
         <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-            <div class="card">
-                <div class="row p-3">
-                <div class="col-2">
-                    <label for="IdVenta">Id Venta</label>
-                    <input class="form-control" type="text" id="IdVenta" name="IdVenta">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Busqueda</h3>
+                    </div>
+                    <div class="input-group p-3">
+                        <input class="form-control" type="text" id="busqueda" placeholder="Buscar...">
+                        <div class="input-group-append">
+                            <button id="buscar" class="btn btn-success">Buscar</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-2">
-                    <label for="nombreCompleto">Nombre</label>
-                    <input  class="form-control" type="text" id="nombreCompleto" name="nombreCompleto">
-                </div>
-                <div class="col-2">
-                    <label for="marca">Marca</label>
-                    <input  class="form-control" type="text" id="marca" name="marca">
-                </div>
-                <div class="col-2">
-                    <label for="fechaA">Fecha A</label>
-                    <input  class="form-control" type="text" id="fechaA" name="fechaA">
-                </div>
-                <div class="col-2">
-                    <label for="fechaB">Fecha B</label>
-                    <input  class="form-control" type="text" id="fechaB" name="fechaB">
-                </div>
-                <div class="col-2">
-                    <label for="" class="text-white">a</label><br>
-                    <button id="buscar" class="btn btn-success" >Buscar</button>
-                </div>
-                </div>
-            </div>
             </div>
         </div>
         </div>
@@ -72,21 +55,40 @@
                 <table class="table table-striped">
                     <thead>
                     <tr>
-                        <th style="width: 10px">ID</th>
-                        <th>Nombre Completo</th>
-                        <th>Telefono</th>
+                        <th style="width: 10px">Ticket</th>
+                        <th>Usuario</th>
+                        <th>Cliente</th>
                         <th>Fecha</th>
+                        <th>Subtotal</th>
+                        <th>IVA</th>
+                        <th>Total</th>
                         <th>Acciones</th>
                     </tr>
                     </thead>
                     <tbody>
+                        @foreach($ventas as $venta)
+                        <tr class="items">
+                            <td>{{$venta->id_venta}}</td>
+                            <td>{{$venta->name}}</td>
+                            <td>{{$venta->nombre_completo}}</td>
+                            <td>{{$venta->fecha_venta}}</td>
+                            <td>{{$venta->subtotal}}</td>
+                            <td>{{$venta->iva}}</td>
+                            <td>{{$venta->total}}</td>
+                            <td><a href="#" class="btn btn-primary"><i class="far fa-edit"></i> Editar</a></td>
+                        </tr>
+                        @endforeach
 
                     </tbody>
+
                 </table>
+
                 </div>
                 <!-- /.card-body -->
+
             </div>
             <!-- /.card -->
+            {{ $ventas->onEachSide(5)->links('pagination::bootstrap-4') }}
             </div>
             <!-- /.col -->
         </div>
@@ -95,5 +97,22 @@
         </div><!-- /.container-fluid -->
     </section>
     <!-- /.content -->
+    <script>
+        var ventas = @json($ventas);
+        var arr = [];
+        arr = ventas;
+        $("#busqueda").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            console.log(getResult(value, ventas));
+        });
+
+        function getResult(filterBy, objList) {
+            return objList.filter(function(obj) {
+                return obj.some(function(item){
+                    return item.indexOf(filterBy) >= 0;
+                });
+            });
+        }
+    </script>
 @endsection
 

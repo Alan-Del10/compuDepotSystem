@@ -14,12 +14,15 @@ use DateTime;
 use Illuminate\Support\Facades\Auth;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
-use Mike42\Escpos\CapabilityProfile;
-use Mike42\Escpos\Printer;
+/*use Mike42\Escpos\CapabilityProfile;
+use Mike42\Escpos\Printer;*/
 use Mike42\Escpos\EscposImage;
 use Image;
 use Illuminate\Support\Facades\Storage;
-
+use Printing;
+use Rawilk\Printing\Contracts\Printer;
+use Rawilk\Printing\PrintTask;
+use Rawilk\Printing\Receipts\ReceiptPrinter;
 class VentaController extends Controller
 {
     /**
@@ -29,7 +32,9 @@ class VentaController extends Controller
      */
     public function index()
     {
-        $ventas = Venta::orderby('id_venta','asc')->get();
+        $ventas = Venta::orderby('id_venta','asc')
+        ->leftJoin('usuario', 'usuario.id', 'venta.id_usuario')
+        ->leftJoin('cliente', 'cliente.id_cliente', 'venta.id_cliente')->paginate(10);
         return view('Venta.venta', compact('ventas'));
     }
 
@@ -92,11 +97,14 @@ class VentaController extends Controller
                 ];
                 if(Venta::insert($json_agregar)){
                     $id = DB::getPdo()->lastInsertId();
+                    //dd($request->ticket);
                     foreach($request->ticket as $detalle){
+
                         $inventario = DB::table('inventario')->where('upc', $detalle['upc'])->get();
+
                         if(count($inventario) > 0){
                             $id_inventario = $inventario[0]->id_inventario;
-                            $precio = $inventario[0]->precio_publico;
+                            $precio = $inventario[0]->precio_max;
                         }
                         $json_detalle = [
                             'id_venta' => $id,
@@ -126,7 +134,7 @@ class VentaController extends Controller
                             }
                         }
                     }
-                    $this->imprimirTicketVenta($id);
+                    $this->imprimirTicketVentaV2($id);
                     return ['response'=>'success', 'message'=>'Se realizó correctamente la venta!.'];
                 }else{
                     $request->flash();
@@ -265,5 +273,63 @@ class VentaController extends Controller
         $impresora->text("Ticket No. ".$venta[0]->id_venta."\n");
         $impresora->feed(4);
         $impresora->close();
+    }
+
+    public function imprimirTicketVentaV2($id_venta){
+
+        $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'cliente.*', 'usuario.*')
+        ->where('id_venta', $id_venta)
+        ->leftJoin('usuario', 'usuario.id', 'venta.id_usuario')
+        ->leftJoin('sucursal', 'sucursal.id_sucursal', 'venta.id_sucursal')
+        ->leftJoin('cliente', 'cliente.id_cliente', 'venta.id_cliente')->get();
+        $img = EscposImage::load("../public/storage/sucursales/".$venta[0]->logo, false);
+        $detalle_venta = DB::table('detalle_venta')->where('id_venta', $id_venta)
+        ->leftJoin('inventario', 'inventario.id_inventario', 'detalle_venta.id_inventario')->get();
+        $pago_venta = DB::table('venta_pago')->where('id_venta', $id_venta)
+        ->leftJoin('forma_de_pago', 'forma_de_pago.id_forma_de_pago', 'venta_pago.id_forma_de_pago')->get();
+        $productos = "";
+        foreach($detalle_venta as $detalle){
+            $productos .= $detalle->cantidad." ".substr($detalle->titulo_inventario,0, 37)." $".$detalle->precio_momento."\n";
+        }
+        $receipt = (string) (new ReceiptPrinter)
+            ->centerAlign()
+            ->bitImage($img)
+            ->feed(1)
+            ->setTextSize(2, 2)
+            ->text($venta[0]->sucursal)
+            ->setTextSize(1,1)
+            ->text($venta[0]->direccion_sucursal)
+            ->setTextSize(1,2)
+            ->text("_____________________________________________")
+            ->text("Datos Del Cliente")
+            ->setTextSize(1,1)
+            ->text($venta[0]->nombre_completo)
+            ->text("Dirección: ".$venta[0]->direccion)
+            ->text("Tel: ".$venta[0]->telefono)
+            ->text("Email: ".$venta[0]->correo)
+            ->text("_____________________________________________")
+            ->leftAlign()
+            ->setTextSize(1,1)
+            ->text("Producto                                Prec.")
+            ->text($productos)
+            ->text("  SUBTOTAL                              $".$venta[0]->subtotal)
+            ->rightAlign()
+            ->line()
+            ->leftAlign()
+            ->text("  IVA(%16)                                  $".$venta[0]->iva)
+            ->text("  TOTAL($)                              $".$venta[0]->total)
+            ->centerAlign()
+            ->text("_____________________________________________")
+            ->leftAlign()
+            ->text("Atendid@ por: ".$venta[0]->name)
+            ->text("Fecha: ".$venta[0]->fecha_venta)
+            ->text("Ticket No. ".$venta[0]->id_venta)
+            ->feed(4)
+            ->cut();
+
+        Printing::newPrintTask()
+            ->printer(70134223)
+            ->content($receipt)
+            ->send();
     }
 }

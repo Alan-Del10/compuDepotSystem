@@ -53,7 +53,6 @@ class SucursalController extends Controller
             if ($request->has('imagenSucursal')) {
                 $image      = $request->file('imagenSucursal');
                 $fileName   = $request->sucursal.'.'. $image->getClientOriginalExtension();
-                dd($fileName);
                 $img = Image::make($image->getRealPath());
                 $extension = $image->getClientOriginalExtension();
                 //dd($img);

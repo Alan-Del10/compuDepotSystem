@@ -80,7 +80,7 @@
                           @foreach($marcas as $marca)
                             <tr>
                               <td>{{$marca->id_marca}}</td>
-                              <td>{{$marca->descripcion}}</td>
+                              <td>{{$marca->marca}}</td>
                               <td>
                                 @if($marca->estatus == 1)
                                     <a class="btn btn-danger" href="{{route('desactivarDatos', [$marca->id_marca, 'marca'])}}" >
@@ -126,6 +126,7 @@
                             <tr>
                               <th style="width: 10px">ID</th>
                               <th>Descripción</th>
+                              <th>Marca</th>
                               <th>Acciones</th>
                             </tr>
                           </thead>
@@ -133,7 +134,8 @@
                           @foreach($modelos as $modelo)
                             <tr>
                               <td>{{$modelo->id_modelo}}</td>
-                              <td>{{$modelo->descripcion}}</td>
+                              <td>{{$modelo->modelo}}</td>
+                              <td>{{$modelo->marca}}</td>
                               <td>
                                 @if($modelo->estatus == 1)
                                     <a class="btn btn-danger" href="{{route('desactivarDatos', [$modelo->id_modelo, 'modelo'])}}" >
@@ -186,7 +188,7 @@
                           @foreach($colores as $color)
                             <tr>
                               <td>{{$color->id_color}}</td>
-                              <td>{{$color->descripcion}}</td>
+                              <td>{{$color->color}}</td>
                               <td>
                                 @if($color->estatus == 1)
                                     <a class="btn btn-danger" href="{{route('desactivarDatos', [$color->id_color, 'color'])}}" >
@@ -451,7 +453,7 @@
                           @foreach($formasPagos as $formaPago)
                             <tr>
                               <td>{{$formaPago->id_forma_de_pago}}</td>
-                              <td>{{$formaPago->descripcion}}</td>
+                              <td>{{$formaPago->forma_pago}}</td>
                               <td>{{$formaPago->estatus}}</td>
                               <td>
                                 @if($formaPago->estatus == 1)
@@ -488,7 +490,7 @@
     <script>
         $(document).ready(function(){
             //inicializa variables al inicio  y detalles
-
+            var categorias = @json($categorias);
             var marcas =  @json($marcas); //variable de marcas pasada del modelo de laravel
             $('.tableForm').hide();
             $('.marcas').show();
@@ -576,16 +578,24 @@
 
             //eventos de agregar datos
             $('#agregarMarca').on('click', function() {
-
+              var cadenaOption = '<select class="form-control" id="categoriaOption">';//inicializo variable para el options del sweet alert
+              categorias.forEach(categoria => {
+                  cadenaOption = cadenaOption +'<option value="'+categoria.categoria+'">'+categoria.categoria+'</option>';
+              });
+              cadenaOption = cadenaOption + '</select>';
               Swal.fire({
                 title: "Agregar Marca",
                 html: '' +
-                          '<div class="form-group row">' +
-                            '<div class="col-sm-12">' +
-                              '<label for="marcaDescripcion" class="float-left col-form-label">Descripcion</label>' +
-                              '<input type="text" class="form-control" id="marcaDescripcion" placeholder="Descripcion">' +
-                            '</div>' +
-                          '</div>'
+                  '<div class="form-group row">' +
+                    '<div class="col-sm-12">' +
+                        '<label for="categoriaOption" class="float-left col-form-label">Categoria</label>' +
+                        ''+cadenaOption+'' +
+                    '</div>' +
+                    '<div class="col-sm-12">' +
+                      '<label for="marcaDescripcion" class="float-left col-form-label">Descripcion</label>' +
+                      '<input type="text" class="form-control" id="marcaDescripcion" placeholder="Descripcion">' +
+                    '</div>' +
+                  '</div>'
                 ,
                 confirmButtonText: "Agregar",
                 showCancelButton: true,
@@ -595,12 +605,13 @@
                 if(result.isConfirmed){
 
                   marcaDescripcion = document.getElementById('marcaDescripcion').value;
-
+                  categoriaOption = document.getElementById('categoriaOption').value;
                   if(marcaDescripcion != null || marcaDescripcion != ''){
                       $.ajax({
                           type: "get",
                           url: "{{route('agregarMarca')}}",
-                          data:{'marcaDescripcion' : marcaDescripcion},
+                          data:{'marcaDescripcion' : marcaDescripcion,
+                          'categoriaOption' : categoriaOption},
                           success: function(data) {
                             console.log(data);
                             if(data == 2){
@@ -652,7 +663,7 @@
               //sacar una cadena de options para el sweet alert
               var cadenaOption = '<select class="form-control" id="marcaOption">';//inicializo variable para el options del sweet alert
               marcas.forEach(marca => {
-                cadenaOption = cadenaOption +'<option value="'+marca.id_marca+'">'+marca.descripcion+'</option>';
+                cadenaOption = cadenaOption +'<option value="'+marca.marca+'">'+marca.marca+'</option>';
               });
               cadenaOption = cadenaOption + '</select>';
 
