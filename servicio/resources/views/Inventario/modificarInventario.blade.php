@@ -359,7 +359,7 @@
                             }).then((result) => {
                                 if (result.isConfirmed) {
                                     var url = '{{ route("Inventario.edit", ":id") }}';
-                                    url = url.replace(':id', upc);
+                                    url = url.replace(':id', data[0][0]['id_inventario']);
                                     window.location.href = url;
                                 }
                             })

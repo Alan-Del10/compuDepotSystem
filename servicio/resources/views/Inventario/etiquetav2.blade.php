@@ -61,7 +61,7 @@
     <body>
         @for ($i = 0; $i < $total; $i++)
             <div class="row">
-                <div class="col-lg" style="padding-left:-60px; text-align: center; font-size: 12px">
+                <div class="col-lg" style="padding-left:-60px; text-align: center; font-size: 16px">
                     <b>${{$precio_max}}</b>
                 </div>
                 <div class="col-sm">

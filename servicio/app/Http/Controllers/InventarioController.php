@@ -169,7 +169,7 @@ class InventarioController extends Controller
                     //dd(Inventario::insert($json_agregar));
                     if(Inventario::insert($json_agregar)){
                         $id = DB::getPdo()->lastInsertId();
-                        if(count($request->compatibilidad)!=0){
+                        if($request->compatibilidad && count($request->compatibilidad)!=0){
                             $compatibilidad = $request->compatibilidad;
                             foreach($compatibilidad as $compa){
                                 $modelo2 = DB::table('modelo')->where('modelo', $compa['modelo'])->get();

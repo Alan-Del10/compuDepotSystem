@@ -95,6 +95,7 @@ class VentaController extends Controller
                     'id_usuario' => $usuario->id,
                     'estatus' => true
                 ];
+                DB::beginTransaction();
                 if(Venta::insert($json_agregar)){
                     $id = DB::getPdo()->lastInsertId();
                     //dd($request->ticket);
@@ -112,7 +113,16 @@ class VentaController extends Controller
                             'cantidad' => $detalle['piezas'],
                             'precio_momento' => $precio
                         ];
+                        $json_update = [
+                            'stock' => $inventario[0]->stock - $detalle['piezas']
+                        ];
+                        if(!DB::table('inventario')->groupBy('stock')->havingRaw('0 >= ?', [($inventario[0]->stock - $detalle['piezas'])])->where('id_inventario', $id_inventario)->update($json_update)){
+                            DB::rollBack();
+                            $request->flash();
+                            return redirect()->back()->withErrors('error', 'Algo pasó al intenar realizar la venta!');
+                        }
                         if(!DB::table('detalle_venta')->insert($json_detalle)){
+                            DB::rollBack();
                             $request->flash();
                             return redirect()->back()->withErrors('error', 'Algo pasó al intenar realizar la venta!');
                         }else{
@@ -128,12 +138,14 @@ class VentaController extends Controller
                                 ];
                                 //dd($json_pago);
                                 if(!DB::table('venta_pago')->insert($json_pago)){
+                                    DB::rollBack();
                                     $request->flash();
                                     return redirect()->back()->withErrors('error', 'Algo pasó al intenar realizar la venta!');
                                 }
                             }
                         }
                     }
+                    DB::commit();
                     $this->imprimirTicketVentaV2($id);
                     return ['response'=>'success', 'message'=>'Se realizó correctamente la venta!.'];
                 }else{
@@ -204,7 +216,8 @@ class VentaController extends Controller
             ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
             ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')
             ->leftJoin('color', 'color.id_color', 'inventario.id_color')
-            ->leftJoin('capacidad', 'capacidad.id_capacidad', 'inventario.id_capacidad')->where('upc', $request->upc)->get();
+            ->leftJoin('capacidad', 'capacidad.id_capacidad', 'inventario.id_capacidad')->where('upc', $request->upc)
+            ->where('stock', '>', 0)->get();
             if(count($articulo) > 0){
                 foreach($articulo as $art){
                     $id_inventario = $art->id_inventario;

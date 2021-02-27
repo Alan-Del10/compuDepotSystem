@@ -4,7 +4,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 id="header-pagina">Agregar Inventario</h1>
+                    <h1 id="header-pagina">Agregar Corte de Caja</h1>
                 </div>
                 <div class="col-sm-6">
                 </div>
@@ -917,7 +917,6 @@
             $('#precioMax').val($('#costo').val() * 1.20);
             $('#mayoreo').val($('#costo').val() * 1.20);
         });
-        //Limpia los datalist cada que se hace un click
         $('input[list]').on('click', function(){
             $(this).val("");
         });

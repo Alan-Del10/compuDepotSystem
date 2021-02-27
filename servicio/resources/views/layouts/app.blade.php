@@ -349,13 +349,7 @@
                         <li class="nav-item">
                             <a href="{{route("CorteCaja.create")}}" class="nav-link">
                             <i class="fas fa-plus nav-icon"></i>
-                            <p>Agregar Corte de Caja Inicial</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{route("CorteCaja.create")}}" class="nav-link">
-                            <i class="fas fa-plus nav-icon"></i>
-                            <p>Agregar Corte de Caja Inicial</p>
+                            <p>Agregar Corte de Caja</p>
                             </a>
                         </li>
                     </ul>
