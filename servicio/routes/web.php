@@ -86,7 +86,7 @@ Route::get('/inventario/verificarUPC', 'InventarioController@verificarUPC')->nam
 Route::get('/inventario/agregarCapacidad','InventarioController@agregarCapacidad')->name('agregarCapacidad')->middleware('auth');
 Route::get('/inventario/agregarProveedor','InventarioController@agregarProveedor')->name('agregarProveedorInventario')->middleware('auth');
 Route::get('/inventario/etiqueta','InventarioController@imprimirEtiqueta')->name('etiquetaInventario')->middleware('auth');
-
+Route::get('/inventario/calcularUPC','InventarioController@calculoUPC')->name('calculoUPC')->middleware('auth');
 
 
 //Capacidad routes

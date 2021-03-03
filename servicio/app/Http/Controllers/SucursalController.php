@@ -47,7 +47,8 @@ class SucursalController extends Controller
             $validator = Validator::make($request->all(), [
                 'sucursal' => 'required|max:200',
                 'local' => 'nullable|max:45',
-                'direccion' => 'nullable|max:200'
+                'direccion' => 'nullable|max:200',
+                'politicas' => 'nullable|max:9999'
             ]);
             $fileName = "";
             if ($request->has('imagenSucursal')) {
@@ -75,7 +76,8 @@ class SucursalController extends Controller
                     'sucursal' => $request->sucursal,
                     'local' => $request->local,
                     'direccion' => $request->direccion,
-                    'logo' => $fileName
+                    'logo' => $fileName,
+                    'politicas' => $request->politicas
                 ]);
                 return redirect()->back()->with('message', 'Se agregó correctamente la sucursal.');
             }
@@ -124,10 +126,12 @@ class SucursalController extends Controller
             $validator = Validator::make($data, [
                 'sucursal' => 'required|max:200',
                 'local' => 'nullable|max:45',
-                'direccion' => 'nullable|max:200'
+                'direccion' => 'nullable|max:200',
+                'politicas' => 'nullable|max:9999'
             ]);
             $fileName = "";
             if ($request->has('imagenSucursal')) {
+
                 $image      = $request->file('imagenSucursal');
                 $fileName   = $request->sucursal.'.'. $image->getClientOriginalExtension();
                 $img = Image::make($image->getRealPath());
@@ -143,24 +147,27 @@ class SucursalController extends Controller
                 }
                 Storage::disk('local')->put('public/sucursales'.'/'.$fileName, $img, 'public');
             }else{
-                $verificarImagen = DB::table('sucursal')->where('sucursal', $request->sucursal)->where('logo', '!=', null)->get();
-                if(count($verificarImagen) > 0) {
-                    $img = $this->convertToJSON($verificarImagen);
-                    $fileName = $img[0]->imagen;
 
+                $verificarImagen = DB::table('sucursal')->where('sucursal', $request->sucursal)->where('logo', '!=', null)->get();
+
+                if(count($verificarImagen) > 0 || $verificarImagen == "") {
+                    $fileName = $verificarImagen[0]->logo;
                 }
             }
             $sucursal = Sucursal::find($id);
+
             //Si encuentra datos erroneos los regresa con un mensaje de error
             if($validator->fails()){
                 return redirect()->back()->withErrors($validator);
             }else{
                 //Validamos que se haya modificado la información y regresamos un mensaje sobre el estado
+
                 $json_actualizar = [
                     'sucursal' => $request->sucursal,
                     'local' => $request->local,
                     'direccion' => $request->direccion,
-                    'logo' => $fileName
+                    'logo' => $fileName,
+                    'politicas' => $request->politicas
                 ];
 
                 if($sucursal->update($json_actualizar)){

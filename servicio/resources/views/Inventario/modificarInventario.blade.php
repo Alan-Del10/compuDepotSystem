@@ -213,17 +213,21 @@
                                     <h4 class="col-12">Costo y Stock</h4>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="costo" class="col-sm-2 col-form-label">Costo ($)</label>
+                                    <label for="costo" class="col-sm-1 col-form-label">Costo ($)</label>
                                     <div class="col-sm-2">
                                         <input type="number" class="form-control @error('costo') is-invalid @enderror" id="costo" name="costo" placeholder="Costo" step="0.01" value="{{ old('costo', $inventario[0]->costo)}}" >
                                     </div>
-                                    <label for="stock" class="col-sm-2 col-form-label">Stock (pz)</label>
+                                    <label for="stock" class="col-sm-1 col-form-label">Stock (pz)</label>
                                     <div class="col-sm-2">
                                         <input type="number" class="form-control @error('stock') is-invalid @enderror" id="stock" name="stock" placeholder="Stock" value="{{ old('stock', $inventario[0]->stock)}}" >
                                     </div>
-                                    <label for="stockMin" class="col-sm-2 col-form-label">Stock <. (pz)</label>
+                                    <label for="stockMin" class="col-sm-1 col-form-label">Stock <. (pz)</label>
                                     <div class="col-sm-2">
                                         <input type="number" class="form-control @error('stockMin') is-invalid @enderror" id="stockMin" name="stockMin" placeholder="Stock Mínimo" value="{{ old('stockMin', $inventario[0]->stock_min)}}" >
+                                    </div>
+                                    <label for="etiquetas" class="col-sm-1 col-form-label">Etiquetas</label>
+                                    <div class="col-sm-2">
+                                        <input type="number" class="form-control @error('etiquetas') is-invalid @enderror" id="etiquetas" name="etiquetas" placeholder="No. Etiquetas" value="{{ old('etiquetas', $inventario[0]->stock)}}">
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -336,6 +340,7 @@
             upc = $(this).val();
             upc = upc.toString();
             if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);
+            calcularUPC(upc);
             if(upc.length == 12 || upc.length == 13 || upc.length == 14){
                 $.ajax({
                     type: "get",
@@ -935,6 +940,7 @@
         //Llena el stock mínimo dependiendo del stock
         $('#stock').on('input', function(){
             $('#stockMin').val("1");
+            $('#etiquetas').val($('#stock').val());
         });
         //Llena los precios del formulario
         $('#costo').on('input', function(){
@@ -945,6 +951,33 @@
         $('input[list]').on('click', function(){
             $(this).val("");
         });
+        //Función que cálcula el UPC dando 11 dígitos
+        function calcularUPC(data){
+            if(data.length == 11){
+                upc = data.split('');
+                par = 0;
+                impar = 0;
+                for (i = 0; i < upc.length; i++) {
+                    if((i+1) % 2 == 0){
+                        par = parseInt(par) + parseInt(upc[i]);
+                    }
+                    else{
+                        impar = parseInt(impar) + parseInt(upc[i]);
+                    }
+                }
+                impar = impar * 3;
+                total = impar + par;
+                mod = parseInt(total) % 10;
+                x12 = 0;
+                if(mod != 0){
+                    x12 = 10 - mod;
+                }
+                upc = upc.join('');
+                upc = upc.toString()
+                upc = upc.concat('', x12.toString());
+                $('#upc').val(upc);
+            }
+        }
     </script>
 @endsection
 

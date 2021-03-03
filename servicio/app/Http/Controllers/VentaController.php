@@ -14,15 +14,18 @@ use DateTime;
 use Illuminate\Support\Facades\Auth;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
+use Mike42\Escpos\Printer as Print2;
 /*use Mike42\Escpos\CapabilityProfile;
 use Mike42\Escpos\Printer;*/
 use Mike42\Escpos\EscposImage;
 use Image;
 use Illuminate\Support\Facades\Storage;
+use NumberFormatter;
 use Printing;
 use Rawilk\Printing\Contracts\Printer;
 use Rawilk\Printing\PrintTask;
 use Rawilk\Printing\Receipts\ReceiptPrinter;
+use Milon\Barcode\DNS1D;
 class VentaController extends Controller
 {
     /**
@@ -61,6 +64,7 @@ class VentaController extends Controller
     {
         //dd($request);
         //Venta::create($request->all());
+        DB::beginTransaction();
         try {
             //Validamos los campos de la base de datos, para no aceptar información erronea
             //dd($request->totales['subtotal']);
@@ -95,7 +99,7 @@ class VentaController extends Controller
                     'id_usuario' => $usuario->id,
                     'estatus' => true
                 ];
-                DB::beginTransaction();
+
                 if(Venta::insert($json_agregar)){
                     $id = DB::getPdo()->lastInsertId();
                     //dd($request->ticket);
@@ -116,15 +120,15 @@ class VentaController extends Controller
                         $json_update = [
                             'stock' => $inventario[0]->stock - $detalle['piezas']
                         ];
-                        if(!DB::table('inventario')->groupBy('stock')->havingRaw('0 >= ?', [($inventario[0]->stock - $detalle['piezas'])])->where('id_inventario', $id_inventario)->update($json_update)){
-                            DB::rollBack();
+                        if(!DB::table('inventario')->groupBy('stock')->havingRaw('? >= 0', [($inventario[0]->stock - $detalle['piezas'])])->where('id_inventario', $id_inventario)->update($json_update)){
                             $request->flash();
-                            return redirect()->back()->withErrors('error', 'Algo pasó al intenar realizar la venta!');
+                            DB::rollBack();
+                            return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta, no tienes stock suficiente!'];
                         }
                         if(!DB::table('detalle_venta')->insert($json_detalle)){
-                            DB::rollBack();
                             $request->flash();
-                            return redirect()->back()->withErrors('error', 'Algo pasó al intenar realizar la venta!');
+                            DB::rollBack();
+                            return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta, tu ticket tiene algo mal!'];
                         }else{
                             foreach($request->formas_pago as $forma){
                                 $forma_pago = DB::table('forma_de_pago')->where('forma_pago', $forma['forma'])->get();
@@ -138,25 +142,31 @@ class VentaController extends Controller
                                 ];
                                 //dd($json_pago);
                                 if(!DB::table('venta_pago')->insert($json_pago)){
-                                    DB::rollBack();
                                     $request->flash();
-                                    return redirect()->back()->withErrors('error', 'Algo pasó al intenar realizar la venta!');
+                                    DB::rollBack();
+                                    return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta, tus formas de pago pueden estar mal!'];
                                 }
                             }
                         }
                     }
-                    DB::commit();
+
                     $this->imprimirTicketVentaV2($id);
+                    DB::commit();
                     return ['response'=>'success', 'message'=>'Se realizó correctamente la venta!.'];
+
                 }else{
                     $request->flash();
-                    return redirect()->back()->withErrors('error', 'Algo pasó al intenar realizar la venta!');
+                    DB::rollBack();
+                    return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta, no pudimos crear la venta!'];
                 }
+
             //}
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             $request->flash();
-            return redirect()->back()->withErrors($th);
+            DB::rollBack();
+            return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta!'];
         }
+        DB::commit();
     }
 
     /**
@@ -210,6 +220,7 @@ class VentaController extends Controller
      * @return Response
      */
     public function verificarUPCVenta(Request $request){
+
         try {
             $articulo = DB::table('inventario')
             ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
@@ -276,8 +287,8 @@ class VentaController extends Controller
         $impresora->setJustification(Printer::JUSTIFY_RIGHT);
         $impresora->text("________\n");
         $impresora->setJustification(Printer::JUSTIFY_LEFT);
-        $impresora->text("  IVA(%16)                ".$venta[0]->iva."\n");
-        $impresora->text("  TOTAL $                 ".$venta[0]->total."\n");
+        $impresora->text("  IVA(%16)               ".$venta[0]->iva."\n");
+        $impresora->text("  TOTAL $               ".$venta[0]->total."\n");
         $impresora->setJustification(Printer::JUSTIFY_CENTER);
         $impresora->text("_______________________\n");
         $impresora->setJustification(Printer::JUSTIFY_LEFT);
@@ -290,7 +301,7 @@ class VentaController extends Controller
 
     public function imprimirTicketVentaV2($id_venta){
 
-        $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'cliente.*', 'usuario.*')
+        $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'sucursal.politicas as politicas', 'cliente.*', 'usuario.*')
         ->where('id_venta', $id_venta)
         ->leftJoin('usuario', 'usuario.id', 'venta.id_usuario')
         ->leftJoin('sucursal', 'sucursal.id_sucursal', 'venta.id_sucursal')
@@ -304,6 +315,11 @@ class VentaController extends Controller
         foreach($detalle_venta as $detalle){
             $productos .= $detalle->cantidad." ".substr($detalle->titulo_inventario,0, 37)." $".$detalle->precio_momento."\n";
         }
+        $formas = "";
+        foreach($pago_venta as $pago){
+            $formas .= $pago->forma_pago."  $".$pago->monto."\n";
+        }
+        $totalTexto = new NumberFormatter("es", NumberFormatter::SPELLOUT);
         $receipt = (string) (new ReceiptPrinter)
             ->centerAlign()
             ->bitImage($img)
@@ -325,24 +341,42 @@ class VentaController extends Controller
             ->setTextSize(1,1)
             ->text("Producto                                Prec.")
             ->text($productos)
-            ->text("  SUBTOTAL                              $".$venta[0]->subtotal)
+            ->text("  SUBTOTAL                             $".$venta[0]->subtotal)
             ->rightAlign()
             ->line()
             ->leftAlign()
-            ->text("  IVA(%16)                                  $".$venta[0]->iva)
-            ->text("  TOTAL($)                              $".$venta[0]->total)
+            ->text("  IVA(%16)                             $".$venta[0]->iva)
+            ->text("  TOTAL($)                             $".$venta[0]->total)
+            ->text("  ".$totalTexto->format($venta[0]->total))
             ->centerAlign()
             ->text("_____________________________________________")
             ->leftAlign()
             ->text("Atendid@ por: ".$venta[0]->name)
             ->text("Fecha: ".$venta[0]->fecha_venta)
             ->text("Ticket No. ".$venta[0]->id_venta)
+            ->setTextSize(1,2)
+            ->text("_____________________________________________")
+            ->centerAlign()
+            ->text("Formas de Pago")
+            ->setTextSize(1,1)
+            ->text($formas)
+            ->setTextSize(1,2)
+            ->text("_____________________________________________")
+            ->centerAlign()
+            ->text("Politicas")
+            ->setTextSize(1,1)
+            ->leftAlign()
+            ->text($venta[0]->politicas)
+            ->feed(1)
+            ->centerAlign()
+            ->barcode(strval($venta[0]->id_venta))
             ->feed(4)
             ->cut();
 
         Printing::newPrintTask()
             ->printer(70134223)
             ->content($receipt)
+            ->copies(2)
             ->send();
     }
 }

@@ -235,7 +235,7 @@
                     <!-- /.card-footer -->
                 </div>
             </div>
-            <div class="alert alert-success" id="mensajeVenta" style="display:none">
+            <div class="alert" id="mensajeVenta" style="display:none">
                 <ul>
                     Venta realizada correctamente!
                 </ul>
@@ -487,7 +487,15 @@
                         'X-CSRF-TOKEN': "{{ csrf_token() }}"
                     },
                     success: function(response){
-                        $('#mensajeVenta').show();
+                        if(response.response == "success"){
+                            $('#mensajeVenta ul').text(response.message);
+                            $('#mensajeVenta').removeClass('alert-danger').addClass('alert-success');
+                            $('#mensajeVenta').show();
+                        }else{
+                            $('#mensajeVenta ul').text(response.message);
+                            $('#mensajeVenta').removeClass('alert-success').addClass('alert-danger');
+                            $('#mensajeVenta').show();
+                        }
                         limpiarFormulario();
                     },
                     error: function(e){

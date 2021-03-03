@@ -50,6 +50,12 @@
                                 </div>
                                 <img src="" class="rounded mx-auto d-block" alt="" id="imagen">
                             </div>
+                            <div class="form-group row">
+                                <label for="politicas" class="col-sm-1 col-form-label">Políticas</label>
+                                <div class="col-sm-10">
+                                    <textarea class="form-control @error('politicas') is-invalid @enderror" id="politicas" rows="10" placeholder="Políticas" name="politicas" >{{ old('descripcion')}}</textarea>
+                                </div>
+                            </div>
 
                             <!-- /.card-body -->
                             <div class="card-footer">

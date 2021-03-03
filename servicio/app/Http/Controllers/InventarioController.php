@@ -184,7 +184,7 @@ class InventarioController extends Controller
                                 }
                             }
                         }
-                        $this->imprimirEtiqueta($id);
+                        $this->imprimirEtiqueta($id, $request->etiquetas);
                         return redirect()->back()->with('success', 'Se agregó correctamente el artículo.');
                     }else{
                         $request->flash();
@@ -255,6 +255,7 @@ class InventarioController extends Controller
                 'upc' => 'required|numeric|digits_between:12,14',
                 'categoria' => 'required',
                 'modelo' => 'required',
+                'marca' => 'required',
                 'color' => 'required',
                 'proveedor' => 'required',
                 'titulo' => 'nullable|max:100',
@@ -323,6 +324,7 @@ class InventarioController extends Controller
                     'upc' => $request->upc,
                     'id_categoria' => $categoria[0]->id_categoria,
                     'id_modelo' => $modelo[0]->id_modelo,
+                    'id_marca'  => $marca[0]->id_marca,
                     'id_proveedor' => $proveedor[0]->id_proveedor,
                     'titulo_inventario' => $request->titulo,
                     'descripcion_inventario' => $request->descripcion,
@@ -345,10 +347,11 @@ class InventarioController extends Controller
                 if($inventario->update($json_actualizar)){
                     if($request->compatibilidad && count($request->compatibilidad)!=0){
                         $compatibilidad = $request->compatibilidad;
+                        DB::table('compatibilidad')->where('id_inventario', $id)->delete();
                         foreach($compatibilidad as $compa){
                             $modelo2 = DB::table('modelo')->where('modelo', $compa['modelo'])->get();
                             $modelo2 = $this->comprobarConsultaDB($modelo2);
-                            DB::table('compatibilidad')->where('id_inventario', $id)->delete();
+
                             $insertarCompatibilidad = DB::table('compatibilidad')->insert([
                                 'id_inventario' => $id,
                                 'id_modelo' => $modelo2[0]->id_modelo
@@ -359,7 +362,7 @@ class InventarioController extends Controller
                             }
                         }
                     }
-                    $this->imprimirEtiqueta($id);
+                    $this->imprimirEtiqueta($id, $request->etiquetas);
                     return redirect()->back()->with('success', 'Se modificó correctamente el inventario.');
                 }else{
                     $request->flash();
@@ -813,7 +816,7 @@ class InventarioController extends Controller
         }
     }
 
-    public function imprimirEtiqueta($id_inventario){
+    public function imprimirEtiqueta($id_inventario, $etiquetas){
         $inventario = DB::table('inventario')->where('id_inventario', $id_inventario)
         ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')
         ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
@@ -849,6 +852,7 @@ class InventarioController extends Controller
             Storage::disk('local')->delete('public/inventario/etiqueta/'.$inventario[0]->upc.'-2.pdf');
         }
         $datos = [
+            'codigo' => $inventario[0]->upc,
             'precio_min' => $inventario[0]->precio_min,
             'precio_max' => $inventario[0]->precio_max,
             'categoria' => $inventario[0]->categoria,
@@ -856,7 +860,7 @@ class InventarioController extends Controller
             'modelo' => $inventario[0]->modelo,
             'color' => $inventario[0]->color,
             'compatibilidad' => $compatibilidadCadena,
-            'total' => $inventario[0]->stock
+            'total' => $etiquetas
         ];
         PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)
         ->save(storage_path('app\\public\\inventario\\etiqueta\\').$inventario[0]->upc.'-2.pdf');
@@ -865,5 +869,30 @@ class InventarioController extends Controller
         ->printer(70131599)
         ->file(storage_path('app\\public\\inventario\\etiqueta\\').$inventario[0]->upc.'-2.pdf')
         ->send();
+    }
+
+    public function calculoUPC(){
+        $upc = str_split('84279707275');
+        $par = 0;
+        $impar = 0;
+        for ($i = 0; $i < count($upc); $i++) {
+            if(($i+1) % 2 == 0){
+                $par += $upc[$i];
+            }
+            else{
+                $impar += $upc[$i];
+
+            }
+        }
+        $impar = $impar * 3;
+        $total = $impar + $par;
+        $mod = $total % 10;
+        $x12 = 0;
+        if($mod != 0){
+            $x12 = 10 - $mod;
+        }
+        $upc = implode($upc);
+        $upc.=$x12;
+        echo $upc;
     }
 }

@@ -49,7 +49,7 @@
                 border-width: 1px;
             }
             .absolute{
-                top: 10px;
+                top: 0px;
                 position: absolute;
                 z-index: -1;
             }
@@ -61,16 +61,27 @@
     <body>
         @for ($i = 0; $i < $total; $i++)
             <div class="row">
-                <div class="col-lg" style="padding-left:-60px; text-align: center; font-size: 16px">
-                    <b>${{$precio_max}}</b>
+                <div class="col-lg" style=" text-align: right; font-size: 16px">
+                    <b style="padding-right:20px;">${{$precio_max}}</b>
                 </div>
                 <div class="col-sm">
-                    <img src="{{asset('storage/sucursales/InCase.png')}}" height="35px" width="25px" alt="logo"/>
+                    <img src="{{asset('storage/sucursales/InCase.png')}}" class="absolute" height="45px" width="35px" alt="logo"/>
                     <!--<img src="{{ public_path('storage/sucursales/InCase.png')}}" height="35px" width="75px" alt="logo"/>-->
                 </div>
             </div>
             <div class="row" style="padding-left:-60px; text-align: center;">
-                <b>{{$categoria}}<br> {{$marca}} {{$modelo}} {{$color}}<br> {{$compatibilidad}}<br></b>
+                <div class="col-xl">
+                    <b>{{$categoria}}<br> {{$marca}} {{(strlen($modelo) > 15) ? substr($modelo, 0, -6) : $modelo}} {{(strlen($color) > 10) ? substr($color,0,-5) : $color}}<br> {{$compatibilidad}}<br></b>
+                </div>
+
+            </div>
+            <div class="row" style="padding-left:80px;">
+                {!! DNS1D::getBarcodeHTML($codigo, "UPCA", 2, 25) !!}
+            </div>
+            <div class="row" style="padding-left:-60px;">
+                <div class="col-xl" style="text-align: center; font-size: 14px">
+                    {{$codigo}}
+                </div>
             </div>
             @if ($total > 1 && $i+1 < $total)
             <div class="page-break"></div>
