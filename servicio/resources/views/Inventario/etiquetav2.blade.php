@@ -36,10 +36,6 @@
                 right: 0;
                 width: 10%;
             }
-            img {
-            -webkit-filter: invert(1);
-            filter: invert(1);
-            }
 
             .firma{
                 height: 20px;
@@ -76,7 +72,11 @@
 
             </div>
             <div class="row" style="padding-left:80px;">
-                {!! DNS1D::getBarcodeHTML($codigo, "UPCA", 2, 25) !!}
+                @if (strlen($codigo) == 12)
+                    {!! DNS1D::getBarcodeHTML($codigo, "UPCA", 2, 25) !!}
+                @elseif(strlen($codigo) == 13)
+                    {!! DNS1D::getBarcodeHTML($codigo, "EAN13", 2, 25) !!}
+                @endif
             </div>
             <div class="row" style="padding-left:-60px;">
                 <div class="col-xl" style="text-align: center; font-size: 14px">

@@ -275,7 +275,7 @@
             if(upc.length == 12 || upc.length == 13 || upc.length == 14){
                 $.ajax({
                     type: "get",
-                    url: "{{route('verificarUPC')}}",
+                    url: "{{route('verificarUPCVenta')}}",
                     data:{'upc' : $(this).val()},
                     success: function(data) {
                         //console.log(data);

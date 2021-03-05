@@ -126,8 +126,7 @@ class InventarioController extends Controller
                     }else{
                         $verificarImagen = DB::table('inventario')->where('upc', $request->upc)->where('imagen', '!=', null)->get();
                         if(count($verificarImagen) > 0) {
-                            $img = $this->convertToJSON($verificarImagen);
-                            $fileName = $img[0]->imagen;
+                            $fileName = $verificarImagen[0]->imagen;
 
                         }
                     }

@@ -102,6 +102,7 @@ Route::resource('Sucursal', SucursalController::class)->middleware('auth');
 //Venta routes
 Route::resource('Venta', VentaController::class)->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');
 Route::get('/venta/ticket', 'VentaController@imprimirTicketVentaV2')->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');
+Route::get('/venta/verificarUPC', 'VentaController@verificarUPCVenta')->name('verificarUPCVenta')->middleware('auth');
 
 //Corte de Caja routes
 Route::resource('CorteCaja', CorteCajaController::class)->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');

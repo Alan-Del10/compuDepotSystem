@@ -227,7 +227,7 @@
                                     </div>
                                     <label for="etiquetas" class="col-sm-1 col-form-label">Etiquetas</label>
                                     <div class="col-sm-2">
-                                        <input type="number" class="form-control @error('etiquetas') is-invalid @enderror" id="etiquetas" name="etiquetas" placeholder="No. Etiquetas" value="{{ old('etiquetas', $inventario[0]->stock)}}">
+                                        <input type="number" class="form-control @error('etiquetas') is-invalid @enderror" id="etiquetas" name="etiquetas" placeholder="No. Etiquetas" value="{{ $inventario[0]->stock}}">
                                     </div>
                                 </div>
                                 <div class="form-group row">
@@ -340,7 +340,7 @@
             upc = $(this).val();
             upc = upc.toString();
             if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);
-            calcularUPC(upc);
+            //calcularUPC(upc);
             if(upc.length == 12 || upc.length == 13 || upc.length == 14){
                 $.ajax({
                     type: "get",

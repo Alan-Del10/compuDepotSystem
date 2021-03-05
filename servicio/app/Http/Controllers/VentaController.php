@@ -312,13 +312,16 @@ class VentaController extends Controller
         $pago_venta = DB::table('venta_pago')->where('id_venta', $id_venta)
         ->leftJoin('forma_de_pago', 'forma_de_pago.id_forma_de_pago', 'venta_pago.id_forma_de_pago')->get();
         $productos = "";
+        $totalArticulos = 0;
         foreach($detalle_venta as $detalle){
             $productos .= $detalle->cantidad." ".substr($detalle->titulo_inventario,0, 37)." $".$detalle->precio_momento."\n";
+            $totalArticulos += $detalle->cantidad;
         }
         $formas = "";
         foreach($pago_venta as $pago){
             $formas .= $pago->forma_pago."  $".$pago->monto."\n";
         }
+
         $totalTexto = new NumberFormatter("es", NumberFormatter::SPELLOUT);
         $receipt = (string) (new ReceiptPrinter)
             ->centerAlign()
@@ -328,15 +331,15 @@ class VentaController extends Controller
             ->text($venta[0]->sucursal)
             ->setTextSize(1,1)
             ->text($venta[0]->direccion_sucursal)
+            ->line()
             ->setTextSize(1,2)
-            ->text("_____________________________________________")
             ->text("Datos Del Cliente")
             ->setTextSize(1,1)
             ->text($venta[0]->nombre_completo)
             ->text("Dirección: ".$venta[0]->direccion)
             ->text("Tel: ".$venta[0]->telefono)
             ->text("Email: ".$venta[0]->correo)
-            ->text("_____________________________________________")
+            ->line()
             ->leftAlign()
             ->setTextSize(1,1)
             ->text("Producto                                Prec.")
@@ -347,21 +350,22 @@ class VentaController extends Controller
             ->leftAlign()
             ->text("  IVA(%16)                             $".$venta[0]->iva)
             ->text("  TOTAL($)                             $".$venta[0]->total)
-            ->text("  ".$totalTexto->format($venta[0]->total))
+            ->text("  Total Articulos                       ".$totalArticulos)
+            ->text("  *".$totalTexto->format($venta[0]->total)." M.N.")
             ->centerAlign()
-            ->text("_____________________________________________")
+            ->line()
             ->leftAlign()
             ->text("Atendid@ por: ".$venta[0]->name)
             ->text("Fecha: ".$venta[0]->fecha_venta)
             ->text("Ticket No. ".$venta[0]->id_venta)
+            ->line()
             ->setTextSize(1,2)
-            ->text("_____________________________________________")
             ->centerAlign()
             ->text("Formas de Pago")
             ->setTextSize(1,1)
             ->text($formas)
+            ->line()
             ->setTextSize(1,2)
-            ->text("_____________________________________________")
             ->centerAlign()
             ->text("Politicas")
             ->setTextSize(1,1)
@@ -370,6 +374,12 @@ class VentaController extends Controller
             ->feed(1)
             ->centerAlign()
             ->barcode(strval($venta[0]->id_venta))
+            ->feed(1)
+            ->text("_________________________")
+            ->text("Firma")
+            ->feed()
+            ->rightAlign()
+            ->text("Desarrollado por Gesdra")
             ->feed(4)
             ->cut();
 

@@ -315,7 +315,7 @@
             upc = $(this).val();
             upc = upc.toString();
             if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);
-            calcularUPC(upc);
+            //calcularUPC(upc);
             if(upc.length == 12 || upc.length == 13 || upc.length == 14){
                 $.ajax({
                     type: "get",
