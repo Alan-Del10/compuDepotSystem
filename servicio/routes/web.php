@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Sucursal;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use App\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,6 +45,31 @@ Route::group(['guard' => 'admin'], function () {
 });
 Route::get('/home','InicioController@index')->name('home')->middleware('auth');
 
+//Ruta para validar credenciales para hacer distintas acciones
+Route::post('/validarPermiso', function (Request $request){
+    try {
+        $validador = Auth::validate($request->all());
+        if($validador){
+            $resultado = User::where('email', $request->email)
+            ->where(function($query) {
+                $query->where('guard', 'admin')
+                    ->orWhere('guard', 'sub_admin')
+                    ->orWhere('guard', 'root');
+            })
+            ->leftJoin('tipo_usuario', 'tipo_usuario.id_tipo_usuario', 'usuario.id_tipo_usuario')->get();
+            if($resultado->isEmpty()){
+                return false;
+            }else{
+                return true;
+            }
+        }else{
+            return false;
+        }
+    } catch (\Throwable $th) {
+        return $th;
+    }
+
+})->name('validarPermiso')->middleware('auth');
 //Ruta de la vista de dashboard
 Route::get('/dashboard','InicioController@dashboard')->name('dashboard')->middleware('auth');
 
@@ -88,6 +115,8 @@ Route::get('/inventario/agregarProveedor','InventarioController@agregarProveedor
 Route::get('/inventario/etiqueta','InventarioController@imprimirEtiqueta')->name('etiquetaInventario')->middleware('auth');
 Route::get('/inventario/calcularUPC','InventarioController@calculoUPC')->name('calculoUPC')->middleware('auth');
 
+//Inventario routes
+Route::resource('Compra', CompraController::class)->middleware('auth:root,admin,sub_admin,vendedor,servicio_cliente');
 
 //Capacidad routes
 Route::resource('Capacidad', CapacidadController::class)->middleware('auth');
@@ -101,7 +130,7 @@ Route::resource('Sucursal', SucursalController::class)->middleware('auth');
 
 //Venta routes
 Route::resource('Venta', VentaController::class)->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');
-Route::get('/venta/ticket', 'VentaController@imprimirTicketVentaV2')->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');
+Route::post('/venta/ticket', 'VentaController@reimprimirTicket')->name('ReimprimirTicket')->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');
 Route::get('/venta/verificarUPC', 'VentaController@verificarUPCVenta')->name('verificarUPCVenta')->middleware('auth');
 
 //Corte de Caja routes

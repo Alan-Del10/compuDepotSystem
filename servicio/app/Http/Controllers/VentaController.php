@@ -129,24 +129,24 @@ class VentaController extends Controller
                             $request->flash();
                             DB::rollBack();
                             return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta, tu ticket tiene algo mal!'];
-                        }else{
-                            foreach($request->formas_pago as $forma){
-                                $forma_pago = DB::table('forma_de_pago')->where('forma_pago', $forma['forma'])->get();
-                                if(count($forma_pago) > 0){
-                                    $id_forma_pago = $forma_pago[0]->id_forma_de_pago;
-                                }
-                                $json_pago = [
-                                    'id_venta' => $id,
-                                    'id_forma_de_pago' => $id_forma_pago,
-                                    'monto' => $forma['pago']
-                                ];
-                                //dd($json_pago);
-                                if(!DB::table('venta_pago')->insert($json_pago)){
-                                    $request->flash();
-                                    DB::rollBack();
-                                    return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta, tus formas de pago pueden estar mal!'];
-                                }
-                            }
+                        }
+                    }
+
+                    foreach($request->formas_pago as $forma){
+                        $forma_pago = DB::table('forma_de_pago')->where('forma_pago', $forma['forma'])->get();
+                        if(count($forma_pago) > 0){
+                            $id_forma_pago = $forma_pago[0]->id_forma_de_pago;
+                        }
+                        $json_pago = [
+                            'id_venta' => $id,
+                            'id_forma_de_pago' => $id_forma_pago,
+                            'monto' => $forma['pago']
+                        ];
+                        //dd($json_pago);
+                        if(!DB::table('venta_pago')->insert($json_pago)){
+                            $request->flash();
+                            DB::rollBack();
+                            return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta, tus formas de pago pueden estar mal!'];
                         }
                     }
 
@@ -314,7 +314,8 @@ class VentaController extends Controller
         $productos = "";
         $totalArticulos = 0;
         foreach($detalle_venta as $detalle){
-            $productos .= $detalle->cantidad." ".substr($detalle->titulo_inventario,0, 37)." $".$detalle->precio_momento."\n";
+            $productos .= $detalle->upc." ".$detalle->titulo_inventario."\n"
+                            ."            ".$detalle->cantidad."X          $".$detalle->precio_momento."           $".($detalle->precio_momento * $detalle->cantidad."\n");
             $totalArticulos += $detalle->cantidad;
         }
         $formas = "";
@@ -336,57 +337,62 @@ class VentaController extends Controller
             ->text("Datos Del Cliente")
             ->setTextSize(1,1)
             ->text($venta[0]->nombre_completo)
-            ->text("Dirección: ".$venta[0]->direccion)
+            ->text("Direccion: ".$venta[0]->direccion)
             ->text("Tel: ".$venta[0]->telefono)
             ->text("Email: ".$venta[0]->correo)
             ->line()
             ->leftAlign()
             ->setTextSize(1,1)
-            ->text("Producto                                Prec.")
+            ->text("C. barras       Producto")
+            ->text("        Cant. P.        Precio U.       Importe")
             ->text($productos)
-            ->text("  SUBTOTAL                             $".$venta[0]->subtotal)
-            ->rightAlign()
+            ->text("  SUBTOTAL                              $".$venta[0]->subtotal)
+            ->centerAlign()
             ->line()
             ->leftAlign()
             ->text("  IVA(%16)                             $".$venta[0]->iva)
             ->text("  TOTAL($)                             $".$venta[0]->total)
-            ->text("  Total Articulos                       ".$totalArticulos)
+            ->text("  Total Articulos                    ".$totalArticulos." pza(s).")
             ->text("  *".$totalTexto->format($venta[0]->total)." M.N.")
+            ->centerAlign()
+            ->line()
+            ->setTextSize(1,2)
+            ->text("Formas de Pago")
+            ->setTextSize(1,1)
+            ->text($formas)
             ->centerAlign()
             ->line()
             ->leftAlign()
             ->text("Atendid@ por: ".$venta[0]->name)
             ->text("Fecha: ".$venta[0]->fecha_venta)
             ->text("Ticket No. ".$venta[0]->id_venta)
+            ->centerAlign()
             ->line()
             ->setTextSize(1,2)
-            ->centerAlign()
-            ->text("Formas de Pago")
-            ->setTextSize(1,1)
-            ->text($formas)
-            ->line()
-            ->setTextSize(1,2)
-            ->centerAlign()
             ->text("Politicas")
             ->setTextSize(1,1)
             ->leftAlign()
             ->text($venta[0]->politicas)
-            ->feed(1)
             ->centerAlign()
-            ->barcode(strval($venta[0]->id_venta))
-            ->feed(1)
+            ->feed(3)
             ->text("_________________________")
             ->text("Firma")
-            ->feed()
+            ->feed(2)
+            ->barcode(strval($venta[0]->id_venta))
+            ->feed(3)
             ->rightAlign()
             ->text("Desarrollado por Gesdra")
-            ->feed(4)
+            ->feed(2)
             ->cut();
 
         Printing::newPrintTask()
             ->printer(70134223)
             ->content($receipt)
-            ->copies(2)
+            ->copies(1)
             ->send();
+    }
+
+    public function reimprimirTicket(Request $request){
+        $this->imprimirTicketVentaV2($request->id_venta);
     }
 }

@@ -62,7 +62,7 @@
                         <th>Subtotal</th>
                         <th>IVA</th>
                         <th>Total</th>
-                        <th>Acciones</th>
+                        <th colspan="2">Acciones</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -75,7 +75,10 @@
                             <td>{{$venta->subtotal}}</td>
                             <td>{{$venta->iva}}</td>
                             <td>{{$venta->total}}</td>
-                            <td><a href="#" class="btn btn-primary"><i class="far fa-edit"></i> Editar</a></td>
+                            <td>
+                                <!--<a href="#" class="btn btn-primary"><i class="far fa-edit"></i> Editar</a>-->
+                                <a href="#" class="btn btn-success" onclick="imprimirTicket($(this))"><i class="fas fa-file-invoice-dollar"></i> Ticket</a>
+                            </td>
                         </tr>
                         @endforeach
 
@@ -105,6 +108,17 @@
             var value = $(this).val().toLowerCase();
             console.log(getResult(value, ventas));
         });
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: false,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        })
 
         function getResult(filterBy, objList) {
             return objList.filter(function(obj) {
@@ -112,6 +126,98 @@
                     return item.indexOf(filterBy) >= 0;
                 });
             });
+        }
+
+        function imprimirTicket(venta) {
+            id_venta = venta.parent().siblings().eq(0).text();
+            Swal.mixin({
+                input: 'text',
+                confirmButtonText: 'Siguiente &rarr;',
+                showCancelButton: true,
+                cancelButtonText: 'Cancelar',
+                progressSteps: ['1', '2']
+            }).queue([
+                {
+                    title: 'Correo',
+                    text: 'Introduce el correo con privilegios'
+                },
+                {
+                    title: 'Contraseña',
+                    text: 'Introduce la contraseña del usuario',
+                    input: 'password'
+                },
+            ]).then((result) => {
+                if (result.value) {
+                    const answers = {
+                        'email' : result.value[0],
+                        'password' : result.value[1]
+                    };
+                    $.ajax({
+                        type: "post",
+                        url: "{{route('validarPermiso')}}",
+                        data: answers,
+                        headers: {
+                            'X-CSRF-TOKEN' : "{{ csrf_token() }}"
+                        },
+                        success: function(data) {
+                            console.log(data);
+                            if(data == true){
+                                $.ajax({
+                                    type: "post",
+                                    url: "{{route('ReimprimirTicket')}}",
+                                    data: {'id_venta' : id_venta},
+                                    headers: {
+                                        'X-CSRF-TOKEN' : "{{ csrf_token() }}"
+                                    },
+                                    success: function(data) {
+                                        Toast.fire({
+                                            icon: 'success',
+                                            title: 'Imprimiendo ticket...'
+                                        })
+                                    },
+                                    error: function(data) {
+                                        Toast.fire({
+                                            icon: 'error',
+                                            title: 'No se pudo imprimir el ticket!'
+                                        })
+                                    }
+                                });
+                            }else{
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: 'No tiene los permisos para esta acción!'
+                                })
+                            }
+                        },
+                        error: function(data) {
+                            Toast.fire({
+                                icon: 'error',
+                                title: 'No tiene los permisos para esta acción!'
+                            })
+                        }
+                    });
+                }
+            })
+            /*$.ajax({
+                type: "post",
+                url: "{{route('ReimprimirTicket')}}",
+                data: {'id_venta':id_venta},
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                },
+                success: function(data) {
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Imprimiendo ticket...'
+                    })
+                },
+                error: function(data) {
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'No se pudo imprimir el ticket!'
+                    })
+                }
+            });*/
         }
     </script>
 @endsection

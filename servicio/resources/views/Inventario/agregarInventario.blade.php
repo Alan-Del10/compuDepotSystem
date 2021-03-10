@@ -33,6 +33,9 @@
                                     <label for="upc" class="col-sm-2 col-form-label">UPC/EAN</label>
                                     <div class="col-sm-4 input-group">
                                         <input type="number" class="form-control @error('upc') is-invalid @enderror" name="upc" id="upc" placeholder="UPC" value="{{ old('upc')}}" minlength="12" maxlength="14" autofocus>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-warning" id="generarUPC" ><i class="fas fa-barcode"></i></button>
+                                        </div>
                                     </div>
                                     <label for="proveedor" class="col-sm-2 col-form-label">Proveedor</label>
                                     <div class="col-sm-4 input-group">
@@ -317,45 +320,49 @@
             if(this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);
             //calcularUPC(upc);
             if(upc.length == 12 || upc.length == 13 || upc.length == 14){
-                $.ajax({
-                    type: "get",
-                    url: "{{route('verificarUPC')}}",
-                    data:{'upc' : $(this).val()},
-                    success: function(data) {
-                        console.log(data);
-                        if(data.res == false){
-                            $('#header-pagina').text('Agregar Inventario');
-                            $('#alerta-upc').show();
-                            //Swal.fire("Oops", "Ese artículo no existe en el inventario, registralo!", "info");
-                            habilitarFormulario(false, data);
-                        }else{
-                            Swal.fire({
-                                title: 'Este artículo ya existe!',
-                                text: "Puede editar este artículo dando clic en el botón!",
-                                icon: 'warning',
-                                showCancelButton: false,
-                                confirmButtonColor: '#3085d6',
-                                confirmButtonText: 'Entendido!'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    var url = '{{ route("Inventario.edit", ":id") }}';
-                                    url = url.replace(':id', data[0][0]['id_inventario']);
-                                    window.location.href = url;
-                                }
-                            })
-                            /*$('#header-pagina').text('Editar Inventario');
-                            habilitarFormulario(true, data);*/
-                        }
-                    },
-                    error: function(data) {
-                        console.log(data);
-                        Swal.fire("Oops", "No se pudo agregar revisa correctamente la info!", "error");
-                    }
-                });
+                upcValidar(upc);
             }else{
 
             }
         });
+        //Consulta de upc
+        function upcValidar(upc){
+            $.ajax({
+                type: "get",
+                url: "{{route('verificarUPC')}}",
+                data:{'upc' : upc},
+                success: function(data) {
+                    console.log(data);
+                    if(data.res == false){
+                        $('#header-pagina').text('Agregar Inventario');
+                        $('#alerta-upc').show();
+                        //Swal.fire("Oops", "Ese artículo no existe en el inventario, registralo!", "info");
+                        habilitarFormulario(false, data);
+                    }else{
+                        Swal.fire({
+                            title: 'Este artículo ya existe!',
+                            text: "Puede editar este artículo dando clic en el botón!",
+                            icon: 'warning',
+                            showCancelButton: false,
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'Entendido!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                var url = '{{ route("Inventario.edit", ":id") }}';
+                                url = url.replace(':id', data[0][0]['id_inventario']);
+                                window.location.href = url;
+                            }
+                        })
+                        /*$('#header-pagina').text('Editar Inventario');
+                        habilitarFormulario(true, data);*/
+                    }
+                },
+                error: function(data) {
+                    console.log(data);
+                    Swal.fire("Oops", "No se pudo agregar revisa correctamente la info!", "error");
+                }
+            });
+        }
         //Función que desactiva la alerta de artículo no existente
         $('#boton-alerta').on('click', function(){
             $('#alerta-upc').hide();
@@ -927,6 +934,11 @@
         $('input[list]').on('click', function(){
             $(this).val("");
         });
+        //Función que manda a llamar el calculo del upc cundo hacen click en el botón de generar UPC
+        $('#generarUPC').on('click', function(){
+            data = $('#upc').val();
+            calcularUPC(data);
+        });
         //Función que cálcula el UPC dando 11 dígitos
         function calcularUPC(data){
             if(data.length == 11){
@@ -952,6 +964,7 @@
                 upc = upc.toString()
                 upc = upc.concat('', x12.toString());
                 $('#upc').val(upc);
+                upcValidar(upc);
             }
         }
     </script>

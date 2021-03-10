@@ -100,7 +100,7 @@
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-12 alert alert-warning fade show" style="display:none" id="alerta-upc">
-                                        <strong>Ops!</strong> Este artículo no está registrado.
+                                        <strong>Ops!</strong> Este artículo no tiene stock o no existe.
                                         <button type="button" id="boton-alerta" class="close">
                                             <span >&times;</span>
                                         </button>
@@ -151,22 +151,22 @@
                                         </ul>
                                     </div>
                                 </div>
-                                <div class="form-group row" id="agregado">
+                                <div class="form-group row agregado">
                                     <label for="forma" class="col-sm-2 col-form-label">Forma</label>
                                     <div class="col-sm-4">
-                                        <input type="text" list="formaData" class="form-control" id="forma" placeholder="Forma">
+                                        <input type="text" list="formaData" class="form-control" id="forma" name="formas_pago[][forma]" placeholder="Forma">
                                         <datalist id="formaData">
                                             @foreach ($formas_pago as $forma)
                                             <option value="{{$forma->forma_pago}}">{{$forma->forma_pago}}</option>
                                             @endforeach
                                         </datalist>
                                     </div>
-                                    <label for="vida" class="col-sm-2 col-form-label">Pago</label>
+                                    <label for="pago" class="col-sm-2 col-form-label">Pago</label>
                                     <div class="col-sm-4 input-group">
                                         <div class="input-group-prepend">
                                             <div class="input-group-text">$</div>
                                         </div>
-                                        <input type="number" class="form-control vida" id="pago" step="0.01" onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 46 && event.charCode <= 57" placeholder="Cantidad">
+                                        <input type="number" class="form-control vida" id="pago" step="0.01" name="formas_pago[][pago]" onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 46 && event.charCode <= 57" placeholder="Cantidad">
                                     </div>
                                 </div>
                             </div>
@@ -267,6 +267,7 @@
         let iva = 0.0;
         let total = 0.0;
         let cliente = 0;
+        let permisoPrecios =  false;
         //Función para detectar cunado se ingrese un UPC
         $('#upc').on('input', function(){
             upc = $(this).val();
@@ -281,48 +282,36 @@
                         //console.log(data);
                         if(data.res == false){
                             $('#alerta-upc').show();
-                            //Swal.fire("Oops", "Ese artículo no existe en el inventario, registralo!", "info");
-                            //habilitarFormulario(false, data);
                         }else{
                             $('#upc').val("");
                             cantidades = "";
                             for(let i = 1; i < data[0][0].stock + 1; i++){
                                 cantidades += '<option value="'+i+'">'+i+'</option>';
                             }
-
                             $('#ticketTabla').append(
                                 '<tr>'+
-                                    '<td scope="row" id="upc_art">'+data[0][0].upc+'</td>'+
-                                    '<td>'+data[0][0].titulo_inventario+'</td>'+
-                                    '<td class="d-none d-lg-table-cell">'+data[0][0].marca+'</td>'+
-                                    '<td class="d-none d-lg-table-cell">'+data[0][0].modelo+'</td>'+
-                                    '<td class="d-none d-lg-table-cell">'+data[0][0].color+'</td>'+
+                                    '<td scope="row" id="upc_art"><small>'+data[0][0].upc+'</small></td>'+
+                                    '<td><small>'+data[0][0].titulo_inventario+'</small></td>'+
+                                    '<td class="d-none d-lg-table-cell"><small>'+data[0][0].marca+'</small></td>'+
+                                    '<td class="d-none d-lg-table-cell"><small>'+data[0][0].modelo+'</small></td>'+
+                                    '<td class="d-none d-lg-table-cell"><small>'+data[0][0].color+'</small></td>'+
                                     '<td>'+
-                                        '<select id="cantidad" class="form-control form-control-sm" onchange="cambiarCantidadProducto($(this).parent().parent())" disabled>'+
+                                        '<select id="cantidad" class="form-control form-control-sm" onchange="obtenerTotal()">'+
                                             cantidades+
                                         '</select>'+
                                     '</td>'+
-                                    '<td id="precio" class="precio">'+data[0][0].precio_max+'</td>'+
-                                    '<td><a href="#" class="btn btn-danger form-control form-control-sm" onclick="quitarProducto($(this).parent().parent())"><i class="far fa-trash-alt"></i></a></td>'+
+                                    '<td>'+
+                                        '<input type="number" list="precioData" class="form-control form-control-sm" id="precio" placeholder="Precio" value="'+data[0][0].precio_max+'" onchange="comprobarPrecioProducto($(this));" min="1">'+
+                                        '<datalist id="precioData">'+
+                                            '<option value="'+data[0][0].precio_min+'">'+data[0][0].precio_min+'</option>'+
+                                            '<option value="'+data[0][0].precio_max+'">'+data[0][0].precio_max+'</option>'+
+                                            '<option value="'+data[0][0].precio_mayoreo+'">'+data[0][0].precio_mayoreo+'</option>'+
+                                        '</datalist>'+
+                                    '</td>'+
+                                    '<td><a href="#" class="btn btn-danger form-control form-control-sm" onclick="quitarProducto($(this))"><i class="far fa-trash-alt"></i></a></td>'+
                                 '</tr>'
                             );
-                            obtenerTotal(1, data[0][0].precio_max, 0);
-                            /*Swal.fire({
-                                title: 'Este artículo ya existe!',
-                                text: "Puede editar este artículo dando clic en el botón!",
-                                icon: 'warning',
-                                showCancelButton: false,
-                                confirmButtonColor: '#3085d6',
-                                confirmButtonText: 'Entendido!'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    var url = '{{ route("Inventario.edit", ":id") }}';
-                                    url = url.replace(':id', upc);
-                                    window.location.href = url;
-                                }
-                            })*/
-                            /*$('#header-pagina').text('Editar Inventario');
-                            habilitarFormulario(true, data);*/
+                            obtenerTotal();
                         }
                     },
                     error: function(data) {
@@ -338,7 +327,7 @@
         $('#agregarFormaPago').on('click', function(){
             $('#formaPago').append(
                 '<hr>'+
-                '<div class="form-group row" id="agregado">'+
+                '<div class="form-group row agregado">'+
                     '<label for="forma" class="col-sm-2 col-form-label">Forma</label>'+
                     '<div class="col-sm-4">'+
                         '<input type="text" list="formaData" class="form-control" id="forma" name="formas_pago[][forma]" placeholder="Forma">'+
@@ -360,23 +349,19 @@
             );
         });
         //Función para sumar o restar el total del ticket
-        function obtenerTotal(cantidad_pza, cantidad, tipo){
-            valor = cantidad_pza * cantidad;
-            if(tipo == 0){
-                subtotal += valor;
-                iva = subtotal * .16;
-                total = subtotal + iva;
-                $('#subtotal h2').html('$'+subtotal);
-                $('#iva h2').html('$'+iva);
-                $('#total h2').html('$'+total);
-            }else if(tipo == 1){
-                subtotal -= valor;
-                iva = subtotal * .16;
-                total = subtotal + iva;
-                $('#subtotal h2').html('$'+subtotal);
-                $('#iva h2').html('$'+iva);
-                $('#total h2').html('$'+total);
-            }
+        function obtenerTotal(){
+            let totalProducto = 0;
+            $.each($('#ticketTabla').children(), function(){
+                cant_pza = ($(this).find('#cantidad').prop('selectedIndex') + 1);
+                cant = $(this).find('#precio').val();
+                totalProducto += (cant * cant_pza);
+            });
+            subtotal = totalProducto;
+            iva = subtotal * .16;
+            total = subtotal + iva;
+            $('#subtotal h2').html('$'+subtotal);
+            $('#iva h2').html('$'+iva);
+            $('#total h2').html('$'+total);
         }
         //Función para comprobar la existencia d eun producto en el ticket, tiene error en el return
         function comprobarProducto(producto){
@@ -398,17 +383,87 @@
         }
         //Función que quita productos del ticket
         function quitarProducto(elem){
-            elem.remove();
-            cant_pza = elem.children().find('#cantidad').prop('selectedIndex');
-            cant = elem.find('#precio').text();
-            console.log(cant);
-            obtenerTotal(cant_pza + 1, cant, 1);
+            elem.parent().parent().remove();
+            obtenerTotal();
         }
         //Función que módifica los totales al cambiar de cantidad productos del ticket
-        function cambiarCantidadProducto(elem){
-            cant_pza = elem.children().find('#cantidad').prop('selectedIndex');
-            cant = elem.parent().find('#precio').text();
-            obtenerTotal(cant_pza, cant, 0);
+        function comprobarPrecioProducto(elem){
+            valor_min = 0;
+            valor_max = 0;
+            elem.parent().find('#precioData option').each(function(i, x){
+                console.log(i);
+                if(i == 0){
+                    valor_min = $(this).text();
+                }else if(i == 1){
+                    valor_max = $(this).text();
+                }
+            });
+            if(elem.val() < valor_min && permisoPrecios == false){
+                Swal.mixin({
+                    input: 'text',
+                    title: 'Para vender a menos del precio mínimo es necesaria una autorización',
+                    confirmButtonText: 'Siguiente &rarr;',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    progressSteps: ['1', '2']
+                }).queue([
+                    {
+                        title: 'Correo',
+                        text: 'Introduce el correo con privilegios'
+                    },
+                    {
+                        title: 'Contraseña',
+                        text: 'Introduce la contraseña del usuario',
+                        input: 'password'
+                    },
+                ]).then((result) => {
+                    if (result.value) {
+                        const answers = {
+                            'email' : result.value[0],
+                            'password' : result.value[1]
+                        };
+                        $.ajax({
+                            type: "post",
+                            url: "{{route('validarPermiso')}}",
+                            data: answers,
+                            headers: {
+                                'X-CSRF-TOKEN' : "{{ csrf_token() }}"
+                            },
+                            success: function(data) {
+                                if(data == true){
+                                    Toast.fire({
+                                        icon: 'success',
+                                        title: 'Permiso habilitado!'
+                                    })
+                                    permisoPrecios = true;
+                                    obtenerTotal();
+                                }else{
+                                    elem.val(valor_max);
+                                    Toast.fire({
+                                        icon: 'error',
+                                        title: 'No tiene los permisos para esta acción!'
+                                    })
+                                }
+                            },
+                            error: function(data) {
+                                elem.val(valor_max);
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: 'No tiene los permisos para esta acción!'
+                                })
+                            }
+                        });
+                    }else{
+                        elem.val(valor_max);
+                        Toast.fire({
+                            icon: 'info',
+                            title: 'Sin cambio de precios!'
+                        })
+                    }
+                })
+            }else{
+                obtenerTotal();
+            }
         }
         //Función para habílitar el botón que envía los datos el controlador
         function checkFinalizarVenta(){
@@ -445,7 +500,7 @@
                     }
                 );
             });
-            $.each($('#formaPago').find('#agregado'), function(i, x){
+            $.each($('#formaPago').find('.agregado'), function(i, x){
                 formas_pago.push(
                     {
                         'forma' : $(this).children().find('#forma').val(),
