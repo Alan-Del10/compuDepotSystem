@@ -198,7 +198,7 @@
                     with font-awesome or any other icon font library -->
 
                 <li class="nav-item">
-                    <a href="{{route('home')}}" class="nav-link">
+                    <a href="{{route('dashboard')}}" class="nav-link">
                     <i class="nav-icon fas fa-th"></i>
                     <p>
                         Dashboard
@@ -397,6 +397,24 @@
                         Proveedores
                     </p>
                     </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-book"></i>
+                    <p>
+                        Bitácoras
+                        <i class="fas fa-angle-left right"></i>
+                        <span class="badge badge-info right">1</span>
+                    </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{route('BitacoraGeneral.index')}}" class="nav-link">
+                            <i class="fas fa-list-alt nav-icon"></i>
+                            <p>Bitácora General</p>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a href="pages/calendar.html" class="nav-link">

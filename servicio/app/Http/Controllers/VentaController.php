@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\BitacoraGeneral;
 use App\FormaPago;
 use App\Servicio;
 use App\Venta;
@@ -13,19 +14,13 @@ use Illuminate\Support\Facades\DB;
 use DateTime;
 use Illuminate\Support\Facades\Auth;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
-use Mike42\Escpos\PrintConnectors\FilePrintConnector;
-use Mike42\Escpos\Printer as Print2;
 /*use Mike42\Escpos\CapabilityProfile;
 use Mike42\Escpos\Printer;*/
 use Mike42\Escpos\EscposImage;
-use Image;
-use Illuminate\Support\Facades\Storage;
 use NumberFormatter;
 use Printing;
 use Rawilk\Printing\Contracts\Printer;
-use Rawilk\Printing\PrintTask;
 use Rawilk\Printing\Receipts\ReceiptPrinter;
-use Milon\Barcode\DNS1D;
 class VentaController extends Controller
 {
     /**
@@ -35,7 +30,7 @@ class VentaController extends Controller
      */
     public function index()
     {
-        $ventas = Venta::orderby('id_venta','asc')
+        $ventas = Venta::orderby('id_venta','desc')
         ->leftJoin('usuario', 'usuario.id', 'venta.id_usuario')
         ->leftJoin('cliente', 'cliente.id_cliente', 'venta.id_cliente')->paginate(10);
         return view('Venta.venta', compact('ventas'));
@@ -62,7 +57,6 @@ class VentaController extends Controller
      */
     public function store(Request $request)
     {
-        //dd($request);
         //Venta::create($request->all());
         DB::beginTransaction();
         try {
@@ -111,16 +105,17 @@ class VentaController extends Controller
                             $id_inventario = $inventario[0]->id_inventario;
                             $precio = $inventario[0]->precio_max;
                         }
+                        $detalle_inventario = DB::table('detalle_inventario')->where('id_inventario', $id_inventario)->where('id_sucursal', $usuario->id_sucursal)->get();
                         $json_detalle = [
                             'id_venta' => $id,
                             'id_inventario' => $id_inventario,
                             'cantidad' => $detalle['piezas'],
-                            'precio_momento' => $precio
+                            'precio_momento' => $detalle['precio']
                         ];
                         $json_update = [
-                            'stock' => $inventario[0]->stock - $detalle['piezas']
+                            'stock' => $detalle_inventario[0]->stock - $detalle['piezas']
                         ];
-                        if(!DB::table('inventario')->groupBy('stock')->havingRaw('? >= 0', [($inventario[0]->stock - $detalle['piezas'])])->where('id_inventario', $id_inventario)->update($json_update)){
+                        if(!DB::table('detalle_inventario')->groupBy('stock')->havingRaw('? >= 0', [($detalle_inventario[0]->stock - $detalle['piezas'])])->where('id_detalle_inventario', $detalle_inventario[0]->id_detalle_inventario)->update($json_update)){
                             $request->flash();
                             DB::rollBack();
                             return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta, no tienes stock suficiente!'];
@@ -151,9 +146,14 @@ class VentaController extends Controller
                     }
 
                     $this->imprimirTicketVentaV2($id);
+                    $usuario_nombre = Auth::user()->name;
+                    $usuario_id = Auth::user()->id;
+                    $sucursal_id = Auth::user()->id_sucursal;
+                    $sucursal = DB::table('sucursal')->where('id_sucursal', $sucursal_id)->get();
+                    $descripcion = 'El usuario '.$usuario_nombre.' ha realizado la venta del ticket no. '.$id.' desde la sucursal '.$sucursal[0]->sucursal. ' a la fecha '.date_format($fecha_venta, 'Y-m-d H:i:s');
+                    $this->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
                     DB::commit();
                     return ['response'=>'success', 'message'=>'Se realizó correctamente la venta!.'];
-
                 }else{
                     $request->flash();
                     DB::rollBack();
@@ -222,12 +222,14 @@ class VentaController extends Controller
     public function verificarUPCVenta(Request $request){
 
         try {
-            $articulo = DB::table('inventario')
+            $articulo = DB::table('inventario')->select('inventario.*', 'modelo.*', 'marca.*', 'categoria.*', 'color.*', 'capacidad.*', 'detalle_inventario.id_detalle_inventario', 'detalle_inventario.stock')
             ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
             ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
             ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')
             ->leftJoin('color', 'color.id_color', 'inventario.id_color')
-            ->leftJoin('capacidad', 'capacidad.id_capacidad', 'inventario.id_capacidad')->where('upc', $request->upc)
+            ->leftJoin('capacidad', 'capacidad.id_capacidad', 'inventario.id_capacidad')
+            ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
+            ->leftJoin('sucursal', 'sucursal.id_sucursal', 'detalle_inventario.id_sucursal')->where('upc', $request->upc)->where('detalle_inventario.id_sucursal', Auth::user()->id_sucursal)
             ->where('stock', '>', 0)->get();
             if(count($articulo) > 0){
                 foreach($articulo as $art){
@@ -322,7 +324,8 @@ class VentaController extends Controller
         foreach($pago_venta as $pago){
             $formas .= $pago->forma_pago."  $".$pago->monto."\n";
         }
-
+        $iconoRegistrado = chr(169);
+        $str = sprintf("Powered By Geesdra %c", 169);
         $totalTexto = new NumberFormatter("es", NumberFormatter::SPELLOUT);
         $receipt = (string) (new ReceiptPrinter)
             ->centerAlign()
@@ -381,12 +384,12 @@ class VentaController extends Controller
             ->barcode(strval($venta[0]->id_venta))
             ->feed(3)
             ->rightAlign()
-            ->text("Desarrollado por Gesdra")
+            ->text("Powered By Gesdra")
             ->feed(2)
             ->cut();
 
         Printing::newPrintTask()
-            ->printer(70134223)
+            ->printer(70177365)
             ->content($receipt)
             ->copies(1)
             ->send();
@@ -394,5 +397,22 @@ class VentaController extends Controller
 
     public function reimprimirTicket(Request $request){
         $this->imprimirTicketVentaV2($request->id_venta);
+        $fecha = new DateTime();
+        $usuario = Auth::user()->name;
+        $usuario_id = Auth::user()->id;
+        $sucursal_id = Auth::user()->id_sucursal;
+        $sucursal = DB::table('sucursal')->where('id_sucursal', $sucursal_id)->get();
+        $descripcion = 'El usuario '.$usuario.' ha reimpreso el ticket de la venta no. '.$request->id_venta.' desde la sucursal '.$sucursal[0]->sucursal. ' a la fecha '.date_format($fecha, 'Y-m-d H:i:s');
+        $this->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
+
+    }
+
+    public function registrarBitacora($fecha, $descripcion, $usuario, $sucursal){
+        BitacoraGeneral::insert([
+            'fecha_log_general' => date_format($fecha, 'Y-m-d H:i:s'),
+            'descripcion_log_general' => $descripcion,
+            'id_usuario' => $usuario,
+            'id_sucursal' => $sucursal
+        ]);
     }
 }

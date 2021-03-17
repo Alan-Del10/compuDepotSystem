@@ -104,10 +104,12 @@
         var ventas = @json($ventas);
         var arr = [];
         arr = ventas;
+        console.log(ventas);
         $("#busqueda").on("keyup", function() {
             var value = $(this).val().toLowerCase();
             console.log(getResult(value, ventas));
         });
+        //Configuración de las notificaciones pequeñas o personalizadas
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -127,7 +129,7 @@
                 });
             });
         }
-
+        //Esta función nos permite reimprimir los tickets de las ventas con autorización de algún superior
         function imprimirTicket(venta) {
             id_venta = venta.parent().siblings().eq(0).text();
             Swal.mixin({
@@ -139,7 +141,8 @@
             }).queue([
                 {
                     title: 'Correo',
-                    text: 'Introduce el correo con privilegios'
+                    text: 'Introduce el correo con privilegios',
+                    input: 'email'
                 },
                 {
                     title: 'Contraseña',
@@ -198,26 +201,6 @@
                     });
                 }
             })
-            /*$.ajax({
-                type: "post",
-                url: "{{route('ReimprimirTicket')}}",
-                data: {'id_venta':id_venta},
-                headers: {
-                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                },
-                success: function(data) {
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Imprimiendo ticket...'
-                    })
-                },
-                error: function(data) {
-                    Toast.fire({
-                        icon: 'error',
-                        title: 'No se pudo imprimir el ticket!'
-                    })
-                }
-            });*/
         }
     </script>
 @endsection

@@ -151,7 +151,14 @@
                                         </ul>
                                     </div>
                                 </div>
-                                <div class="form-group row agregado">
+                                <div class="form-group row">
+                                    <div class="col-12 alert alert-danger" id="mensajeTotalFormas" style="display:none">
+                                        <ul>
+                                            <li>Tu total de venta es mayor al total de pagos!</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="form-group row agregado" id="agregado">
                                     <label for="forma" class="col-sm-2 col-form-label">Forma</label>
                                     <div class="col-sm-4">
                                         <input type="text" list="formaData" class="form-control" id="forma" name="formas_pago[][forma]" placeholder="Forma">
@@ -268,6 +275,18 @@
         let total = 0.0;
         let cliente = 0;
         let permisoPrecios =  false;
+        //Configuración de notificaciones pequeñas
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        })
         //Función para detectar cunado se ingrese un UPC
         $('#upc').on('input', function(){
             upc = $(this).val();
@@ -327,7 +346,7 @@
         $('#agregarFormaPago').on('click', function(){
             $('#formaPago').append(
                 '<hr>'+
-                '<div class="form-group row agregado">'+
+                '<div class="form-group row agregado" id="agregado">'+
                     '<label for="forma" class="col-sm-2 col-form-label">Forma</label>'+
                     '<div class="col-sm-4">'+
                         '<input type="text" list="formaData" class="form-control" id="forma" name="formas_pago[][forma]" placeholder="Forma">'+
@@ -356,9 +375,9 @@
                 cant = $(this).find('#precio').val();
                 totalProducto += (cant * cant_pza);
             });
-            subtotal = totalProducto;
-            iva = subtotal * .16;
-            total = subtotal + iva;
+            total = totalProducto.toFixed(2);
+            iva = (total * .16).toFixed(2);
+            subtotal = (parseFloat(total) - parseFloat(iva)).toFixed(2);
             $('#subtotal h2').html('$'+subtotal);
             $('#iva h2').html('$'+iva);
             $('#total h2').html('$'+total);
@@ -409,7 +428,8 @@
                 }).queue([
                     {
                         title: 'Correo',
-                        text: 'Introduce el correo con privilegios'
+                        text: 'Introduce el correo con privilegios',
+                        input: 'email'
                     },
                     {
                         title: 'Contraseña',
@@ -480,6 +500,7 @@
             clienteValidacion = true;
             ticketValidacion = true;
             formasPagoValidacion = true;
+            totalFormasPagoValidacion = true;
             if(!$('#cliente').val()){
                 $('#cliente').addClass('is-invalid');
                 clienteValidacion = false;
@@ -490,12 +511,13 @@
             let ticket = [];
             let formas_pago = [];
             let cliente = $('#cliente').val();
+            let totalFormasPago = 0.0;
             $.each($('#ticketTabla').children(), function(i,x){
                 ticket.push(
                     {
                         'upc' : $(this).find('#upc_art').text(),
                         'piezas' : $(this).children().find('#cantidad').val(),
-                        'precio' : $(this).find('#precio').text()
+                        'precio' : $(this).children().find('#precio').val()
 
                     }
                 );
@@ -507,6 +529,7 @@
                         'pago' : $(this).children().find('#pago').val()
                     }
                 );
+                totalFormasPago += parseFloat($(this).children().find('#pago').val());
             });
             if(ticket.length == 0){
                 $('#mensajeTicket').show();
@@ -522,7 +545,15 @@
                 $('#mensajeFormas').hide();
                 formasPagoValidacion = true;
             }
-            if(clienteValidacion == true && ticketValidacion == true && formasPagoValidacion == true){
+
+            if(totalFormasPago < total){
+                $('#mensajeTotalFormas').show();
+                totalFormasPagoValidacion = false;
+            }else{
+                $('#mensajeTotalFormas').hide();
+                totalFormasPagoValidacion = true;
+            }
+            if(clienteValidacion == true && ticketValidacion == true && formasPagoValidacion == true && totalFormasPagoValidacion == true){
                 $.ajax({
                     type: "post",
                     url: "{{route('Venta.store')}}",
@@ -579,7 +610,7 @@
                 $(this).remove();
             });
             $('#formaPago').append(
-                '<div class="form-group row" id="agregado">'+
+                '<div class="form-group row agregado" id="agregado">'+
                     '<label for="forma" class="col-sm-2 col-form-label">Forma</label>'+
                     '<div class="col-sm-4">'+
                         '<input type="text" list="formaData" class="form-control" id="forma" name="formas_pago[][forma]" placeholder="Forma">'+

@@ -21,7 +21,7 @@ use App\User;
 
 Route::get('/', function () {
     if (Auth::check()) {
-        return redirect('/home');
+        return redirect('/dashboard');
     }else{
         return view('auth.login');
     }
@@ -139,6 +139,9 @@ Route::resource('CorteCaja', CorteCajaController::class)->middleware('auth:root,
 //Permisos routes
 Route::resource('Permisos', PermisosController::class)->middleware('auth');
 Route::get('/permisos/listado', 'PermisosController@index')->middleware('auth');
+
+//Bitacora Generel Routes
+Route::resource('BitacoraGeneral', BitacoraGeneralController::class)->middleware('auth');
 
 //Configuracion routes
 Route::resource('Configuracion', ConfiguracionController::class)->middleware('auth:root,admin');

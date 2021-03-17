@@ -53,7 +53,7 @@ class LoginController extends Controller
         if(Auth::attempt($request->only('email','password'))){
             $guard = DB::table('usuario')->leftJoin('tipo_usuario', 'tipo_usuario.id_tipo_usuario', 'usuario.id_tipo_usuario')->where('email',$request->email)->get();
             if(Auth::guard($guard[0]->guard)->attempt($request->only('email','password'), $request->filled('remember'))){
-                return redirect()->intended('/home')->with('status','Has iniciado sesión como '.$guard[0]->puesto);
+                return redirect()->intended('/dashboard')->with('status','Has iniciado sesión como '.$guard[0]->puesto);
             }
             //Fallo de autenticación...
             return $this->loginFailed();
