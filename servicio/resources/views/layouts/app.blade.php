@@ -364,12 +364,6 @@
                             <p>Listado de Cortes</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="{{route("CorteCaja.create")}}" class="nav-link">
-                            <i class="fas fa-plus nav-icon"></i>
-                            <p>Agregar Corte de Caja</p>
-                            </a>
-                        </li>
                     </ul>
                 </li>
                 <li class="nav-item">
@@ -398,7 +392,7 @@
                     </p>
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item {{(Auth::guard('admin')->check() || Auth::guard('sub_admin')->check() || Auth::guard('root')->check())? : 'd-none'}}">
                     <a href="#" class="nav-link">
                     <i class="nav-icon fas fa-book"></i>
                     <p>
@@ -512,6 +506,8 @@
 <!-- Bootstrap 4 -->
 <script src="{{asset('plugins/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
 <script src="{{asset('plugins/bootstrap/js/bootstrap.bundle.js')}}"></script>
+<script src="{{asset('plugins/bootstrap/js/bootstrap.min.js')}}"></script>
+<script src="{{asset('plugins/bootstrap/js/bootstrap.js')}}"></script>
 <!--<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>-->
 <!-- ChartJS -->

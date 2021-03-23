@@ -94,25 +94,29 @@
                                 </h3>
 
                                 <div class="card-tools">
-                                    {{ $logs->links('pagination::bootstrap-4') }}
+                                    @isset($logs)
+                                        {{ $logs->links('pagination::bootstrap-4') }}
+                                    @endisset
                                 </div>
                             </div>
                             <!-- /.card-header -->
                             <div class="card-body">
                                 <ul class="todo-list" data-widget="todo-list">
-                                    @foreach ($logs as $log)
-                                        <li>
-                                            <!-- todo text -->
-                                            <span class="text"><small>{{$log->descripcion_log_general}}</small></span>
-                                            <!-- Emphasis label -->
-                                            <small class="badge badge-danger"><i class="far fa-clock"></i> {{$log->fecha_log_general}}</small>
-                                            <!-- General tools such as edit or delete-->
-                                            <div class="tools">
-                                                <i class="fas fa-edit"></i>
-                                                <i class="fas fa-trash-o"></i>
-                                            </div>
-                                        </li>
-                                    @endforeach
+                                    @isset($logs)
+                                        @foreach ($logs as $log)
+                                            <li>
+                                                <!-- todo text -->
+                                                <span class="text"><small>{{$log->descripcion_log_general}}</small></span>
+                                                <!-- Emphasis label -->
+                                                <small class="badge badge-danger"><i class="far fa-clock"></i> {{$log->fecha_log_general}}</small>
+                                                <!-- General tools such as edit or delete-->
+                                                <div class="tools">
+                                                    <i class="fas fa-edit"></i>
+                                                    <i class="fas fa-trash-o"></i>
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    @endisset
                                 </ul>
                             </div>
                             <!-- /.card-body -->

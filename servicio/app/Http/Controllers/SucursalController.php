@@ -48,7 +48,9 @@ class SucursalController extends Controller
                 'sucursal' => 'required|max:200',
                 'local' => 'nullable|max:45',
                 'direccion' => 'nullable|max:200',
-                'politicas' => 'nullable|max:9999'
+                'politicas' => 'nullable|max:9999',
+                'tickets' => 'nullable',
+                'etiquetas' => 'nullable'
             ]);
             $fileName = "";
             if ($request->has('imagenSucursal')) {
@@ -77,7 +79,9 @@ class SucursalController extends Controller
                     'local' => $request->local,
                     'direccion' => $request->direccion,
                     'logo' => $fileName,
-                    'politicas' => $request->politicas
+                    'politicas' => $request->politicas,
+                    'tickets' => $request->tickets,
+                    'etiquetas' => $request->etiquetas
                 ]);
                 return redirect()->back()->with('message', 'Se agregó correctamente la sucursal.');
             }
@@ -127,7 +131,9 @@ class SucursalController extends Controller
                 'sucursal' => 'required|max:200',
                 'local' => 'nullable|max:45',
                 'direccion' => 'nullable|max:200',
-                'politicas' => 'nullable|max:9999'
+                'politicas' => 'nullable|max:9999',
+                'tickets' => 'nullable',
+                'etiquetas' => 'nullable'
             ]);
             $fileName = "";
             if ($request->has('imagenSucursal')) {
@@ -155,19 +161,19 @@ class SucursalController extends Controller
                 }
             }
             $sucursal = Sucursal::find($id);
-
             //Si encuentra datos erroneos los regresa con un mensaje de error
             if($validator->fails()){
                 return redirect()->back()->withErrors($validator);
             }else{
                 //Validamos que se haya modificado la información y regresamos un mensaje sobre el estado
-
                 $json_actualizar = [
                     'sucursal' => $request->sucursal,
                     'local' => $request->local,
                     'direccion' => $request->direccion,
                     'logo' => $fileName,
-                    'politicas' => $request->politicas
+                    'politicas' => $request->politicas,
+                    'tickets' => $request->tickets,
+                    'etiquetas' => $request->etiquetas
                 ];
 
                 if($sucursal->update($json_actualizar)){

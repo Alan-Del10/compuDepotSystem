@@ -2,101 +2,99 @@
 @section('content')
     <section class="content-header">
         <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-            <h1>Ventas</h1>
-            </div>
-            <div class="col-sm-6">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Ventas</h1>
+                </div>
+                <div class="col-sm-6">
 
+                </div>
             </div>
-        </div>
         </div><!-- /.container-fluid -->
     </section>
 
     <!-- Main content -->
     <section class="content">
         <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card card-info">
-                    <div class="card-header">
-                        <h3 class="card-title">Busqueda</h3>
-                    </div>
-                    <div class="input-group p-3">
-                        <input class="form-control" type="text" id="busqueda" placeholder="Buscar...">
-                        <div class="input-group-append">
-                            <button id="buscar" class="btn btn-success">Buscar</button>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Busqueda</h3>
+                        </div>
+                        <div class="input-group p-3">
+                            <input class="form-control" type="text" id="busqueda" placeholder="Buscar...">
+                            <div class="input-group-append">
+                                <button id="buscar" class="btn btn-success">Buscar</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        </div>
         <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                <div class="row">
-                    <div class="col-4">
-                    <h3 class="card-title">Ventas</h3>
-                    </div>
-                    <div class="col-6">
-                    </div>
-                    <div class="col-2">
-                        <a id="agregarVenta" href='{{route("Venta.create")}}' class="btn btn-info">Agregar Venta <i class="far fa-plus-square"></i></a>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Ventas</h3>
+                            <div class="card-tools">
+                                <ul class="nav nav-pills ml-auto">
+                                    <li class="nav-item">
+                                        <a id="agregarVenta" href='{{ route('Venta.create') }}'
+                                            class="btn btn-primary btn-sm">Agregar Venta <i class="far fa-plus-square"></i></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body p-0">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 10px">Ticket</th>
+                                        <th>Usuario</th>
+                                        <th>Cliente</th>
+                                        <th>Fecha</th>
+                                        <th>Subtotal</th>
+                                        <th>IVA</th>
+                                        <th>Total</th>
+                                        <th colspan="2">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($ventas as $venta)
+                                        <tr class="items">
+                                            <td>{{ $venta->id_venta }}</td>
+                                            <td>{{ $venta->name }}</td>
+                                            <td>{{ $venta->nombre_completo }}</td>
+                                            <td>{{ $venta->fecha_venta }}</td>
+                                            <td>{{ $venta->subtotal }}</td>
+                                            <td>{{ $venta->iva }}</td>
+                                            <td>{{ $venta->total }}</td>
+                                            <td>
+                                                <!--<a href="#" class="btn btn-primary"><i class="far fa-edit"></i> Editar</a>-->
+                                                <a href="#" class="btn btn-success" onclick="imprimirTicket($(this))"><i
+                                                        class="fas fa-file-invoice-dollar"></i> Ticket</a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+                        <!-- /.card-body -->
 
                     </div>
+                    <!-- /.card -->
+                    {{ $ventas->onEachSide(5)->links('pagination::bootstrap-4') }}
                 </div>
-
-                </div>
-                <!-- /.card-header -->
-                <div class="card-body p-0">
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th style="width: 10px">Ticket</th>
-                        <th>Usuario</th>
-                        <th>Cliente</th>
-                        <th>Fecha</th>
-                        <th>Subtotal</th>
-                        <th>IVA</th>
-                        <th>Total</th>
-                        <th colspan="2">Acciones</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($ventas as $venta)
-                        <tr class="items">
-                            <td>{{$venta->id_venta}}</td>
-                            <td>{{$venta->name}}</td>
-                            <td>{{$venta->nombre_completo}}</td>
-                            <td>{{$venta->fecha_venta}}</td>
-                            <td>{{$venta->subtotal}}</td>
-                            <td>{{$venta->iva}}</td>
-                            <td>{{$venta->total}}</td>
-                            <td>
-                                <!--<a href="#" class="btn btn-primary"><i class="far fa-edit"></i> Editar</a>-->
-                                <a href="#" class="btn btn-success" onclick="imprimirTicket($(this))"><i class="fas fa-file-invoice-dollar"></i> Ticket</a>
-                            </td>
-                        </tr>
-                        @endforeach
-
-                    </tbody>
-
-                </table>
-
-                </div>
-                <!-- /.card-body -->
-
+                <!-- /.col -->
             </div>
-            <!-- /.card -->
-            {{ $ventas->onEachSide(5)->links('pagination::bootstrap-4') }}
-            </div>
-            <!-- /.col -->
-        </div>
-        <!-- /.row -->
-        <!-- /.row -->
+            <!-- /.row -->
+            <!-- /.row -->
         </div><!-- /.container-fluid -->
     </section>
     <!-- /.content -->
@@ -124,7 +122,7 @@
 
         function getResult(filterBy, objList) {
             return objList.filter(function(obj) {
-                return obj.some(function(item){
+                return obj.some(function(item) {
                     return item.indexOf(filterBy) >= 0;
                 });
             });
@@ -138,8 +136,7 @@
                 showCancelButton: true,
                 cancelButtonText: 'Cancelar',
                 progressSteps: ['1', '2']
-            }).queue([
-                {
+            }).queue([{
                     title: 'Correo',
                     text: 'Introduce el correo con privilegios',
                     input: 'email'
@@ -152,25 +149,27 @@
             ]).then((result) => {
                 if (result.value) {
                     const answers = {
-                        'email' : result.value[0],
-                        'password' : result.value[1]
+                        'email': result.value[0],
+                        'password': result.value[1]
                     };
                     $.ajax({
                         type: "post",
-                        url: "{{route('validarPermiso')}}",
+                        url: "{{ route('validarPermiso') }}",
                         data: answers,
                         headers: {
-                            'X-CSRF-TOKEN' : "{{ csrf_token() }}"
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
                         },
                         success: function(data) {
                             console.log(data);
-                            if(data == true){
+                            if (data == true) {
                                 $.ajax({
                                     type: "post",
-                                    url: "{{route('ReimprimirTicket')}}",
-                                    data: {'id_venta' : id_venta},
+                                    url: "{{ route('ReimprimirTicket') }}",
+                                    data: {
+                                        'id_venta': id_venta
+                                    },
                                     headers: {
-                                        'X-CSRF-TOKEN' : "{{ csrf_token() }}"
+                                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
                                     },
                                     success: function(data) {
                                         Toast.fire({
@@ -185,7 +184,7 @@
                                         })
                                     }
                                 });
-                            }else{
+                            } else {
                                 Toast.fire({
                                     icon: 'error',
                                     title: 'No tiene los permisos para esta acción!'
@@ -202,6 +201,6 @@
                 }
             })
         }
+
     </script>
 @endsection
-

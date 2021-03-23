@@ -114,6 +114,7 @@ Route::get('/inventario/agregarCapacidad','InventarioController@agregarCapacidad
 Route::get('/inventario/agregarProveedor','InventarioController@agregarProveedor')->name('agregarProveedorInventario')->middleware('auth');
 Route::get('/inventario/etiqueta','InventarioController@imprimirEtiqueta')->name('etiquetaInventario')->middleware('auth');
 Route::get('/inventario/calcularUPC','InventarioController@calculoUPC')->name('calculoUPC')->middleware('auth');
+Route::post('/inventario/inventarioPorSucursal','InventarioController@inventarioPorSucursal')->name('inventarioPorSucursal')->middleware('auth');
 
 //Inventario routes
 Route::resource('Compra', CompraController::class)->middleware('auth:root,admin,sub_admin,vendedor,servicio_cliente');

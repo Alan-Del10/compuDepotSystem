@@ -66,6 +66,28 @@
                                     <textarea class="form-control @error('politicas') is-invalid @enderror" id="politicas" rows="10" placeholder="Políticas" name="politicas" >{{ old('descripcion', $sucursal->politicas)}}</textarea>
                                 </div>
                             </div>
+                            <hr>
+                            <div class="form-group row">
+                                <h2>Impresoras</h2>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tickets" class="col-sm-1 col-form-label">Tickets:</label>
+                                <div class="col-sm-11">
+                                    <input type="number" name="tickets" id="tickets" class="form-control" value="{{old('tickets', $sucursal->tickets)}}">
+                                    @if ($errors->has('tickets'))
+                                        <span class="errormsg">{{ $errors->first('tickets') }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="etiquetas" class="col-sm-1 col-form-label">Etiquetas:</label>
+                                <div class="col-sm-11">
+                                    <input type="number" name="etiquetas" id="etiquetas" class="form-control" value="{{old('etiquetas', $sucursal->etiquetas)}}">
+                                    @if ($errors->has('etiquetas'))
+                                        <span class="errormsg">{{ $errors->first('etiquetas') }}</span>
+                                    @endif
+                                </div>
+                            </div>
                             <!-- /.card-body -->
                             <div class="card-footer">
                                 <input type="submit" value="Modificar" class="btn btn-success float-right modificarSucursal">

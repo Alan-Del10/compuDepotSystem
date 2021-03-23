@@ -303,7 +303,7 @@ class VentaController extends Controller
 
     public function imprimirTicketVentaV2($id_venta){
 
-        $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'sucursal.politicas as politicas', 'cliente.*', 'usuario.*')
+        $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'sucursal.politicas as politicas', 'sucursal.tickets as tickets', 'cliente.*', 'usuario.*')
         ->where('id_venta', $id_venta)
         ->leftJoin('usuario', 'usuario.id', 'venta.id_usuario')
         ->leftJoin('sucursal', 'sucursal.id_sucursal', 'venta.id_sucursal')
@@ -389,9 +389,9 @@ class VentaController extends Controller
             ->cut();
 
         Printing::newPrintTask()
-            ->printer(70177365)
+            ->printer($venta[0]->tickets)
             ->content($receipt)
-            ->copies(1)
+            ->copies(2)
             ->send();
     }
 

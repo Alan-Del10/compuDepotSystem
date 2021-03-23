@@ -690,7 +690,7 @@
                                 $('#mensajeCliente').removeClass('alert-danger').addClass('alert-success');
                             }
                             $('#mensajeCliente ul').text('Cliente dado de alta con éxito!');
-                            $('#cliente').val(response[0].nombre_completo);
+                            $('#cliente').val(response[0].id_cliente+" "+response[0].nombre_completo);
                             $('#formCliente').find('.form-group').find('input').each(function(){
                                 $(this).val("");
                             });

@@ -56,7 +56,22 @@
                                     <textarea class="form-control @error('politicas') is-invalid @enderror" id="politicas" rows="10" placeholder="Políticas" name="politicas" >{{ old('descripcion')}}</textarea>
                                 </div>
                             </div>
-
+                            <hr>
+                            <div class="form-group row">
+                                <h2>Impresoras</h2>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tickets" class="col-sm-1 col-form-label">Tickets:</label>
+                                <div class="col-sm-11">
+                                    <input type="number" name="tickets" id="tickets" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="etiquetas" class="col-sm-1 col-form-label">Etiquetas:</label>
+                                <div class="col-sm-11">
+                                    <input type="number" name="etiquetas" id="etiquetas" class="form-control">
+                                </div>
+                            </div>
                             <!-- /.card-body -->
                             <div class="card-footer">
                                 <input type="submit" value="Agregar" class="btn btn-success float-right agregarSucursal">

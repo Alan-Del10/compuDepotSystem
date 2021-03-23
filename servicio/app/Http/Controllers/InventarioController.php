@@ -28,18 +28,31 @@ class InventarioController extends Controller
      */
     public function index()
     {
-        $inventarios = Inventario::orderby('id_inventario','asc')->select('inventario.*', 'detalle_inventario.stock as stock', 'color.*', 'sucursal.*', 'categoria.*',  'marca.*', 'modelo.*')
-        ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
-        ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
-        ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')
-        ->leftJoin('color', 'color.id_color', 'inventario.id_color')
-        ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
-        ->leftJoin('sucursal', 'sucursal.id_sucursal', 'detalle_inventario.id_sucursal')->paginate(10);
+        /*if(Auth::guard('admin')->check() || Auth::guard('sub_admin')->check() || Auth::guard('root')->check()){
+            $inventarios = Inventario::select(DB::raw('inventario.upc, inventario.id_inventario, modelo.modelo, marca.marca, categoria.categoria, color.color, inventario.precio_min, inventario.precio_max,
+            inventario.precio_mayoreo, inventario.imagen, inventario.titulo_inventario, inventario.costo, SUM(detalle_inventario.stock) as stock'))
+            ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
+            ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
+            ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')
+            ->leftJoin('color', 'color.id_color', 'inventario.id_color')
+            ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
+            ->groupBy('inventario.id_inventario')->orderby('inventario.id_inventario','asc')->paginate(10);
+        }else{*/
+            $inventarios = Inventario::orderby('id_inventario','asc')->select('inventario.*', 'detalle_inventario.stock as stock', 'color.*', 'categoria.*',  'marca.*', 'modelo.*')
+            ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
+            ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
+            ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')
+            ->leftJoin('color', 'color.id_color', 'inventario.id_color')
+            ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
+            ->where('detalle_inventario.id_sucursal', Auth::user()->id_sucursal)->paginate(10);
+        //}
         $categorias =  DB::table('categoria')->where('estatus', 1)->get();
         $compatibilidades = DB::table('compatibilidad')->leftJoin('inventario', 'inventario.id_inventario', 'compatibilidad.id_inventario')
         ->leftJoin('modelo', 'modelo.id_modelo', 'compatibilidad.id_modelo')
         ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')->get();
-        return view('Inventario.inventario', compact('inventarios', 'categorias', 'compatibilidades'));
+        $sucursales = Sucursal::get();
+        $sucursal = Sucursal::where('id_sucursal', Auth::user()->id_sucursal)->get();
+        return view('Inventario.inventario', compact('inventarios', 'categorias', 'compatibilidades', 'sucursales', 'sucursal'));
     }
 
     /**
@@ -397,7 +410,6 @@ class InventarioController extends Controller
                     $usuario_nombre = Auth::user()->name;
                     $usuario_id = Auth::user()->id;
                     if($request->detalleInventario != null && count($request->detalleInventario) != 0){
-
                         $detalleInventario = $request->detalleInventario;
                         DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
                         foreach($detalleInventario as $detalle){
@@ -415,9 +427,14 @@ class InventarioController extends Controller
                                 return redirect()->back()->withErrors('error', 'Algo pasó al intenar agregar los datos!');
                             }
                             $descripcion = 'El usuario '.$usuario_nombre.' ha modificado los atributos del artículo con el UPC/EAN '.$request->upc.' con el título '.$request->titulo.' desde la sucursal '.$sucursal[0]->sucursal. ' con stock '.$detalle['stock'].'pza(s). a la fecha '.date_format($fecha_modificacion, 'Y-m-d H:i:s');
-                            $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal);
+                            if($detalle['etiquetas'] > 0){
+                                $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal);
+                            }
+
                             $this->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                         }
+                    }elseif(DB::table('detalle_inventario')->where('id_inventario', $id)->get()){
+                        DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
                     }
                     DB::commit();
                     return redirect()->back()->with('success', 'Se modificó correctamente el inventario.');
@@ -520,7 +537,9 @@ class InventarioController extends Controller
             return redirect()->route('Inventario.create')->withErrors('error', 'Algo pasó al intenar insertar los datos!');
         }
     }
-
+    /**
+     * Registra proveedores
+     */
     public function agregarProveedor(Request $request)
     {
         try {
@@ -549,6 +568,9 @@ class InventarioController extends Controller
         }
     }
 
+    /**
+     * Función que imprime las etiquetas de los productos para colocarlos en sus estantes
+     */
     public function imprimirEtiqueta($id_inventario, $etiquetas, $id_sucursal){
 
         $inventario = DB::table('inventario')->where('id_inventario', $id_inventario)
@@ -603,11 +625,14 @@ class InventarioController extends Controller
         ->save(storage_path('app\\public\\inventario\\etiqueta\\').$inventario[0]->upc.'-2.pdf');
 
         Printing::newPrintTask()
-        ->printer(70131599)
+        ->printer($sucursal[0]->etiquetas)
         ->file(storage_path('app\\public\\inventario\\etiqueta\\').$inventario[0]->upc.'-2.pdf')
         ->send();
     }
 
+    /**
+     * Función de prueba para calcular UPC
+     */
     public function calculoUPC(){
         $upc = str_split('84279707275');
         $par = 0;
@@ -633,6 +658,9 @@ class InventarioController extends Controller
         echo $upc;
     }
 
+    /**
+     * Función que registra en bitacora general los movimientos de inventario
+     */
     public function registrarBitacora($fecha, $descripcion, $usuario, $sucursal){
         BitacoraGeneral::insert([
             'fecha_log_general' => date_format($fecha, 'Y-m-d H:i:s'),
@@ -640,5 +668,22 @@ class InventarioController extends Controller
             'id_usuario' => $usuario,
             'id_sucursal' => $sucursal
         ]);
+    }
+
+    /**
+     * Función para buscar stock de sucursales especificas desde la vista de inventario
+     */
+    public function inventarioPorSucursal(Request $request){
+        $inventarios = Inventario::orderby('id_inventario','asc')->select('inventario.*', 'detalle_inventario.stock as stock', 'color.*', 'sucursal.*', 'categoria.*',  'marca.*', 'modelo.*')
+        ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
+        ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
+        ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')
+        ->leftJoin('color', 'color.id_color', 'inventario.id_color')
+        ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
+        ->leftJoin('sucursal', 'sucursal.id_sucursal', 'detalle_inventario.id_sucursal')
+        ->where('detalle_inventario.sucursal', $request->sucursal)->paginate(10);
+        if($request->ajax()){
+            return $inventarios;
+        }
     }
 }

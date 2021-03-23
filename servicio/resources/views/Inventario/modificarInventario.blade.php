@@ -100,7 +100,7 @@
                                             @endforeach
                                         </datalist>
                                         <div class="input-group-append">
-                                            <button type="button" class="btn btn-primary" id="agregarCategoria" disabled><i
+                                            <button type="button" class="btn btn-primary" id="agregarCategoria"><i
                                                     class="fas fa-plus"></i></button>
                                         </div>
                                     </div>
@@ -116,7 +116,7 @@
                                             @endforeach
                                         </datalist>
                                         <div class="input-group-append">
-                                            <button type="button" class="btn btn-primary" id="agregarMarca" disabled><i
+                                            <button type="button" class="btn btn-primary" id="agregarMarca"><i
                                                     class="fas fa-plus"></i></button>
                                         </div>
                                     </div>
@@ -165,7 +165,7 @@
                                 <div class="form-group row">
                                     <div class="col-sm-4">
                                         <div class="form-check form-check-inline">
-                                            @if ($compatibilidad)
+                                            @if (count($compatibilidad)>0)
                                                 <input type="checkbox" class="form-check-input" id="checkCompatibilidad"
                                                     name="checkCompatibilidad" checked
                                                     onclick="checkCompatibilidadModelos()">
@@ -178,7 +178,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div id="divCompatibilidad" style="display: {{ $compatibilidad ? 'block' : 'none' }}">
+                                <div id="divCompatibilidad" style="display: {{ (count($compatibilidad)>0) ? 'block' : 'none' }}">
                                     <hr>
                                     <div class="form-group row">
                                         <h4 class="col-12">Compatibilidad</h4>
@@ -262,7 +262,7 @@
                                     <label for="sucursal" class="col-sm-2 col-form-label">Sucursal</label>
                                     <input type="text" list="sucursalData" class="form-control col-4" id="sucursal"
                                         name="sucursal" value="{{ old('sucursal') }}" placeholder="Seleccionar Sucursal"
-                                        disabled />
+                                         />
                                     <datalist id="sucursalData">
                                         @foreach ($sucursales as $sucursal)
                                             <option value="{{ $sucursal->sucursal }}">{{ $sucursal->sucursal }}
@@ -272,10 +272,10 @@
                                     <div class="input-group col-6">
                                         <label for="stock" class="col-sm-3 col-form-label">Stock (pz)</label>
                                         <input type="number" class="form-control" id="stock" name="stock"
-                                            placeholder="Stock" disabled>
+                                            placeholder="Stock" >
                                         <div class="input-group-append">
                                             <button type="button" class="btn btn-success" id="agregarStockSucursal"
-                                                disabled><i class="fas fa-plus"></i></button>
+                                                ><i class="fas fa-plus"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -294,7 +294,7 @@
                                                 @foreach ($detalle_inventario as $detalle)
                                                     <tr>
                                                         <th scope="row"><input type="text" class="form-control form-control-sm" value="{{ $detalle->sucursal }}" name="detalleInventario[{{$x}}][sucursal]" readonly></th>
-                                                        <th scope="row"><input type="number" class="form-control form-control-sm" value="{{ $detalle->stock }}" name="detalleInventario[{{$x}}][stock]" readonly></th>
+                                                        <th scope="row"><input type="number" class="form-control form-control-sm" value="{{ $detalle->stock }}" name="detalleInventario[{{$x}}][stock]"></th>
                                                         <th scope="row"><input type="number" class="form-control form-control-sm" value="{{ $detalle->stock }}" name="detalleInventario[{{$x}}][etiquetas]"></th>
                                                         <th scope="row"><a href="#" class="btn btn-danger btn-sm" onclick="$(this).parent().parent().remove(); conteoDetalle -= 1;"><i class="fas fa-trash"></i></a></th>
                                                     </tr>
