@@ -21,6 +21,8 @@ use NumberFormatter;
 use Printing;
 use Rawilk\Printing\Contracts\Printer;
 use Rawilk\Printing\Receipts\ReceiptPrinter;
+use App\Http\Controllers\BitacoraGeneralController;
+
 class VentaController extends Controller
 {
     /**
@@ -151,7 +153,8 @@ class VentaController extends Controller
                     $sucursal_id = Auth::user()->id_sucursal;
                     $sucursal = DB::table('sucursal')->where('id_sucursal', $sucursal_id)->get();
                     $descripcion = 'El usuario '.$usuario_nombre.' ha realizado la venta del ticket no. '.$id.' desde la sucursal '.$sucursal[0]->sucursal. ' a la fecha '.date_format($fecha_venta, 'Y-m-d H:i:s');
-                    $this->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
+                    //$this->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
+                    (new BitacoraGeneralController)->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
                     DB::commit();
                     return ['response'=>'success', 'message'=>'Se realizó correctamente la venta!.'];
                 }else{
@@ -403,16 +406,8 @@ class VentaController extends Controller
         $sucursal_id = Auth::user()->id_sucursal;
         $sucursal = DB::table('sucursal')->where('id_sucursal', $sucursal_id)->get();
         $descripcion = 'El usuario '.$usuario.' ha reimpreso el ticket de la venta no. '.$request->id_venta.' desde la sucursal '.$sucursal[0]->sucursal. ' a la fecha '.date_format($fecha, 'Y-m-d H:i:s');
-        $this->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
+        //$this->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
+        (new BitacoraGeneralController)->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
 
-    }
-
-    public function registrarBitacora($fecha, $descripcion, $usuario, $sucursal){
-        BitacoraGeneral::insert([
-            'fecha_log_general' => date_format($fecha, 'Y-m-d H:i:s'),
-            'descripcion_log_general' => $descripcion,
-            'id_usuario' => $usuario,
-            'id_sucursal' => $sucursal
-        ]);
     }
 }

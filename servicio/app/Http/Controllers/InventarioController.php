@@ -18,6 +18,7 @@ use Rawilk\Printing\Receipts\ReceiptPrinter;
 use Rawilk\Printing\Contracts\Printer;
 use Rawilk\Printing\Facades\Printing;
 use Barryvdh\DomPDF\Facade as PDF;
+use App\Http\Controllers\BitacoraGeneralController;
 
 class InventarioController extends Controller
 {
@@ -221,7 +222,8 @@ class InventarioController extends Controller
                                 }
                                 $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal);
                                 $descripcion = 'El usuario '.$usuario_nombre.' ha agregado al inventario el artículo con el UPC/EAN '.$request->upc.' con el título '.$request->titulo.' desde la sucursal '.$sucursal[0]->sucursal. ' con stock '.$detalle['stock'].'pza(s). a la fecha '.date_format($fecha_alta, 'Y-m-d H:i:s');
-                                $this->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
+                                //$this->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
+                                (new BitacoraGeneralController)->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                             }
                         }
                         DB::commit();
@@ -430,8 +432,8 @@ class InventarioController extends Controller
                             if($detalle['etiquetas'] > 0){
                                 $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal);
                             }
-
-                            $this->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
+                            //$this->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
+                            (new BitacoraGeneralController)->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                         }
                     }elseif(DB::table('detalle_inventario')->where('id_inventario', $id)->get()){
                         DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
@@ -656,18 +658,6 @@ class InventarioController extends Controller
         $upc = implode($upc);
         $upc.=$x12;
         echo $upc;
-    }
-
-    /**
-     * Función que registra en bitacora general los movimientos de inventario
-     */
-    public function registrarBitacora($fecha, $descripcion, $usuario, $sucursal){
-        BitacoraGeneral::insert([
-            'fecha_log_general' => date_format($fecha, 'Y-m-d H:i:s'),
-            'descripcion_log_general' => $descripcion,
-            'id_usuario' => $usuario,
-            'id_sucursal' => $sucursal
-        ]);
     }
 
     /**

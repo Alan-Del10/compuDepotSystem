@@ -88,4 +88,16 @@ class BitacoraGeneralController extends Controller
     {
         //
     }
+
+    /**
+     * Función que registra en bitacora general los movimientos de ventas e inventario
+     */
+    public function registrarBitacora($fecha, $descripcion, $usuario, $sucursal){
+        BitacoraGeneral::insert([
+            'fecha_log_general' => date_format($fecha, 'Y-m-d H:i:s'),
+            'descripcion_log_general' => $descripcion,
+            'id_usuario' => $usuario,
+            'id_sucursal' => $sucursal
+        ]);
+    }
 }
