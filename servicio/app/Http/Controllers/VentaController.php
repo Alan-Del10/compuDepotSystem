@@ -22,6 +22,8 @@ use Printing;
 use Rawilk\Printing\Contracts\Printer;
 use Rawilk\Printing\Receipts\ReceiptPrinter;
 use App\Http\Controllers\BitacoraGeneralController;
+/* Bot Telegram */
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 class VentaController extends Controller
 {
@@ -147,14 +149,17 @@ class VentaController extends Controller
                         }
                     }
 
-                    $this->imprimirTicketVentaV2($id);
+                    //$this->imprimirTicketVentaV2($id);
                     $usuario_nombre = Auth::user()->name;
                     $usuario_id = Auth::user()->id;
                     $sucursal_id = Auth::user()->id_sucursal;
                     $sucursal = DB::table('sucursal')->where('id_sucursal', $sucursal_id)->get();
                     $descripcion = 'El usuario '.$usuario_nombre.' ha realizado la venta del ticket no. '.$id.' desde la sucursal '.$sucursal[0]->sucursal. ' a la fecha '.date_format($fecha_venta, 'Y-m-d H:i:s');
                     //$this->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
+
                     (new BitacoraGeneralController)->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
+
+                    (new BitacoraGeneralController)->mensajeTelegram($usuario_nombre,$sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha_venta, $id);
                     DB::commit();
                     return ['response'=>'success', 'message'=>'Se realizó correctamente la venta!.'];
                 }else{
@@ -167,6 +172,7 @@ class VentaController extends Controller
         } catch (\Exception $e) {
             $request->flash();
             DB::rollBack();
+            dd($e);
             return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta!'];
         }
         DB::commit();
@@ -305,7 +311,7 @@ class VentaController extends Controller
     }
 
     public function imprimirTicketVentaV2($id_venta){
-
+        dd("Entra");
         $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'sucursal.politicas as politicas', 'sucursal.tickets as tickets', 'cliente.*', 'usuario.*')
         ->where('id_venta', $id_venta)
         ->leftJoin('usuario', 'usuario.id', 'venta.id_usuario')
@@ -408,6 +414,9 @@ class VentaController extends Controller
         $descripcion = 'El usuario '.$usuario.' ha reimpreso el ticket de la venta no. '.$request->id_venta.' desde la sucursal '.$sucursal[0]->sucursal. ' a la fecha '.date_format($fecha, 'Y-m-d H:i:s');
         //$this->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
         (new BitacoraGeneralController)->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
+
+        (new BitacoraGeneralController)->mensajeTelegram($usuario,$sucursal[0]->sucursal,$sucursal[0]->direccion, $fecha,$request->id_venta,null,null,true);
+
 
     }
 }

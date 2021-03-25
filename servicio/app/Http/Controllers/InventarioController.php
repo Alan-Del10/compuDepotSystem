@@ -213,17 +213,18 @@ class InventarioController extends Controller
                                 $json_detalle = [
                                     'id_inventario' => $id,
                                     'id_sucursal' => $sucursal[0]->id_sucursal,
-                                    'stock' => $detalle['stock']
+                                    'stock' => 10
                                 ];
                                 if(!DB::table('detalle_inventario')->insert($json_detalle)){
                                     $request->flash();
                                     DB::rollBack();
                                     return redirect()->back()->withErrors('error', 'Algo pasó al intenar agregar los datos!');
                                 }
-                                $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal);
+                                /* $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal); */
                                 $descripcion = 'El usuario '.$usuario_nombre.' ha agregado al inventario el artículo con el UPC/EAN '.$request->upc.' con el título '.$request->titulo.' desde la sucursal '.$sucursal[0]->sucursal. ' con stock '.$detalle['stock'].'pza(s). a la fecha '.date_format($fecha_alta, 'Y-m-d H:i:s');
                                 //$this->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                                 (new BitacoraGeneralController)->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
+                                (new BitacoraGeneralController)->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha_alta,null,$request->upc, $request->titulo);
                             }
                         }
                         DB::commit();
@@ -412,6 +413,7 @@ class InventarioController extends Controller
                     $usuario_nombre = Auth::user()->name;
                     $usuario_id = Auth::user()->id;
                     if($request->detalleInventario != null && count($request->detalleInventario) != 0){
+                        $bitacora = new BitacoraGeneralController;
                         $detalleInventario = $request->detalleInventario;
                         DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
                         foreach($detalleInventario as $detalle){
@@ -420,7 +422,7 @@ class InventarioController extends Controller
                             $json_detalle = [
                                 'id_inventario' => $id,
                                 'id_sucursal' => $sucursal[0]->id_sucursal,
-                                'stock' => $detalle['stock']
+                                'stock' => 10
                             ];
 
                             if(!DB::table('detalle_inventario')->insert($json_detalle)){
@@ -428,12 +430,24 @@ class InventarioController extends Controller
                                 DB::rollBack();
                                 return redirect()->back()->withErrors('error', 'Algo pasó al intenar agregar los datos!');
                             }
-                            $descripcion = 'El usuario '.$usuario_nombre.' ha modificado los atributos del artículo con el UPC/EAN '.$request->upc.' con el título '.$request->titulo.' desde la sucursal '.$sucursal[0]->sucursal. ' con stock '.$detalle['stock'].'pza(s). a la fecha '.date_format($fecha_modificacion, 'Y-m-d H:i:s');
+                            $fecha = date_format($fecha_modificacion, 'Y-m-d H:i:s');
+                                //
+                                $descripcion = 'El usuario '.$usuario_nombre.' ha modificado los atributos del artículo con el UPC/EAN '.$request->upc.' con el título '.$request->titulo.' desde la sucursal '.$sucursal[0]->sucursal. ' con stock '.$detalle['stock'].'pza(s). a la fecha '. $fecha;
+
                             if($detalle['etiquetas'] > 0){
+
                                 $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal);
+
                             }
                             //$this->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
-                            (new BitacoraGeneralController)->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
+
+                            $bitacora->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
+
+                            //dd($sucursal[0]);
+
+                            $bitacora->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha,null,$request->upc, $request->titulo);
+
+
                         }
                     }elseif(DB::table('detalle_inventario')->where('id_inventario', $id)->get()){
                         DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
@@ -583,10 +597,16 @@ class InventarioController extends Controller
         $sucursal = DB::table('sucursal')->where('id_sucursal', $id_sucursal)->get();
         $compatibilidad = DB::table('compatibilidad')->where('id_inventario', $id_inventario)
         ->leftJoin('modelo', 'modelo.id_modelo', 'compatibilidad.id_modelo')->get();
-        $compatibilidadCadena = "";
-        foreach($compatibilidad as $compa){
-            $compatibilidadCadena .= $compa->modelo.'/';
-        }
+
+        if(sizeof($compatibilidad) > 1){
+            $compatibilidadCadena = "";
+            dd(sizeof($compatibilidad));
+            foreach($compatibilidad as $compa){
+
+                $compatibilidadCadena .= $compa->modelo.'/';
+
+            }
+
         /*if(Storage::disk('local')->exists('public/inventario/etiqueta/'.$inventario[0]->upc.'.pdf')) {
             Storage::disk('local')->delete('public/inventario/etiqueta/'.$inventario[0]->upc.'.pdf');
         }
@@ -607,6 +627,7 @@ class InventarioController extends Controller
         ->send();*/
 
         //Etiquetas para cada stock de producto
+
         if(Storage::disk('local')->exists('public/inventario/etiqueta/'.$inventario[0]->upc.'-2.pdf')) {
             Storage::disk('local')->delete('public/inventario/etiqueta/'.$inventario[0]->upc.'-2.pdf');
         }
@@ -630,6 +651,7 @@ class InventarioController extends Controller
         ->printer($sucursal[0]->etiquetas)
         ->file(storage_path('app\\public\\inventario\\etiqueta\\').$inventario[0]->upc.'-2.pdf')
         ->send();
+        }
     }
 
     /**
