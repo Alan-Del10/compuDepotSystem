@@ -111,9 +111,9 @@ class BitacoraGeneralController extends Controller
 
     }
 
-    public function mensajeTelegram($name,$sucursal,$direccion,$fecha_modificacion,$num_ticket=null,$upc=null,$titulo=null,$ticket_impreso=null)
+    public function mensajeTelegram($name,$sucursal,$direccion,$fecha_modificacion,$num_ticket=null,$upc=null,$titulo=null,$ticket_impreso=null,$stock=null)
     {
-
+        //dd($stock);
         if(gettype($fecha_modificacion) != "string"){
          $date = date_format($fecha_modificacion, 'Y-m-d H:i:s');
         } else {
@@ -129,8 +129,12 @@ class BitacoraGeneralController extends Controller
             . "<b> ". $titulo. "</b> "
             . " desde la sucursal"
             . "<b> ". $sucursal." ". $direccion ."</b> "
+            . "con stock "
+            ."<b> ". $stock ." pza(s) </b> "
             . "a la fecha"
             . "<b> ". $date . "</b> ";
+
+            //con stock '.$detalle['stock'].'pza(s). a la fecha
 
             Telegram::sendMessage([
                 'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
@@ -194,5 +198,16 @@ class BitacoraGeneralController extends Controller
 
     }
 
+
+    public function pruebaMensaje ($descripcion,$inventario=false, $venta=false)
+    {
+        //dd($descripcion);
+        Telegram::sendMessage([
+            'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
+            'parse_mode' => 'HTML',
+            'text' => $descripcion
+        ]);
+
+    }
 
 }

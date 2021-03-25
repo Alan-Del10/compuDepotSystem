@@ -445,7 +445,7 @@ class InventarioController extends Controller
 
                             //dd($sucursal[0]);
 
-                            $bitacora->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha,null,$request->upc, $request->titulo);
+                            $bitacora->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha,null,$request->upc, $request->titulo,null,$detalle['stock']);
 
 
                         }
