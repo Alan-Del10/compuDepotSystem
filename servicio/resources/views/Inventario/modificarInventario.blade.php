@@ -438,6 +438,7 @@
         var modeloTitulo = $('#modelo').val();
         var colorTitulo = $('#color').val();
         var compatibilidadTitulo = "";
+        let marcasExtras = [];
         //Función para detectar cunado se ingrese un UPC
         $(document).ready(function() {
             if ($('#tablaCompatibilidad').find('tr')) {
@@ -738,6 +739,7 @@
                                 $('#marca').val(response[0].marca);
                                 $('#marcaData').append('<option value="' + response[0].marca +
                                     '">' + response[0].marca + '</option>');
+                                marcasExtras.push(response[0]);
                                 console.log(response);
                             },
                             error: function(e) {
@@ -788,6 +790,17 @@
                 }
 
             });
+            if(marcasExtras){
+                marcasExtras.forEach(marca => {
+                    if ($('#marca').val() == marca.marca) {
+                        cadenaOption = cadenaOption + '<option value="' + marca.marca + '" selected>' + marca
+                            .marca + '</option>';
+                    } else {
+                        cadenaOption = cadenaOption + '<option value="' + marca.marca + '">' + marca.marca +
+                            '</option>';
+                    }
+                });
+            }
             cadenaOption = cadenaOption + '</select>';
 
             Swal.fire({

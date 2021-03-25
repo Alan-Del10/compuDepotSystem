@@ -244,6 +244,7 @@
         var modelos = @json($modelos);
         var marcas = @json($marcas);
         var categorias = @json($categorias);
+        let marcasExtras = [];
         let total = 0;
         //Busca el producto en la BD, des ser enontrado lo agrea con sus datos, sino, agrega un renglón para que el usuario inserte los datos
         $('#upc').on('input', function() {
@@ -300,7 +301,7 @@
             total = 0;
             if ($('#paqueteTicketTabla').children()) {
                 $.each($('#paqueteTicketTabla').children(), function() {
-                    total += $(this).find('.costo').text() * $(this).find('.cantidad').text();
+                    total += $(this).find('#costoTabla').text() * $(this).find('#cantidadTabla').text();
                 });
                 $('#total').val(total);
             } else {
@@ -440,6 +441,17 @@
                 }
 
             });
+            if(marcasExtras){
+                marcasExtras.forEach(marca => {
+                    if ($('#marca').val() == marca.marca) {
+                        cadenaOption = cadenaOption + '<option value="' + marca.marca + '" selected>' + marca
+                            .marca + '</option>';
+                    } else {
+                        cadenaOption = cadenaOption + '<option value="' + marca.marca + '">' + marca.marca +
+                            '</option>';
+                    }
+                });
+            }
             cadenaOption = cadenaOption + '</select>';
 
             Swal.fire({
@@ -722,9 +734,9 @@
             }
 
             if (total) {
-                totalValidacion = false;
-            } else {
                 totalValidacion = true;
+            } else {
+                totalValidacion = false;
             }
             if (proveedorValidacion == true && productosValidacion == true && totalValidacion == true &&
                 numeroCompraValidacion == true) {
@@ -743,7 +755,7 @@
                     },
                     success: function(response) {
                         console.log(response);
-                        /*if(response.response == "success"){
+                        if(response.response == "success"){
                             $('#mensajeCompra ul').text(response.message);
                             $('#mensajeCompra').removeClass('alert-danger').addClass('alert-success');
                             $('#mensajeCompra').show();
@@ -752,18 +764,21 @@
                             $('#mensajeCompra').removeClass('alert-success').addClass('alert-danger');
                             $('#mensajeCompra').show();
                         }
-                        limpiarFormulario();*/
+                        //limpiarFormulario();
                     },
                     error: function(e) {
                         console.log(e);
                         Swal.fire({
-                            html: e.responseText
+                            html: e
                         })
                     }
                 });
             }
 
         }
-
+        //Limpia los datalist cada que se hace un click
+        $('input[list]').on('click', function() {
+            $(this).val("");
+        });
     </script>
 @endsection

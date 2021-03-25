@@ -155,6 +155,7 @@ class VentaController extends Controller
                     $descripcion = 'El usuario '.$usuario_nombre.' ha realizado la venta del ticket no. '.$id.' desde la sucursal '.$sucursal[0]->sucursal. ' a la fecha '.date_format($fecha_venta, 'Y-m-d H:i:s');
                     //$this->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
                     (new BitacoraGeneralController)->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
+                    //(new BitacoraGeneralController)->mensajeTelegram($usuario_nombre,$sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha_venta, $id);
                     DB::commit();
                     return ['response'=>'success', 'message'=>'Se realizó correctamente la venta!.'];
                 }else{
@@ -232,7 +233,7 @@ class VentaController extends Controller
             ->leftJoin('color', 'color.id_color', 'inventario.id_color')
             ->leftJoin('capacidad', 'capacidad.id_capacidad', 'inventario.id_capacidad')
             ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
-            ->leftJoin('sucursal', 'sucursal.id_sucursal', 'detalle_inventario.id_sucursal')->where('upc', $request->upc)->where('detalle_inventario.id_sucursal', Auth::user()->id_sucursal)
+            ->where('upc', $request->upc)
             ->where('stock', '>', 0)->get();
             if(count($articulo) > 0){
                 foreach($articulo as $art){
@@ -408,6 +409,8 @@ class VentaController extends Controller
         $descripcion = 'El usuario '.$usuario.' ha reimpreso el ticket de la venta no. '.$request->id_venta.' desde la sucursal '.$sucursal[0]->sucursal. ' a la fecha '.date_format($fecha, 'Y-m-d H:i:s');
         //$this->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
         (new BitacoraGeneralController)->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
+
+        //(new BitacoraGeneralController)->mensajeTelegram($usuario,$sucursal[0]->sucursal,$sucursal[0]->direccion, $fecha,$request->id_venta,null,null,true);
 
     }
 }
