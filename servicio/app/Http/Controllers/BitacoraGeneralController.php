@@ -114,6 +114,7 @@ class BitacoraGeneralController extends Controller
     public function mensajeTelegram($name,$sucursal,$direccion,$fecha_modificacion,$num_ticket=null,$upc=null,$titulo=null,$ticket_impreso=null,$stock=null)
     {
         //dd($stock);
+        try{
         if(gettype($fecha_modificacion) != "string"){
          $date = date_format($fecha_modificacion, 'Y-m-d H:i:s');
         } else {
@@ -194,7 +195,10 @@ class BitacoraGeneralController extends Controller
         }
 
         //dd(gettype($usuario_nombre),gettype($upc),gettype($titulo),gettype($sucursal),gettype($fecha_modificacion));
-
+    }catch(\Throwable $th){
+            dd(gettype($name),gettype($sucursal),gettype($direccion),gettype($fecha_modificacion),gettype($num_ticket),gettype($upc),gettype($titulo),gettype($ticket_impreso),gettype($stock));
+            return redirect()->back()->withErrors($th);
+    }
 
     }
 
