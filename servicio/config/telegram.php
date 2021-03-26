@@ -33,8 +33,17 @@ return [
     */
     'bots'                         => [
         'mybot' => [
-            'username'            => 'TelegramBot',
-            'token'               => env('TELEGRAM_BOT_TOKEN', 'YOUR-BOT-TOKEN'),
+            'username'            => 'TesttingMikeBot',
+            'token'               => env('TELEGRAM_BOT_TOKEN_BITACORA', '1702930122:AAFPdTZ7SNnoIadfIdPKVJmaHsmDthVZ114I'),
+            'certificate_path'    => env('TELEGRAM_CERTIFICATE_PATH', 'YOUR-CERTIFICATE-PATH'),
+            'webhook_url'         => env('TELEGRAM_WEBHOOK_URL', 'YOUR-BOT-WEBHOOK-URL'),
+            'commands'            => [
+                //Acme\Project\Commands\MyTelegramBot\BotCommand::class
+            ],
+        ],
+        'ventaBot' => [
+            'username'            => 'DepartamentoVentasbo',
+            'token'               => env('TELEGRAM_BOT_TOKEN_VENTAS', '1620163885:AAFvVcwwqLzdmC_N91hXXIM20ViHuGe3D5I'),
             'certificate_path'    => env('TELEGRAM_CERTIFICATE_PATH', 'YOUR-CERTIFICATE-PATH'),
             'webhook_url'         => env('TELEGRAM_WEBHOOK_URL', 'YOUR-BOT-WEBHOOK-URL'),
             'commands'            => [
@@ -58,6 +67,7 @@ return [
     |
     */
     'default'                      => 'mybot',
+    'venta'                      => 'venta',
 
     /*
     |--------------------------------------------------------------------------
@@ -157,13 +167,11 @@ return [
                 Acme\Project\Commands\LoginCommand::class,
                 Acme\Project\Commands\SomeCommand::class,
             ],
-
             'stats' => [
                 Acme\Project\Commands\UserStatsCommand::class,
                 Acme\Project\Commands\SubscriberStatsCommand::class,
                 Acme\Project\Commands\ReportsCommand::class,
             ],
-
             'admin' => [
                 'auth', // Command Group Name.
                 'stats' // Command Group Name.

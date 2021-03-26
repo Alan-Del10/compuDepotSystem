@@ -155,7 +155,7 @@ class VentaController extends Controller
                     $descripcion = 'El usuario '.$usuario_nombre.' ha realizado la venta del ticket no. '.$id.' desde la sucursal '.$sucursal[0]->sucursal. ' a la fecha '.date_format($fecha_venta, 'Y-m-d H:i:s');
                     //$this->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
                     (new BitacoraGeneralController)->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
-                    //(new BitacoraGeneralController)->mensajeTelegram($usuario_nombre,$sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha_venta, $id);
+                    (new BitacoraGeneralController)->mensajeTelegram($usuario_nombre,$sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha_venta, $id);
                     DB::commit();
                     return ['response'=>'success', 'message'=>'Se realizó correctamente la venta!.'];
                 }else{
@@ -410,7 +410,7 @@ class VentaController extends Controller
         //$this->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
         (new BitacoraGeneralController)->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
 
-        //(new BitacoraGeneralController)->mensajeTelegram($usuario,$sucursal[0]->sucursal,$sucursal[0]->direccion, $fecha,$request->id_venta,null,null,true);
+        (new BitacoraGeneralController)->mensajeTelegram($usuario,$sucursal[0]->sucursal,$sucursal[0]->direccion, $fecha,$request->id_venta,null,null,true);
 
     }
 }

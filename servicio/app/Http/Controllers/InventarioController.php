@@ -222,7 +222,8 @@ class InventarioController extends Controller
                                 $descripcion = 'El usuario ' . $usuario_nombre . ' ha agregado al inventario el artículo con el UPC/EAN ' . $request->upc . ' con el título ' . $request->titulo . ' desde la sucursal ' . $sucursal[0]->sucursal . ' con stock ' . $detalle['stock'] . 'pza(s). a la fecha ' . date_format($fecha_alta, 'Y-m-d H:i:s');
                                 //$this->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                                 (new BitacoraGeneralController)->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
-                                //(new BitacoraGeneralController)->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha_alta,null,$request->upc, $request->titulo);
+                                (new BitacoraGeneralController)->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha_alta,null,$request->upc, $request->titulo,null,$detalle['stock']);
+
                             }
                         }
                         DB::commit();
@@ -434,7 +435,8 @@ class InventarioController extends Controller
                             }
                             //$this->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                             $bitacora->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
-                            //$bitacora->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha,null,$request->upc, $request->titulo);
+                            $bitacora->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha,null,$request->upc, $request->titulo,null,$detalle['stock']);
+
                         }
                     } elseif (DB::table('detalle_inventario')->where('id_inventario', $id)->get()) {
                         DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
@@ -589,9 +591,7 @@ class InventarioController extends Controller
             foreach ($compatibilidad as $compa) {
                 $compatibilidadCadena .= $compa->modelo . '/';
             }
-        }else{
-            $compatibilidadCadena="";
-        }
+
             /*if(Storage::disk('local')->exists('public/inventario/etiqueta/'.$inventario[0]->upc.'.pdf')) {
             Storage::disk('local')->delete('public/inventario/etiqueta/'.$inventario[0]->upc.'.pdf');
         }
@@ -635,7 +635,7 @@ class InventarioController extends Controller
                 ->printer($sucursal[0]->etiquetas)
                 ->file(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf')
                 ->send();
-        //}
+        }
     }
 
     /**

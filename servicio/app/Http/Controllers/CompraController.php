@@ -23,7 +23,11 @@ class CompraController extends Controller
      */
     public function index()
     {
-        return view('Compra.compra');
+        $compras = Compra::orderBy('id_compra', 'DESC')
+        ->leftJoin('proveedor', 'proveedor.id_proveedor', 'compra.id_proveedor')
+        ->leftJoin('usuario', 'usuario.id', 'compra.id_usuario')
+        ->paginate(10);
+        return view('Compra.compra', compact('compras'));
     }
 
     /**
@@ -222,9 +226,10 @@ class CompraController extends Controller
         $totalTexto = new NumberFormatter("es", NumberFormatter::SPELLOUT);
         $receipt = (string) (new ReceiptPrinter)
             ->setTextSize(1,2)
+            ->centerAlign()
             ->text("Datos Del Proveedor y Paquete")
             ->setTextSize(1,1)
-            ->text($compra[0]->proveedor)
+            ->text('Proveedor: '.$compra[0]->proveedor)
             ->text('No. Compra Proveedor: '.$compra[0]->no_compra)
             ->line()
             ->leftAlign()
