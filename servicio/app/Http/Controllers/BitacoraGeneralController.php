@@ -104,94 +104,139 @@ class BitacoraGeneralController extends Controller
         ]);
     }
 
-    public function mensajeTelegram($name, $sucursal, $direccion, $fecha_modificacion, $num_ticket = null, $upc = null, $titulo = null, $ticket_impreso = null, $stock = null)
+    public function mensajeTelegram($name,$sucursal=null,$direccion=null,$fecha_modificacion=null,$num_ticket=null,$upc=null,$titulo=null,$ticket_impreso=null,$stock=null,$puesto=null,$correo=null,$ip=null)
     {
-        try {
-            //dd($name,$sucursal,$direccion,$fecha_modificacion,$num_ticket,$upc,$titulo,$ticket_impreso,$stock);
-            if (gettype($fecha_modificacion) != "string") {
-                $date = date_format($fecha_modificacion, 'Y-m-d H:i:s');
-            } else {
-                $date = $fecha_modificacion;
-            }
-
-            if (!is_null($upc)) {
-                $text = "El usuario "
-                    . "<b>" . $name . "</b> "
-                    . "ha modificado los atributos del artículo con el"
-                    . "<b> UPC/EAN " . $upc . "</b> "
-                    . "con el título"
-                    . "<b> " . $titulo . "</b> "
-                    . " desde la sucursal"
-                    . "<b> " . $sucursal . " " . $direccion . "</b> "
-                    . "con stock "
-                    . "<b> " . $stock . " pza(s) </b> "
-                    . "a la fecha"
-                    . "<b> " . $date . "</b> ";
-
-                //con stock '.$detalle['stock'].'pza(s). a la fecha
-
-                Telegram::sendMessage([
-                    'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
-                    'parse_mode' => 'HTML',
-                    'text' => $text
-                ]);
-            }
-
-            if (!is_null($num_ticket)) {
-                $text = "El usuario "
-                    . "<b>" . $name . "</b> "
-                    . "ha realizado la venta del ticket no."
-                    . "<b> " . $num_ticket . "</b> "
-                    . " desde la sucursal"
-                    . "<b> " . $sucursal . " " . $direccion . "</b> "
-                    . "a la fecha"
-                    . "<b> " . $date . "</b> ";
-
-                Telegram::sendMessage([
-                    'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
-                    'parse_mode' => 'HTML',
-                    'text' => $text
-                ]);
-
-                Telegram::sendMessage([
-                    'chat_id' => env('TELEGRAM_CHANNEL_ID_VENTA'),
-                    'parse_mode' => 'HTML',
-                    'text' => $text
-                ]);
-            }
-
-            if (!is_null($ticket_impreso)) {
-                /* descripcion = 'El usuario '.$usuario.' ha reimpreso el ticket de la venta no. '.$request->id_venta.' desde la sucursal '.$sucursal[0]->sucursal. ' a la fecha '.date_format($fecha, 'Y-m-d H:i:s'); */
-                $text = "El usuario "
-                    . "<b>" . $name . "</b> "
-                    . "ha reimpreso el ticket de la venta no."
-                    . "<b> " . $num_ticket . "</b> "
-                    . " desde la sucursal"
-                    . "<b> " . $sucursal . " " . $direccion . "</b> "
-                    . "a la fecha"
-                    . "<b> " . $date . "</b> ";
 
 
-                Telegram::sendMessage([
-                    'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
-                    'parse_mode' => 'HTML',
-                    'text' => $text
-                ]);
+        //dd($stock);
+        if(gettype($fecha_modificacion) != "string"){
+         $date = date_format($fecha_modificacion, 'Y-m-d H:i:s');
+        } else {
+            $date = $fecha_modificacion;
+        }
+        try{
+        if(!is_null($upc)){
+            $text = "El usuario "
+            . "<b>". $name. "</b> "
+            ."ha modificado los atributos del artículo con el"
+            . "<b> UPC/EAN ". $upc. "</b> "
+            . "con el título"
+            . "<b> ". $titulo. "</b> "
+            . " desde la sucursal"
+            . "<b> ". $sucursal." ". $direccion ."</b> "
+            . "con stock "
+            ."<b> ". $stock ." pza(s) </b> "
+            . "a la fecha"
+            . "<b> ". $date . "</b> ";
 
-                Telegram::sendMessage([
-                    'chat_id' => env('TELEGRAM_CHANNEL_ID_VENTA'),
-                    'parse_mode' => 'HTML',
-                    'text' => $text
-                ]);
-            }
-        } catch (\Throwable $th) {
-            dd(gettype($name),gettype($sucursal),gettype($direccion),gettype($fecha_modificacion),gettype($num_ticket),gettype($upc),gettype($titulo),gettype($ticket_impreso),gettype($stock));
-            return redirect()->back()->withErrors($th);
+            //con stock '.$detalle['stock'].'pza(s). a la fecha
+
+            /* Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHAT_TEST'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]); */
+            Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]);
+        }
+
+        if(!is_null($num_ticket)){
+            $text = "El usuario "
+            . "<b>". $name. "</b> "
+            ."ha realizado la venta del ticket no."
+            . "<b> ". $num_ticket. "</b> "
+            . " desde la sucursal"
+            . "<b> ". $sucursal." ". $direccion . "</b> "
+            . "a la fecha"
+            . "<b> ". $date . "</b> ";
+           /*  Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHAT_TEST'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]); */
+
+             Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]);
+
+            Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHANNEL_ID_VENTA'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]);
+
+        }
+
+        if(!is_null($ticket_impreso)){
+
+            $text = "El usuario "
+            . "<b>". $name. "</b> "
+            ."ha reimpreso el ticket de la venta no."
+            . "<b> ". $num_ticket. "</b> "
+            . " desde la sucursal"
+            . "<b> ". $sucursal." ". $direccion . "</b> "
+            . "a la fecha"
+            . "<b> ". $date . "</b> ";
+
+
+            Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]);
+
+            Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHANNEL_ID_VENTA'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]);
+         /*    Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHAT_TEST'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]); */
+
+        }
+
+        if(!is_null($puesto)){
+
+            $text = "El usuario "
+            . "<b>". $name. "</b> "
+            ."ha ingresado al sistema con un correo electronico"
+            . "<b> ". $correo. "</b> "
+            . " clasificado como"
+            . "<b> ".$puesto . "</b> "
+            . "a la fecha"
+            . "<b> ". $date . "</b> "
+            ." con un IP "
+            . "<b> ". $ip . "</b> ";
+
+            /* Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHAT_TEST'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]); */
+            Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
+                'parse_mode' => 'HTML',
+                'text' => $text
+            ]);
+
         }
 
 
-        //dd(gettype($usuario_nombre),gettype($upc),gettype($titulo),gettype($sucursal),gettype($fecha_modificacion));
+    }catch(\Throwable $th){
+        dd($th);
+        dd(gettype($name),gettype($sucursal),gettype($direccion),gettype($date),gettype($num_ticket),gettype($upc),gettype($titulo),gettype($ticket_impreso),gettype($stock));
+        return redirect()->back()->withErrors($th);
+    }
 
 
     }
+
 }

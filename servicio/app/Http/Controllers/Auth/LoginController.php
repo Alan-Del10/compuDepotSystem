@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+/*Mandar mensaje a Bitacora del login */
+use App\Http\Controllers\BitacoraGeneralController;
+use DateTime;
 
 class LoginController extends Controller
 {
@@ -53,6 +56,13 @@ class LoginController extends Controller
         if(Auth::attempt($request->only('email','password'))){
             $guard = DB::table('usuario')->leftJoin('tipo_usuario', 'tipo_usuario.id_tipo_usuario', 'usuario.id_tipo_usuario')->where('email',$request->email)->get();
             if(Auth::guard($guard[0]->guard)->attempt($request->only('email','password'), $request->filled('remember'))){
+
+                $fecha_login = new DateTime();
+
+                $ip = empty($_SERVER["REMOTE_ADDR"]) ? "Desconocida" : $_SERVER["REMOTE_ADDR"];
+
+                (new BitacoraGeneralController)->mensajeTelegram($guard[0]->name,null,null,$fecha_login,null,null,null,null,null,$guard[0]->puesto,$guard[0]->email,$ip);
+
                 return redirect()->intended('/dashboard')->with('status','Has iniciado sesión como '.$guard[0]->puesto);
             }
             //Fallo de autenticación...

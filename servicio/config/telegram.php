@@ -33,23 +33,14 @@ return [
     */
     'bots'                         => [
         'mybot' => [
-            'username'            => 'TesttingMikeBot',
-            'token'               => env('TELEGRAM_BOT_TOKEN_BITACORA', '1702930122:AAFPdTZ7SNnoIadfIdPKVJmaHsmDthVZ114I'),
+            'username'            => 'bitacoraGeneralbot',
+            'token'               => env('TELEGRAM_BOT_TOKEN', '1702930122:AAFPdTZ7SNnoIadfIdPKVJmaHsmDthVZ114I'),
             'certificate_path'    => env('TELEGRAM_CERTIFICATE_PATH', 'YOUR-CERTIFICATE-PATH'),
             'webhook_url'         => env('TELEGRAM_WEBHOOK_URL', 'YOUR-BOT-WEBHOOK-URL'),
             'commands'            => [
                 //Acme\Project\Commands\MyTelegramBot\BotCommand::class
             ],
-        ],
-        'ventaBot' => [
-            'username'            => 'DepartamentoVentasbo',
-            'token'               => env('TELEGRAM_BOT_TOKEN_VENTAS', '1620163885:AAFvVcwwqLzdmC_N91hXXIM20ViHuGe3D5I'),
-            'certificate_path'    => env('TELEGRAM_CERTIFICATE_PATH', 'YOUR-CERTIFICATE-PATH'),
-            'webhook_url'         => env('TELEGRAM_WEBHOOK_URL', 'YOUR-BOT-WEBHOOK-URL'),
-            'commands'            => [
-                //Acme\Project\Commands\MyTelegramBot\BotCommand::class
-            ],
-        ],
+        ]
 
         //        'mySecondBot' => [
         //            'username'  => 'AnotherTelegram_Bot',
@@ -67,7 +58,6 @@ return [
     |
     */
     'default'                      => 'mybot',
-    'venta'                      => 'venta',
 
     /*
     |--------------------------------------------------------------------------

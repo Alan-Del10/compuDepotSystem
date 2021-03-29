@@ -13,6 +13,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Sucursal;
 
+/*Mandar mensaje a Bitacora del registro */
+use App\Http\Controllers\BitacoraGeneralController;
+use DateTime;
+
+
 class RegisterController extends Controller
 {
     /*
@@ -92,6 +97,13 @@ class RegisterController extends Controller
         }*/
         $id_tipo_usuario = $id_tipo_usuario->id_tipo_usuario;
         $id_sucursal = $id_sucursal->id_sucursal;
+
+        dd($data['sucursal']);
+
+        $fecha_login = new DateTime();
+
+        (new BitacoraGeneralController)->mensajeTelegram($data['name'],$data['sucursal'],null,$fecha_login,null,null,null,null,null,$data['tipo_usuario'],$data['email']);
+
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],

@@ -222,8 +222,7 @@ class InventarioController extends Controller
                                 $descripcion = 'El usuario ' . $usuario_nombre . ' ha agregado al inventario el artículo con el UPC/EAN ' . $request->upc . ' con el título ' . $request->titulo . ' desde la sucursal ' . $sucursal[0]->sucursal . ' con stock ' . $detalle['stock'] . 'pza(s). a la fecha ' . date_format($fecha_alta, 'Y-m-d H:i:s');
                                 //$this->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                                 (new BitacoraGeneralController)->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
-                                (new BitacoraGeneralController)->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha_alta,null,$request->upc, $request->titulo,null,$detalle['stock']);
-
+                                (new BitacoraGeneralController)->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal, $sucursal[0]->direccion, $fecha_alta, null, $request->upc, $request->titulo, null, $detalle['stock']);
                             }
                         }
                         DB::commit();
@@ -435,8 +434,7 @@ class InventarioController extends Controller
                             }
                             //$this->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                             $bitacora->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
-                            $bitacora->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha,null,$request->upc, $request->titulo,null,$detalle['stock']);
-
+                            $bitacora->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal, $sucursal[0]->direccion, $fecha, null, $request->upc, $request->titulo, null, $detalle['stock']);
                         }
                     } elseif (DB::table('detalle_inventario')->where('id_inventario', $id)->get()) {
                         DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
@@ -585,14 +583,14 @@ class InventarioController extends Controller
         $sucursal = DB::table('sucursal')->where('id_sucursal', $id_sucursal)->get();
         $compatibilidad = DB::table('compatibilidad')->where('id_inventario', $id_inventario)
             ->leftJoin('modelo', 'modelo.id_modelo', 'compatibilidad.id_modelo')->get();
-            $compatibilidadCadena="";
-        if (sizeof($compatibilidad) > 1) {
+        $compatibilidadCadena = "";
+        if (sizeof($compatibilidad) > 0) {
             $compatibilidadCadena = "";
             foreach ($compatibilidad as $compa) {
                 $compatibilidadCadena .= $compa->modelo . '/';
             }
-
-            /*if(Storage::disk('local')->exists('public/inventario/etiqueta/'.$inventario[0]->upc.'.pdf')) {
+        }
+        /*if(Storage::disk('local')->exists('public/inventario/etiqueta/'.$inventario[0]->upc.'.pdf')) {
             Storage::disk('local')->delete('public/inventario/etiqueta/'.$inventario[0]->upc.'.pdf');
         }
         $datos = [
@@ -611,31 +609,30 @@ class InventarioController extends Controller
         ->file(storage_path('app\\public\\inventario\\etiqueta\\').$inventario[0]->upc.'.pdf')
         ->send();*/
 
-            //Etiquetas para cada stock de producto
-            if (Storage::disk('local')->exists('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf')) {
-                Storage::disk('local')->delete('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf');
-            }
-            $imagen = base64_encode(Storage::get('public/sucursales/' . $sucursal[0]->logo));
-            $datos = [
-                'codigo' => $inventario[0]->upc,
-                'precio_min' => $inventario[0]->precio_min,
-                'precio_max' => $inventario[0]->precio_max,
-                'categoria' => $inventario[0]->categoria,
-                'marca' => $inventario[0]->marca,
-                'modelo' => $inventario[0]->modelo,
-                'color' => $inventario[0]->color,
-                'compatibilidad' => $compatibilidadCadena,
-                'total' => $etiquetas,
-                'logo' => $imagen
-            ];
-            PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)
-                ->save(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf');
-
-            Printing::newPrintTask()
-                ->printer($sucursal[0]->etiquetas)
-                ->file(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf')
-                ->send();
+        //Etiquetas para cada stock de producto
+        if (Storage::disk('local')->exists('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf')) {
+            Storage::disk('local')->delete('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf');
         }
+        $imagen = base64_encode(Storage::get('public/sucursales/' . $sucursal[0]->logo));
+        $datos = [
+            'codigo' => $inventario[0]->upc,
+            'precio_min' => $inventario[0]->precio_min,
+            'precio_max' => $inventario[0]->precio_max,
+            'categoria' => $inventario[0]->categoria,
+            'marca' => $inventario[0]->marca,
+            'modelo' => $inventario[0]->modelo,
+            'color' => $inventario[0]->color,
+            'compatibilidad' => $compatibilidadCadena,
+            'total' => $etiquetas,
+            'logo' => $imagen
+        ];
+        PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)
+            ->save(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf');
+
+        Printing::newPrintTask()
+            ->printer($sucursal[0]->etiquetas)
+            ->file(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf')
+            ->send();
     }
 
     /**

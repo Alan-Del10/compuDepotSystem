@@ -314,6 +314,18 @@
                             <p>Categorias</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{route('TraspasoInventario.index')}}" class="nav-link">
+                            <i class="fas fa-random nav-icon"></i>
+                            <p>Listado de Traspasos</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{route("TraspasoInventario.create")}}" class="nav-link">
+                            <i class="fas fa-exchange-alt nav-icon"></i>
+                            <p>Realizar Traspaso</p>
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="nav-item">
