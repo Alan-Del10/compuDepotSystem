@@ -27,8 +27,8 @@
                             <!-- /.card-header -->
                             <div class="card-body">
                                 <div class="form-group row">
-                                    <label for="cliente" class="col-sm-3 col-form-label">Nombre Cliente</label>
-                                    <div class="col-sm-9 input-group">
+                                    <label for="cliente" class="col-sm-2 col-form-label">Nombre Cliente</label>
+                                    <div class="col-sm-4 input-group">
                                         <input type="text" list="clienteData" class="form-control @error('cliente') is-invalid @enderror" id="cliente" name="cliente" value="{{old('cliente')}}" placeholder="Seleccionar Cliente"/>
                                         <datalist id="clienteData">
                                             @foreach ($clientes as $cliente)
@@ -38,6 +38,15 @@
                                         <div class="input-group-append">
                                             <button type="button" class="btn btn-primary" id="habilitarFormCliente"><i class="fas fa-plus"></i></button>
                                         </div>
+                                    </div>
+                                    <label for="usuario_cliente" class="col-sm-2 col-form-label">¿De quién es cliente?</label>
+                                    <div class="col-sm-4 input-group">
+                                        <input type="text" list="usuarioClienteData" class="form-control @error('usuario_cliente') is-invalid @enderror" id="usuario_cliente" name="usuario_cliente" value="{{old('usuario_cliente')}}" placeholder="Seleccionar Cliente"/>
+                                        <datalist id="usuarioClienteData">
+                                            @foreach ($usuarios as $usuario)
+                                            <option value="{{$usuario->id}} {{$usuario->name}}">{{$usuario->name}}</option>
+                                            @endforeach
+                                        </datalist>
                                     </div>
                                 </div>
                                 <div class="form-group row" id="mensajeCliente" style="display:none">
@@ -511,6 +520,7 @@
             let ticket = [];
             let formas_pago = [];
             let cliente = $('#cliente').val();
+            let usuario_cliente = $('#usuario_cliente').val();
             let totalFormasPago = 0.0;
             $.each($('#ticketTabla').children(), function(i,x){
                 ticket.push(
@@ -559,6 +569,7 @@
                     url: "{{route('Venta.store')}}",
                     data:{
                         'cliente' : cliente,
+                        'usuario_cliente' : usuario_cliente,
                         'ticket' : ticket,
                         'formas_pago' : formas_pago,
                         'totales' :
