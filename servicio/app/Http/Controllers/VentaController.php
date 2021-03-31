@@ -312,7 +312,7 @@ class VentaController extends Controller
         $impresora->close();
     }
 
-    public function imprimirTicketVentaV2($id_venta){
+    public function imprimirTicketVentaV2($id_venta,$reimprimr=false){
         try{
         $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'sucursal.politicas as politicas', 'sucursal.tickets as tickets', 'cliente.*', 'usuario.*', 'usuario2.name as cliente_usuario')
         ->where('id_venta', $id_venta)
@@ -472,7 +472,7 @@ class VentaController extends Controller
             ->copies(1)
             ->send();
             $fecha_venta = new DateTime();
-            (new BitacoraGeneralController)->mensajeTelegram($venta[0]->name,$venta[0]->sucursal,$venta[0]->direccion_sucursal,$fecha_venta, $id_venta,null,null,null,null,null,null,null,$totalArticulos,$venta[0]->cliente_usuario,$venta[0]->total,$prod_mensaje);
+            (new BitacoraGeneralController)->mensajeTelegram($venta[0]->name,$venta[0]->sucursal,$venta[0]->direccion_sucursal,$fecha_venta, $id_venta,null,null,null,null,null,null,null,$totalArticulos,$venta[0]->cliente_usuario,$venta[0]->total,$prod_mensaje,null,$reimprimr);
     }catch(\Throwable $th){
         dd($th);
         $fecha_venta = new DateTime();
@@ -481,7 +481,7 @@ class VentaController extends Controller
     }
 
     public function reimprimirTicket(Request $request){
-        $this->imprimirTicketVentaV2($request->id_venta);
+        $this->imprimirTicketVentaV2($request->id_venta,true);
         $fecha = new DateTime();
         $usuario = Auth::user()->name;
         $usuario_id = Auth::user()->id;
@@ -491,7 +491,9 @@ class VentaController extends Controller
         //$this->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
         (new BitacoraGeneralController)->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
 
-        (new BitacoraGeneralController)->mensajeTelegram($usuario,$sucursal[0]->sucursal,$sucursal[0]->direccion, $fecha,$request->id_venta,null,null,true);
+        (new BitacoraGeneralController)->mensajeTelegram($usuario,$sucursal[0]->sucursal,$sucursal[0]->direccion, $fecha,$request->id_venta,null,null,true,null,null,null,null,null,null,null,null,null,true);
+
+        
 
     }
 }

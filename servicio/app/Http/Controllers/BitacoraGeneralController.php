@@ -110,7 +110,7 @@ class BitacoraGeneralController extends Controller
         dd($activity);
     }
 
-    public function mensajeTelegram($name,$sucursal=null,$direccion=null,$fecha_modificacion=null,$num_ticket=null,$upc=null,$titulo=null,$ticket_impreso=null,$stock=null,$puesto=null,$correo=null,$ip=null,$tot_articulos=null,$cliente_de = null,$total_venta=null,$productos=null,$se_cambio=null)
+    public function mensajeTelegram($name,$sucursal=null,$direccion=null,$fecha_modificacion=null,$num_ticket=null,$upc=null,$titulo=null,$ticket_impreso=null,$stock=null,$puesto=null,$correo=null,$ip=null,$tot_articulos=null,$cliente_de = null,$total_venta=null,$productos=null,$se_cambio=null,$reimprimir=false)
     {
 
 
@@ -146,7 +146,7 @@ class BitacoraGeneralController extends Controller
             ]);
         }
 
-        if(!is_null($num_ticket) && is_null($ticket_impreso)){
+        if(!is_null($num_ticket) && is_null($ticket_impreso) && !is_null($productos) && !$reimprimir){
             //Para chat de venta
             $text = "El usuario "
             . "<b>". $name. "</b> "
@@ -174,7 +174,7 @@ class BitacoraGeneralController extends Controller
 
         }
 
-        if(!is_null($num_ticket) && is_null($ticket_impreso)){
+        if(!is_null($num_ticket) && is_null($ticket_impreso) && !is_null($tot_articulos) && !is_null($cliente_de) && !is_null($total_venta) && !$reimprimir){
             //Para chat de bitacora
             $text = "El usuario "
             . "<b>". $name. "</b> "
@@ -205,7 +205,7 @@ class BitacoraGeneralController extends Controller
 
         }
 
-        if(!is_null($ticket_impreso)){
+        if(!is_null($ticket_impreso) && $reimprimir){
 
             $text = "El usuario "
             . "<b>". $name. "</b> "
