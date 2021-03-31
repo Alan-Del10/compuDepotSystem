@@ -222,7 +222,7 @@ class InventarioController extends Controller
                                 $descripcion = 'El usuario ' . $usuario_nombre . ' ha agregado al inventario el artículo con el UPC/EAN ' . $request->upc . ' con el título ' . $request->titulo . ' desde la sucursal ' . $sucursal[0]->sucursal . ' con stock ' . $detalle['stock'] . 'pza(s). a la fecha ' . date_format($fecha_alta, 'Y-m-d H:i:s');
                                 //$this->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                                 (new BitacoraGeneralController)->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
-                                (new BitacoraGeneralController)->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha_alta,null,$request->upc, $request->titulo);
+                                (new BitacoraGeneralController)->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal, $sucursal[0]->direccion, $fecha_alta, null, $request->upc, $request->titulo, null, $detalle['stock']);
                             }
                         }
                         DB::commit();
@@ -318,11 +318,14 @@ class InventarioController extends Controller
                 'precioMax' => 'required|numeric'
             ]);
             $inventario = Inventario::find($id);
+
             //Si encuentra datos erroneos los regresa con un mensaje de error
             if ($validator->fails()) {
                 return redirect()->back()->withErrors($validator);
+
             } else {
                 $fecha_modificacion = new DateTime();
+
                 if ($request->checkOnline == "on") {
                     $online = true;
                 } else {
@@ -330,12 +333,14 @@ class InventarioController extends Controller
                 }
                 $fileName = "";
 
+
+
                 if ($request->has('imagenProducto')) {
                     $image      = $request->file('imagenProducto');
                     $fileName   = $request->upc . '.' . $image->getClientOriginalExtension();
                     $img = Image::make($image->getRealPath());
                     $extension = $image->getClientOriginalExtension();
-                    //dd($img);
+
                     $img->resize(120, 120, function ($constraint) {
                         $constraint->aspectRatio();
                     });
@@ -347,15 +352,19 @@ class InventarioController extends Controller
                     }
                     Storage::disk('local')->put('public/inventario' . '/' . $fileName, $img, 'public');
                 } else {
+
                     $verificarImagen = DB::table('inventario')->where('upc', $request->upc)->where('imagen', '!=', null)->get();
                     if (count($verificarImagen) > 0) {
                         $img = $this->convertToJSON($verificarImagen);
                         $fileName = $img[0]->imagen;
                     }
+
                 }
                 $categoria = DB::table('categoria')->where('categoria', $request->categoria)->get();
+
                 $categoria = $this->comprobarConsultaDB($categoria);
                 $modelo = DB::table('modelo')->where('modelo', $request->modelo)->get();
+
                 $modelo = $this->comprobarConsultaDB($modelo);
                 $marca = DB::table('marca')->where('marca', $request->marca)->get();
                 $marca = $this->comprobarConsultaDB($marca);
@@ -364,6 +373,7 @@ class InventarioController extends Controller
                 $proveedor = DB::table('proveedor')->where('proveedor', $request->proveedor)->get();
                 $proveedor = $this->comprobarConsultaDB($proveedor);
                 //Validamos que se haya modificado la información y regresamos un mensaje sobre el estado
+
                 $json_actualizar = [
                     'upc' => $request->upc,
                     'id_categoria' => $categoria[0]->id_categoria,
@@ -387,7 +397,109 @@ class InventarioController extends Controller
                     'venta_online' => $online,
                     'imagen' => $fileName
                 ];
+
+                //Verificar que se cambio
+                $changed = "";
+                //Si cambio el UPC
+                if(DB::table('inventario')->where('id_inventario',$id)->where('upc',$request->upc)->doesntExist()){
+                    $upc_anterior = DB::table('inventario')->where('id_inventario', $id)->get('upc');
+
+                    $changed .= ' el UPC de '.$upc_anterior[0]->upc.' a ' . $request->upc;
+                    
+
+                }
+                 //Si cambio el Proveedor
+                if(DB::table('inventario')->where('id_inventario',$id)->where('id_proveedor',$proveedor[0]->id_proveedor)->doesntExist()){
+                    $prov_anterior = DB::table('proveedor')->where('id_proveedor', $proveedor[0]->id_proveedor)->get('proveedor');
+
+
+
+                    $changed .= ' el proveedor de $'.$prov_anterior.' a ' . $request->proveedor;
+
+                }
+                 //Si cambio la categoria
+                if(DB::table('inventario')->where('id_inventario',$id)->where('id_categoria',$categoria[0]->id_categoria)->doesntExist()){
+
+                    $cat_anterior = DB::table('inventario')
+                    ->where('id_inventario','=',$id)
+                    ->leftJoin('categoria','categoria.id_categoria','=','inventario.id_categoria')
+                    ->get('categoria.categoria');
+
+
+                    $changed .= ' la categoria cambio de '.$cat_anterior[0]->categoria.' a ' . $request->categoria;
+                    
+
+                }
+                //Si cambio el modelo
+                if(DB::table('inventario')->where('id_inventario',$id)->where('id_modelo',$modelo[0]->id_modelo)->doesntExist()){
+                    $mod_anterior = DB::table('inventario')
+                    ->where('id_inventario','=',$id)
+                    ->leftJoin('modelo','modelo.id_modelo','=','inventario.id_modelo')
+                    ->get('modelo.modelo');
+
+
+                    $changed .= ' el modelo de '.$mod_anterior[0]->modelo.' cambio a ' . $request->modelo;
+                    
+
+                }
+                //Si cambio el costo
+                if(DB::table('inventario')->where('id_inventario',$id)->where('costo',$request->costo)->doesntExist()){
+                    $costo_anterior = DB::table('inventario')->where('id_inventario', $id)->get('costo');
+
+                    $changed .= ' el costo de $'.$costo_anterior[0]->costo.' cambio a $' . $request->costo;
+                    
+
+                }
+                //Si cambio el precio minímo
+                if(DB::table('inventario')->where('id_inventario',$id)->where('precio_min',$request->precioMin)->doesntExist()){
+                    $precio_min_anterior = DB::table('inventario')->where('id_inventario', $id)->get('precio_min');
+
+                    $changed .= ' el precio minímo de $'.$precio_min_anterior[0]->precio_min.' cambio a $' . $request->precioMin;
+                    
+                   
+
+                }
+                //Si cambio el precio máximo
+                if(DB::table('inventario')->where('id_inventario',$id)->where('precio_max',$request->precioMax)->doesntExist()){
+                    $precio_max_anterior = DB::table('inventario')->where('id_inventario', $id)->get('precio_max');
+
+                    $changed .= ' el precio máximo de $'.$precio_max_anterior[0]->precio_max.' cambio a $' . $request->precioMax;
+                    
+        
+
+                }
+            
+                //Si cambio el largo
+                if(DB::table('inventario')->where('id_inventario',$id)->where('largo',$request->largo)->doesntExist()){
+                    $largo_anterior = DB::table('inventario')->where('id_inventario', $id)->get('largo');
+
+                    $changed .= ' el largo de '.$largo_anterior[0]->largo.'m cambio a ' . $request->largo.'m';
+                    
+                    //dd($changed);
+
+                }
+                //Si cambio el alto
+                if(DB::table('inventario')->where('id_inventario',$id)->where('alto',$request->alto)->doesntExist()){
+                    $alto_anterior = DB::table('inventario')->where('id_inventario', $id)->get('alto');
+
+                    $changed .= ' el alto de '.$alto_anterior[0]->alto.'m cambio a ' . $request->alto.'m';
+                    
+                    //dd($changed);
+
+                }
+                //Si cambio el ancho
+                if(DB::table('inventario')->where('id_inventario',$id)->where('ancho',$request->ancho)->doesntExist()){
+                    $ancho_anterior = DB::table('inventario')->where('id_inventario', $id)->get('ancho');
+
+                    $changed .= ' el ancho de '.$ancho_anterior[0]->ancho.'m cambio a ' . $request->ancho.'m';
+                    
+                    //dd($changed);
+
+                }
+
+
                 if ($inventario->update($json_actualizar)) {
+
                     if ($request->compatibilidad != null && count($request->compatibilidad) != 0) {
                         $compatibilidad = $request->compatibilidad;
                         DB::table('compatibilidad')->where('id_inventario', $id)->delete();
@@ -412,9 +524,18 @@ class InventarioController extends Controller
                     if ($request->detalleInventario != null && count($request->detalleInventario) != 0) {
                         $bitacora = new BitacoraGeneralController;
                         $detalleInventario = $request->detalleInventario;
+                        //Sacar el stock actual
+                        $stock_actual =DB::table('detalle_inventario')->where('id_inventario', $id)->get('stock');
+                       
+
                         DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
                         foreach ($detalleInventario as $detalle) {
                             $sucursal = DB::table('sucursal')->where('sucursal', $detalle['sucursal'])->get();
+                            //Verificar si se cambio el stock
+                            if($stock_actual[0]->stock != $detalle['stock']){
+                                $changed .= ' el stock de '.$stock_actual[0]->stock.' pza(s) cambio a ' . $detalle['stock'] .' pza(s)';
+
+                            }
                             $sucursal = $this->comprobarConsultaDB($sucursal);
                             $json_detalle = [
                                 'id_inventario' => $id,
@@ -429,12 +550,16 @@ class InventarioController extends Controller
                             }
                             $fecha = date_format($fecha_modificacion, 'Y-m-d H:i:s');
                             $descripcion = 'El usuario ' . $usuario_nombre . ' ha modificado los atributos del artículo con el UPC/EAN ' . $request->upc . ' con el título ' . $request->titulo . ' desde la sucursal ' . $sucursal[0]->sucursal . ' con stock ' . $detalle['stock'] . 'pza(s). a la fecha ' . date_format($fecha_modificacion, 'Y-m-d H:i:s');
+
                             if ($detalle['etiquetas'] > 0) {
                                 $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal);
                             }
                             //$this->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
+
                             $bitacora->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
-                            $bitacora->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha,null,$request->upc, $request->titulo,null,$detalle['stock']);
+
+
+                            $bitacora->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal, $sucursal[0]->direccion, $fecha, null, $request->upc, $request->titulo, null, $detalle['stock'],null,null,null,null,null,null,null,$changed);
                         }
                     } elseif (DB::table('detalle_inventario')->where('id_inventario', $id)->get()) {
                         DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
@@ -581,40 +706,62 @@ class InventarioController extends Controller
             ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
             ->leftJoin('color', 'color.id_color', 'inventario.id_color')->get();
         $sucursal = DB::table('sucursal')->where('id_sucursal', $id_sucursal)->get();
+
         $compatibilidad = DB::table('compatibilidad')->where('id_inventario', $id_inventario)
             ->leftJoin('modelo', 'modelo.id_modelo', 'compatibilidad.id_modelo')->get();
-            $compatibilidadCadena="";
-        if (sizeof($compatibilidad) > 1) {
-            $compatibilidadCadena = "";
+        $compatibilidadCadena = "";
+        if (sizeof($compatibilidad) > 0) {
+
             foreach ($compatibilidad as $compa) {
                 $compatibilidadCadena .= $compa->modelo . '/';
             }
-
-            //Etiquetas para cada stock de producto
-            if (Storage::disk('local')->exists('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf')) {
-                Storage::disk('local')->delete('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf');
-            }
-            $imagen = base64_encode(Storage::get('public/sucursales/' . $sucursal[0]->logo));
-            $datos = [
-                'codigo' => $inventario[0]->upc,
-                'precio_min' => $inventario[0]->precio_min,
-                'precio_max' => $inventario[0]->precio_max,
-                'categoria' => $inventario[0]->categoria,
-                'marca' => $inventario[0]->marca,
-                'modelo' => $inventario[0]->modelo,
-                'color' => $inventario[0]->color,
-                'compatibilidad' => $compatibilidadCadena,
-                'total' => $etiquetas,
-                'logo' => $imagen
-            ];
-            PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)
-                ->save(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf');
-
-            Printing::newPrintTask()
-                ->printer($sucursal[0]->etiquetas)
-                ->file(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf')
-                ->send();
         }
+        /*if(Storage::disk('local')->exists('public/inventario/etiqueta/'.$inventario[0]->upc.'.pdf')) {
+            Storage::disk('local')->delete('public/inventario/etiqueta/'.$inventario[0]->upc.'.pdf');
+        }
+        $datos = [
+            'precio' => $inventario[0]->precio_max,
+            'categoria' => $inventario[0]->categoria,
+            'marca' => $inventario[0]->marca,
+            'modelo' => $inventario[0]->modelo,
+            'color' => $inventario[0]->color,
+            'compatibilidad' => $compatibilidadCadena
+        ];
+        PDF::loadView('Inventario.etiqueta', $datos)->setPaper('b8', 'portrait')->setWarnings(false)
+        ->save(storage_path('app\\public\\inventario\\etiqueta\\').$inventario[0]->upc.'.pdf');
+        Printing::newPrintTask()
+        ->printer(70130535)
+        ->file(storage_path('app\\public\\inventario\\etiqueta\\').$inventario[0]->upc.'.pdf')
+        ->send();*/
+
+        //Etiquetas para cada stock de producto
+        if (Storage::disk('local')->exists('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf')) {
+            Storage::disk('local')->delete('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf');
+        }
+        //dd('Aqui jala');
+       /*  $imagen = base64_encode(Storage::get('public/sucursales/' . $sucursal[0]->logo));
+
+
+        $datos = [
+            'codigo' => $inventario[0]->upc,
+            'precio_min' => $inventario[0]->precio_min,
+            'precio_max' => $inventario[0]->precio_max,
+            'categoria' => $inventario[0]->categoria,
+            'marca' => $inventario[0]->marca,
+            'modelo' => $inventario[0]->modelo,
+            'color' => $inventario[0]->color,
+            'compatibilidad' => $compatibilidadCadena,
+            'total' => $etiquetas,
+            'logo' => $imagen
+        ];
+
+        PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)
+            ->save(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf');
+
+        Printing::newPrintTask()
+            ->printer($sucursal[0]->etiquetas)
+            ->file(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf')
+            ->send(); */
     }
 
     /**
@@ -644,7 +791,9 @@ class InventarioController extends Controller
         echo $upc;
     }
 
-    /* Función para buscar stock de sucursales especificas desde la vista de inventario */
+    /**
+     * Función para buscar stock de sucursales especificas desde la vista de inventario
+     */
     public function inventarioPorSucursal(Request $request)
     {
         $inventarios = Inventario::orderby('id_inventario', 'asc')->select('inventario.*', 'detalle_inventario.stock as stock', 'color.*', 'sucursal.*', 'categoria.*',  'marca.*', 'modelo.*')

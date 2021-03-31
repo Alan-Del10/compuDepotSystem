@@ -22,6 +22,7 @@ use Printing;
 use Rawilk\Printing\Contracts\Printer;
 use Rawilk\Printing\Receipts\ReceiptPrinter;
 use App\Http\Controllers\BitacoraGeneralController;
+use App\User;
 
 class VentaController extends Controller
 {
@@ -48,7 +49,8 @@ class VentaController extends Controller
         $formas_pago = FormaPago::where('estatus', true)->get();
         $clientes = Cliente::get();
         $tipos_clientes = DB::table('tipo_cliente')->where('estatus', true)->get();
-        return view('Venta.agregarVenta',compact('formas_pago', 'clientes', 'tipos_clientes'));
+        $usuarios = User::get();
+        return view('Venta.agregarVenta',compact('formas_pago', 'clientes', 'tipos_clientes', 'usuarios'));
     }
 
     /**
@@ -78,6 +80,9 @@ class VentaController extends Controller
             }else{*/
                 $fecha_venta = new DateTime();
                 $usuario = Auth::user();
+                $pos_usuario = strpos($request->usuario_cliente, " ", 0);
+                $id_usuario2 = substr($request->usuario_cliente, 0, $pos_usuario);
+                $usuario2 = DB::table('usuario')->where('id', $id_usuario2)->get();
                 $pos = strpos($request->cliente, " ", 0);
                 $id_cliente = substr($request->cliente, 0, $pos);
                 $cliente = DB::table('cliente')->where('id_cliente', $id_cliente)->get();
@@ -87,13 +92,15 @@ class VentaController extends Controller
 
                 $json_agregar = [
                     'fecha_venta' => date_format($fecha_venta, 'Y-m-d H:i:s'),
+                    'fecha_corte' => date_format($fecha_venta, 'Y-m-d'),
                     'subtotal' => $request->totales['subtotal'],
                     'iva' => $request->totales['iva'],
                     'total' => $request->totales['total'],
                     'id_cliente' => $cliente,
                     'id_sucursal' => $usuario->id_sucursal,
                     'id_usuario' => $usuario->id,
-                    'estatus' => true
+                    'estatus' => true,
+                    'id_usuario_cliente' => $usuario2[0]->id
                 ];
 
                 if(Venta::insert($json_agregar)){
@@ -155,7 +162,7 @@ class VentaController extends Controller
                     $descripcion = 'El usuario '.$usuario_nombre.' ha realizado la venta del ticket no. '.$id.' desde la sucursal '.$sucursal[0]->sucursal. ' a la fecha '.date_format($fecha_venta, 'Y-m-d H:i:s');
                     //$this->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
                     (new BitacoraGeneralController)->registrarBitacora($fecha_venta, $descripcion, $usuario_id, $sucursal_id);
-                    (new BitacoraGeneralController)->mensajeTelegram($usuario_nombre,$sucursal[0]->sucursal,$sucursal[0]->direccion,$fecha_venta, $id);
+
                     DB::commit();
                     return ['response'=>'success', 'message'=>'Se realizó correctamente la venta!.'];
                 }else{
@@ -250,8 +257,6 @@ class VentaController extends Controller
     }
     public function imprimirTicketVenta($id_venta){
 
-
-        try{
         $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'cliente.*', 'usuario.*')
         ->where('id_venta', $id_venta)
         ->leftJoin('usuario', 'usuario.id', 'venta.id_usuario')
@@ -264,7 +269,7 @@ class VentaController extends Controller
         $profile = CapabilityProfile::load("SP2000");
         $ruta = "smb://".gethostname()."/Tickets3";
         $img = EscposImage::load("../public/storage/sucursales/".$venta[0]->logo, false);
-        //$img = EscposImage::load("../public/storage/img/logo.png", false);
+        $img = EscposImage::load("../public/storage/img/logo.png", false);
         $connector = new WindowsPrintConnector($ruta);
         $impresora = new Printer($connector,$profile);
         $impresora->setJustification(Printer::JUSTIFY_CENTER);
@@ -305,32 +310,34 @@ class VentaController extends Controller
         $impresora->text("Ticket No. ".$venta[0]->id_venta."\n");
         $impresora->feed(4);
         $impresora->close();
-    }catch(\Throwable $e){
-            //Aqui tira un error podemos manejarlo, dependiendo del tipo de error
-            //dd($e);
-            return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta!EN ESTA FUNCON'];
-        }
     }
 
     public function imprimirTicketVentaV2($id_venta){
-
         try{
-        $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'sucursal.politicas as politicas', 'sucursal.tickets as tickets', 'cliente.*', 'usuario.*')
+        $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'sucursal.politicas as politicas', 'sucursal.tickets as tickets', 'cliente.*', 'usuario.*', 'usuario2.name as cliente_usuario')
         ->where('id_venta', $id_venta)
         ->leftJoin('usuario', 'usuario.id', 'venta.id_usuario')
         ->leftJoin('sucursal', 'sucursal.id_sucursal', 'venta.id_sucursal')
-        ->leftJoin('cliente', 'cliente.id_cliente', 'venta.id_cliente')->get();
+        ->leftJoin('cliente', 'cliente.id_cliente', 'venta.id_cliente')
+        ->leftJoin('usuario as usuario2', 'usuario2.id', 'venta.id_usuario_cliente')->get();
         $img = EscposImage::load("../public/storage/sucursales/".$venta[0]->logo, false);
         $detalle_venta = DB::table('detalle_venta')->where('id_venta', $id_venta)
         ->leftJoin('inventario', 'inventario.id_inventario', 'detalle_venta.id_inventario')->get();
         $pago_venta = DB::table('venta_pago')->where('id_venta', $id_venta)
         ->leftJoin('forma_de_pago', 'forma_de_pago.id_forma_de_pago', 'venta_pago.id_forma_de_pago')->get();
         $productos = "";
+        $prod_mensaje = "";
         $totalArticulos = 0;
         foreach($detalle_venta as $detalle){
             $productos .= $detalle->upc." ".$detalle->titulo_inventario."\n"
                             ."            ".$detalle->cantidad."X          $".$detalle->precio_momento."           $".($detalle->precio_momento * $detalle->cantidad."\n");
+
             $totalArticulos += $detalle->cantidad;
+            $prod_mensaje .=
+            "\nUPC: ".$detalle->upc
+            ."\nNombre del articulo: \n".$detalle->titulo_inventario
+            ."\nTotal articulos: ".$totalArticulos
+            ."\nTOTAL($) :" .($detalle->precio_momento * $detalle->cantidad);
         }
         $formas = "";
         foreach($pago_venta as $pago){
@@ -340,6 +347,9 @@ class VentaController extends Controller
         $str = sprintf("Powered By Geesdra %c", 169);
         $totalTexto = new NumberFormatter("es", NumberFormatter::SPELLOUT);
         $receipt = (string) (new ReceiptPrinter)
+            ->rightAlign()
+            ->setTextSize(1,1)
+            ->text('Ticket Cliente')
             ->centerAlign()
             ->bitImage($img)
             ->feed(1)
@@ -361,10 +371,10 @@ class VentaController extends Controller
             ->text("C. barras       Producto")
             ->text("        Cant. P.        Precio U.       Importe")
             ->text($productos)
-            ->text("  SUBTOTAL                              $".$venta[0]->subtotal)
             ->centerAlign()
             ->line()
             ->leftAlign()
+            ->text("  SUBTOTAL                              $".$venta[0]->subtotal)
             ->text("  IVA(%16)                             $".$venta[0]->iva)
             ->text("  TOTAL($)                             $".$venta[0]->total)
             ->text("  Total Articulos                    ".$totalArticulos." pza(s).")
@@ -381,6 +391,7 @@ class VentaController extends Controller
             ->text("Atendid@ por: ".$venta[0]->name)
             ->text("Fecha: ".$venta[0]->fecha_venta)
             ->text("Ticket No. ".$venta[0]->id_venta)
+            ->text("Cliente de: ".$venta[0]->cliente_usuario)
             ->centerAlign()
             ->line()
             ->setTextSize(1,2)
@@ -398,17 +409,74 @@ class VentaController extends Controller
             ->rightAlign()
             ->text("Powered By Gesdra")
             ->feed(2)
+            ->cut()
+            ->rightAlign()
+            ->setTextSize(1,1)
+            ->text('Ticket Sucursal')
+            ->centerAlign()
+            ->bitImage($img)
+            ->feed(1)
+            ->setTextSize(2, 2)
+            ->text($venta[0]->sucursal)
+            ->setTextSize(1,1)
+            ->text($venta[0]->direccion_sucursal)
+            ->line()
+            ->setTextSize(1,2)
+            ->text("Datos Del Cliente")
+            ->setTextSize(1,1)
+            ->text($venta[0]->nombre_completo)
+            ->text("Direccion: ".$venta[0]->direccion)
+            ->text("Tel: ".$venta[0]->telefono)
+            ->text("Email: ".$venta[0]->correo)
+            ->line()
+            ->leftAlign()
+            ->setTextSize(1,1)
+            ->text("C. barras       Producto")
+            ->text("        Cant. P.        Precio U.       Importe")
+            ->text($productos)
+            ->centerAlign()
+            ->line()
+            ->leftAlign()
+            ->text("  SUBTOTAL                              $".$venta[0]->subtotal)
+            ->text("  IVA(%16)                             $".$venta[0]->iva)
+            ->text("  TOTAL($)                             $".$venta[0]->total)
+            ->text("  Total Articulos                    ".$totalArticulos." pza(s).")
+            ->text("  *".$totalTexto->format($venta[0]->total)." M.N.")
+            ->centerAlign()
+            ->line()
+            ->setTextSize(1,2)
+            ->text("Formas de Pago")
+            ->setTextSize(1,1)
+            ->text($formas)
+            ->centerAlign()
+            ->line()
+            ->leftAlign()
+            ->text("Atendid@ por: ".$venta[0]->name)
+            ->text("Fecha: ".$venta[0]->fecha_venta)
+            ->text("Ticket No. ".$venta[0]->id_venta)
+            ->text("Cliente de: ".$venta[0]->cliente_usuario)
+            ->feed(3)
+            ->rightAlign()
+            ->text("Powered By Gesdra")
+            ->cut()
+            ->leftAlign()
+            ->text("Atendid@ por: ".$venta[0]->name)
+            ->text("Fecha: ".$venta[0]->fecha_venta)
+            ->text("Ticket No. ".$venta[0]->id_venta)
+            ->text("Cliente de: ".$venta[0]->cliente_usuario)
             ->cut();
 
         Printing::newPrintTask()
             ->printer($venta[0]->tickets)
             ->content($receipt)
-            ->copies(2)
+            ->copies(1)
             ->send();
-    }catch(\Throwable $e){
-        //Aqui tira un error podemos manejarlo, dependiendo del tipo de error
-        //dd($e);
-        return ['response'=>'error', 'message'=>'Algo pasó al intenar realizar la venta!EN ESTA FUNCON'];
+            $fecha_venta = new DateTime();
+            (new BitacoraGeneralController)->mensajeTelegram($venta[0]->name,$venta[0]->sucursal,$venta[0]->direccion_sucursal,$fecha_venta, $id_venta,null,null,null,null,null,null,null,$totalArticulos,$venta[0]->cliente_usuario,$venta[0]->total,$prod_mensaje);
+    }catch(\Throwable $th){
+        dd($th);
+        $fecha_venta = new DateTime();
+        (new BitacoraGeneralController)->mensajeTelegram($venta[0]->name,$venta[0]->sucursal,$venta[0]->direccion_sucursal,$fecha_venta, $id_venta,null,null,null,null,null,null,null,$totalArticulos,$venta[0]->cliente_usuario,$venta[0]->total,$prod_mensaje);
     }
     }
 
