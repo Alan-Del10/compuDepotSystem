@@ -269,7 +269,7 @@ class VentaController extends Controller
         $profile = CapabilityProfile::load("SP2000");
         $ruta = "smb://".gethostname()."/Tickets3";
         $img = EscposImage::load("../public/storage/sucursales/".$venta[0]->logo, false);
-        $img = EscposImage::load("../public/storage/img/logo.png", false);
+        //$img = EscposImage::load("../public/storage/img/logo.png", false);
         $connector = new WindowsPrintConnector($ruta);
         $impresora = new Printer($connector,$profile);
         $impresora->setJustification(Printer::JUSTIFY_CENTER);
@@ -320,7 +320,7 @@ class VentaController extends Controller
         ->leftJoin('sucursal', 'sucursal.id_sucursal', 'venta.id_sucursal')
         ->leftJoin('cliente', 'cliente.id_cliente', 'venta.id_cliente')
         ->leftJoin('usuario as usuario2', 'usuario2.id', 'venta.id_usuario_cliente')->get();
-        $img = EscposImage::load("../public/storage/sucursales/".$venta[0]->logo, false);
+        //$img = EscposImage::load("../public/storage/sucursales/".$venta[0]->logo, false);
         $detalle_venta = DB::table('detalle_venta')->where('id_venta', $id_venta)
         ->leftJoin('inventario', 'inventario.id_inventario', 'detalle_venta.id_inventario')->get();
         $pago_venta = DB::table('venta_pago')->where('id_venta', $id_venta)
@@ -336,8 +336,8 @@ class VentaController extends Controller
             $prod_mensaje .=
             "\nUPC: ".$detalle->upc
             ."\nNombre del articulo: \n".$detalle->titulo_inventario
-            ."\nTotal articulos: ".$totalArticulos
-            ."\nTOTAL($) :" .($detalle->precio_momento * $detalle->cantidad);
+            ." X". $detalle->cantidad
+            ."\nImporte: $".($detalle->precio_momento * $detalle->cantidad);
         }
         $formas = "";
         foreach($pago_venta as $pago){
@@ -346,7 +346,7 @@ class VentaController extends Controller
         $iconoRegistrado = chr(169);
         $str = sprintf("Powered By Geesdra %c", 169);
         $totalTexto = new NumberFormatter("es", NumberFormatter::SPELLOUT);
-        $receipt = (string) (new ReceiptPrinter)
+       /*  $receipt = (string) (new ReceiptPrinter)
             ->rightAlign()
             ->setTextSize(1,1)
             ->text('Ticket Cliente')
@@ -470,7 +470,7 @@ class VentaController extends Controller
             ->printer($venta[0]->tickets)
             ->content($receipt)
             ->copies(1)
-            ->send();
+            ->send(); */
             $fecha_venta = new DateTime();
             (new BitacoraGeneralController)->mensajeTelegram($venta[0]->name,$venta[0]->sucursal,$venta[0]->direccion_sucursal,$fecha_venta, $id_venta,null,null,null,null,null,null,null,$totalArticulos,$venta[0]->cliente_usuario,$venta[0]->total,$prod_mensaje,null,$reimprimr);
     }catch(\Throwable $th){
@@ -492,8 +492,6 @@ class VentaController extends Controller
         (new BitacoraGeneralController)->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
 
         (new BitacoraGeneralController)->mensajeTelegram($usuario,$sucursal[0]->sucursal,$sucursal[0]->direccion, $fecha,$request->id_venta,null,null,true,null,null,null,null,null,null,null,null,null,true);
-
-        
 
     }
 }

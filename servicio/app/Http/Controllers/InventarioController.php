@@ -399,13 +399,13 @@ class InventarioController extends Controller
                 ];
 
                 //Verificar que se cambio
-                $changed = "";
+                $changed = null;
                 //Si cambio el UPC
                 if(DB::table('inventario')->where('id_inventario',$id)->where('upc',$request->upc)->doesntExist()){
                     $upc_anterior = DB::table('inventario')->where('id_inventario', $id)->get('upc');
 
                     $changed .= ' el UPC de '.$upc_anterior[0]->upc.' a ' . $request->upc;
-                    
+                    //dd("El costo se cambio");
 
                 }
                  //Si cambio el Proveedor
@@ -427,7 +427,7 @@ class InventarioController extends Controller
 
 
                     $changed .= ' la categoria cambio de '.$cat_anterior[0]->categoria.' a ' . $request->categoria;
-                    
+                    //dd("El costo se cambio");
 
                 }
                 //Si cambio el modelo
@@ -439,15 +439,29 @@ class InventarioController extends Controller
 
 
                     $changed .= ' el modelo de '.$mod_anterior[0]->modelo.' cambio a ' . $request->modelo;
-                    
+                    //dd("El costo se cambio");
 
                 }
+                //Si cambio el color
+
+                /* if(DB::table('inventario')->where('id_inventario',$id)->where('id_color',$color[0]->id_color)->doesntExist()){
+
+                    $color_anterior = DB::table('inventario')
+                    ->where('id_inventario','=',$id)
+                    ->leftJoin('color','color.id_color','=','inventario.id_color')
+                    ->get('color.color');
+                    dd($color_anterior);
+                    $changed .= 'La marca de '.$color_anterior[0]->marca.' cambio a ' . $request->marca;
+                    dd($changed);
+                    //dd("El costo se cambio");
+
+                } */
                 //Si cambio el costo
                 if(DB::table('inventario')->where('id_inventario',$id)->where('costo',$request->costo)->doesntExist()){
                     $costo_anterior = DB::table('inventario')->where('id_inventario', $id)->get('costo');
 
                     $changed .= ' el costo de $'.$costo_anterior[0]->costo.' cambio a $' . $request->costo;
-                    
+                    //dd("El costo se cambio");
 
                 }
                 //Si cambio el precio minímo
@@ -455,8 +469,8 @@ class InventarioController extends Controller
                     $precio_min_anterior = DB::table('inventario')->where('id_inventario', $id)->get('precio_min');
 
                     $changed .= ' el precio minímo de $'.$precio_min_anterior[0]->precio_min.' cambio a $' . $request->precioMin;
-                    
-                   
+                    //dd("El costo se cambio");
+                    //dd($changed);
 
                 }
                 //Si cambio el precio máximo
@@ -464,17 +478,25 @@ class InventarioController extends Controller
                     $precio_max_anterior = DB::table('inventario')->where('id_inventario', $id)->get('precio_max');
 
                     $changed .= ' el precio máximo de $'.$precio_max_anterior[0]->precio_max.' cambio a $' . $request->precioMax;
-                    
-        
+                    //dd("El costo se cambio");
+                    //dd($changed);
 
                 }
-            
+                //Si cambio el precio mayoreo
+               /*  if(DB::table('inventario')->where('id_inventario',$id)->where('precio_mayoreo',$request->preciomayoreo)->doesntExist()){
+                    $precio_mayoreo_anterior = DB::table('inventario')->where('id_inventario', $id)->get('precio_mayoreo');
+
+                    $changed .= 'El precio por mayoreo de $'.$precio_mayoreo_anterior[0]->precio_mayoreo.' cambio a $' . $request->mayoreo;
+                    //dd("El costo se cambio");
+                    //dd($changed);
+
+                } */
                 //Si cambio el largo
                 if(DB::table('inventario')->where('id_inventario',$id)->where('largo',$request->largo)->doesntExist()){
                     $largo_anterior = DB::table('inventario')->where('id_inventario', $id)->get('largo');
 
                     $changed .= ' el largo de '.$largo_anterior[0]->largo.'m cambio a ' . $request->largo.'m';
-                    
+                    //dd("El costo se cambio");
                     //dd($changed);
 
                 }
@@ -483,7 +505,7 @@ class InventarioController extends Controller
                     $alto_anterior = DB::table('inventario')->where('id_inventario', $id)->get('alto');
 
                     $changed .= ' el alto de '.$alto_anterior[0]->alto.'m cambio a ' . $request->alto.'m';
-                    
+                    //dd("El costo se cambio");
                     //dd($changed);
 
                 }
@@ -492,7 +514,7 @@ class InventarioController extends Controller
                     $ancho_anterior = DB::table('inventario')->where('id_inventario', $id)->get('ancho');
 
                     $changed .= ' el ancho de '.$ancho_anterior[0]->ancho.'m cambio a ' . $request->ancho.'m';
-                    
+                    //dd("El costo se cambio");
                     //dd($changed);
 
                 }
@@ -526,7 +548,7 @@ class InventarioController extends Controller
                         $detalleInventario = $request->detalleInventario;
                         //Sacar el stock actual
                         $stock_actual =DB::table('detalle_inventario')->where('id_inventario', $id)->get('stock');
-                       
+                        //dd($stock_actual);
 
                         DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
                         foreach ($detalleInventario as $detalle) {
