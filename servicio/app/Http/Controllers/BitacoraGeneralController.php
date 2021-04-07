@@ -168,16 +168,9 @@ class BitacoraGeneralController extends Controller
             . "<b> ". $sucursal." ". $direccion . "</b> "
             . "a la fecha"
             . "<b> ". $date . "</b> ";
-            //dd($productos);
-            //$data = "USUARIO:".$name. " TICKET:".$num_ticket." SUCRSAL:" . $sucursal ." DIRECCION:".$direccion." FECHA:".$date." PRODUCTOS:".$productos." TOT ARTICULOS:".$tot_articulos." CLIENTE DE:".$cliente_de . "TOT VENTA:" .$total_venta;
-            //dd($text);
-            Telegram::sendMessage([
-                'chat_id' => env('TELEGRAM_CHAT_TEST'),
-                'parse_mode' => 'HTML',
-                'text' => $text
-            ]);
+         
 
-          /*    Telegram::sendMessage([
+             Telegram::sendMessage([
                 'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
                 'parse_mode' => 'HTML',
                 'text' => $text
@@ -187,7 +180,7 @@ class BitacoraGeneralController extends Controller
                 'chat_id' => env('TELEGRAM_CHANNEL_ID_VENTA'),
                 'parse_mode' => 'HTML',
                 'text' => $text
-            ]); */
+            ]);
 
         }
 
@@ -205,16 +198,8 @@ class BitacoraGeneralController extends Controller
             . "<b> ". $sucursal." ". $direccion . "</b> "
             . "a la fecha"
             . "<b> ". $date . "</b> ";
-            //dd($productos);
-            //$data = "USUARIO:".$name. " TICKET:".$num_ticket." SUCRSAL:" . $sucursal ." DIRECCION:".$direccion." FECHA:".$date." PRODUCTOS:".$productos." TOT ARTICULOS:".$tot_articulos." CLIENTE DE:".$cliente_de . "TOT VENTA:" .$total_venta;
-            //dd($text);
-            Telegram::sendMessage([
-                'chat_id' => env('TELEGRAM_CHAT_TEST'),
-                'parse_mode' => 'HTML',
-                'text' => $text
-            ]);
 
-          /*    Telegram::sendMessage([
+             Telegram::sendMessage([
                 'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
                 'parse_mode' => 'HTML',
                 'text' => $text
@@ -224,7 +209,7 @@ class BitacoraGeneralController extends Controller
                 'chat_id' => env('TELEGRAM_CHANNEL_ID_VENTA'),
                 'parse_mode' => 'HTML',
                 'text' => $text
-            ]); */
+            ]);
 
         }
 
@@ -240,7 +225,7 @@ class BitacoraGeneralController extends Controller
             . "<b> ". $date . "</b> ";
 
 
-          /*   Telegram::sendMessage([
+            Telegram::sendMessage([
                 'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
                 'parse_mode' => 'HTML',
                 'text' => $text
@@ -248,11 +233,6 @@ class BitacoraGeneralController extends Controller
 
             Telegram::sendMessage([
                 'chat_id' => env('TELEGRAM_CHANNEL_ID_VENTA'),
-                'parse_mode' => 'HTML',
-                'text' => $text
-            ]); */
-            Telegram::sendMessage([
-                'chat_id' => env('TELEGRAM_CHAT_TEST'),
                 'parse_mode' => 'HTML',
                 'text' => $text
             ]);
@@ -272,11 +252,6 @@ class BitacoraGeneralController extends Controller
             ." con un IP "
             . "<b> ". $ip . "</b> ";
 
-            /* Telegram::sendMessage([
-                'chat_id' => env('TELEGRAM_CHAT_TEST'),
-                'parse_mode' => 'HTML',
-                'text' => $text
-            ]); */
             Telegram::sendMessage([
                 'chat_id' => env('TELEGRAM_CHANNEL_ID_BITACORA'),
                 'parse_mode' => 'HTML',
