@@ -82,6 +82,11 @@ return [
             'provider' => 'personalizados',
         ],
 
+        'almacenista' => [
+            'driver' => 'session',
+            'provider' => 'personalizados',
+        ],
+
     ],
 
     /*
@@ -128,6 +133,11 @@ return [
         ],
 
         'personalizados' => [
+            'driver' => 'eloquent',
+            'model' => App\User::class,
+        ],
+
+        'almacenista' => [
             'driver' => 'eloquent',
             'model' => App\User::class,
         ],

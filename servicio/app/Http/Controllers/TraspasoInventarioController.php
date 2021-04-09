@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Sucursal;
 use App\TraspasoInventario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use DateTime;
+use Illuminate\Support\Facades\Validator;
+
 
 class TraspasoInventarioController extends Controller
 {
@@ -15,11 +20,24 @@ class TraspasoInventarioController extends Controller
      */
     public function index()
     {
-        $traspasos = TraspasoInventario::orderBy('id_traspaso_inventario', 'DESC')
-        ->leftJoin('sucursal', 'sucursal.id_sucursal', 'traspaso_inventario.id_sucursal_salida')
-        ->leftJoin('sucursal as sucursal_2', 'sucursal_2.id_sucursal', 'traspaso_inventario.id_sucursal_entrada')
-        ->leftJoin('usuario', 'usuario.id', 'traspaso_inventario.id_usuario')
-        ->paginate(10);
+        if (Auth::guard('admin')->check()) {
+            $traspasos = TraspasoInventario::orderBy('id_traspaso_inventario', 'DESC')
+                ->select('traspaso_inventario.*', 'usuario.name', 'sucursal.sucursal as sucursal_salida', 'sucursal_2.sucursal as sucursal_entrada')
+                ->leftJoin('sucursal', 'sucursal.id_sucursal', 'traspaso_inventario.id_sucursal_salida')
+                ->leftJoin('sucursal as sucursal_2', 'sucursal_2.id_sucursal', 'traspaso_inventario.id_sucursal_entrada')
+                ->leftJoin('usuario', 'usuario.id', 'traspaso_inventario.id_usuario')
+                ->paginate(10);
+        } else {
+            $traspasos = TraspasoInventario::orderBy('id_traspaso_inventario', 'DESC')
+                ->select('traspaso_inventario.*', 'usuario.name', 'sucursal.sucursal as sucursal_salida', 'sucursal_2.sucursal as sucursal_entrada')
+                ->leftJoin('sucursal', 'sucursal.id_sucursal', 'traspaso_inventario.id_sucursal_salida')
+                ->leftJoin('sucursal as sucursal_2', 'sucursal_2.id_sucursal', 'traspaso_inventario.id_sucursal_entrada')
+                ->leftJoin('usuario', 'usuario.id', 'traspaso_inventario.id_usuario')
+                ->where('sucursal.id_sucursal', Auth::user()->id_sucursal)
+                ->orWhere('sucursal_2.id_sucursal', Auth::user()->id_sucursal)
+                ->paginate(10);
+        }
+
         return view('TraspasoInventario.traspasoInventario', compact('traspasos'));
     }
 
@@ -42,7 +60,115 @@ class TraspasoInventarioController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request);
+        $incompletos = array();
+        //Validamos los campos de la base de datos, para no aceptar información erronea
+        $validator = Validator::make($request->all(), [
+            'traspasos' => 'required'
+        ]);
+
+        //Si encuentra datos erroneos los regresa con un mensaje de error
+        if ($validator->fails()) {
+            $request->flush();
+            return $validator;
+        } else {
+            $fecha_traspaso = new DateTime();
+            $usuario = Auth::user();
+            //dd($request->all());
+            foreach ($request->traspasos as $key => $value) {
+                DB::beginTransaction();
+                try {
+                    $json_agregar = [
+                        'id_usuario' => $usuario->id,
+                        'id_sucursal_salida' => $value['sucursal_salida'],
+                        'id_sucursal_entrada' => $value['sucursal_entrada'],
+                        'total_productos' => $value['cantidad'],
+                        'razon' => $value['razon'],
+                        'fecha_traspaso' => date_format($fecha_traspaso, 'Y-m-d H:i:s'),
+                        'estatus' => 0
+                    ];
+                    if (Sucursal::where('id_sucursal', $value['sucursal_entrada'])->doesntExist() || Sucursal::where('id_sucursal', $value['sucursal_salida'])->doesntExist()) {
+                        array_push($value, [
+                            'error' => 'Una sucursal no existe!',
+                            'index' => $key
+                        ]);
+                        array_push($incompletos, $value);
+                        DB::rollBack();
+                    } else {
+                        if (TraspasoInventario::insert($json_agregar)) {
+                            $id = DB::getPdo()->lastInsertId();
+                            foreach ($value['inventario'] as $key_2 => $value_2) {
+                                $inventario = DB::table('inventario')
+                                    ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
+                                    ->select('inventario.id_inventario', 'detalle_inventario.stock', 'detalle_inventario.id_detalle_inventario')
+                                    ->where('upc', $value_2['upc'])
+                                    ->where('detalle_inventario.id_sucursal', $value['sucursal_salida'])->get();
+                                $json_detalle = [
+                                    'id_traspaso_inventario' => $id,
+                                    'id_inventario' => $inventario[0]->id_inventario,
+                                    'cantidad' => $value_2['cantidad'],
+                                    'cantidad_comprobada' => 0,
+                                    'autorizado' => 0
+                                ];
+                                if (!DB::table('detalle_traspaso_inventario')->insert($json_detalle)) {
+                                    //Aquí iba el proceso de movimiento del stock
+                                    //se cambió para mejor autorizar desde la vista de traspasoss desde la sucursal de entrada
+                                    array_push($value, [
+                                        'error' => 'No se puedo insertar el detalle del traspaso!',
+                                        'index' => $key
+                                    ]);
+                                    array_push($incompletos, $value);
+                                    DB::rollBack();
+                                }
+                            }
+                        } else {
+                            array_push($value, [
+                                'error' => 'No se puedo insertar el traspaso #' . ($key + 1),
+                                'index' => $key
+                            ]);
+                            array_push($incompletos, $value);
+                            DB::rollBack();
+                        }
+                    }
+                    DB::commit();
+                } catch (\Exception $e) {
+                    array_push($incompletos, $value);
+                    DB::rollback();
+                    throw $e;
+                } catch (\Throwable $e) {
+                    array_push($incompletos, $value);
+                    DB::rollback();
+                    throw $e;
+                }
+                /*DB::transaction(function () use($value, $usuario, $fecha_traspaso, $incompletos){
+                    $json_agregar = [
+                        'id_usuario' => $usuario->id,
+                        'id_sucursal_salida' => $value['sucursal_salida'],
+                        'id_sucursal_entrada' => $value['sucursal_entrada'],
+                        'total_productos' => $value['cantidad'],
+                        'razon' => $value['razon'],
+                        'fecha_traspaso' => date_format($fecha_traspaso, 'Y-m-d H:i:s')
+                    ];
+                    if(Sucursal::where('id_sucursal', $value['sucursal_entrada'])->doesntExist() || Sucursal::where('id_sucursal', $value['sucursal_salida'])->doesntExist()){
+                        return array_push($incompletos, $value);
+                    }else{
+                        if(TraspasoInventario::insert($json_agregar)){
+                            $id = DB::getPdo()->lastInsertId();
+                        }
+                    }
+                });*/
+            }
+            if (count($incompletos) > 0) {
+                $request->flush();
+                return [
+                    ['response' => 'error', 'message' => 'Algo pasó al intenar realizar el traspaso!'],
+                    ['traspaso_invalido' => $incompletos]
+                ];
+            } else {
+                return [
+                    ['response' => 'success', 'message' => 'Listo, se ha hecho la propuesta de traspaso a las sucursales correspondientes!']
+                ];
+            }
+        }
     }
 
     /**
@@ -62,9 +188,27 @@ class TraspasoInventarioController extends Controller
      * @param  \App\TraspasoInventario  $traspasoInventario
      * @return \Illuminate\Http\Response
      */
-    public function edit(TraspasoInventario $traspasoInventario)
+    public function edit($traspasoInventario)
     {
-        //
+        $traspaso = TraspasoInventario::where('id_traspaso_inventario', $traspasoInventario)
+            ->select('traspaso_inventario.*', 'sucursal.sucursal as sucursal_salida', 'sucursal_2.sucursal as sucursal_entrada')
+            ->leftJoin('sucursal', 'sucursal.id_sucursal', 'traspaso_inventario.id_sucursal_salida')
+            ->leftJoin('sucursal as sucursal_2', 'sucursal_2.id_sucursal', 'traspaso_inventario.id_sucursal_entrada')
+            ->get();
+        $sucursales = DB::table('sucursal')->get();
+        if ($traspaso[0]->estatus == 1) {
+            return redirect()->back()->withErrors('error', 'Este traspaso no se puede editar!');
+        } else {
+            $detalle_traspaso = DB::table('detalle_traspaso_inventario')
+                ->where('id_traspaso_inventario', $traspasoInventario)
+                ->where('detalle_inventario.id_sucursal', $traspaso[0]->id_sucursal_salida)
+                ->leftJoin('inventario', 'inventario.id_inventario', 'detalle_traspaso_inventario.id_inventario')
+                ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
+                ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
+                ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
+                ->leftJoin('color', 'color.id_color', 'inventario.id_color')->get();
+            return view('TraspasoInventario.editarTraspasoInventario', compact('traspaso', 'detalle_traspaso', 'sucursales'));
+        }
     }
 
     /**
@@ -74,9 +218,75 @@ class TraspasoInventarioController extends Controller
      * @param  \App\TraspasoInventario  $traspasoInventario
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, TraspasoInventario $traspasoInventario)
+    public function update(Request $request, $id)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($request->all(), [
+                'traspasos' => 'required'
+            ]);
+
+            $traspaso = $request->traspasos;
+            $json_modificar = [
+                'id_sucursal_salida' => $traspaso['sucursal_salida'],
+                'id_sucursal_entrada' => $traspaso['sucursal_entrada'],
+                'total_productos' => $traspaso['cantidad'],
+                'razon' => $traspaso['razon']
+            ];
+            if (Sucursal::where('id_sucursal', $traspaso['sucursal_entrada'])->doesntExist() || Sucursal::where('id_sucursal', $traspaso['sucursal_salida'])->doesntExist()) {
+                array_push($traspaso, [
+                    'error' => 'Una sucursal no existe!'
+                ]);
+                array_push($incompletos, $traspaso);
+                DB::rollBack();
+            }else{
+                $traspaso_inventario = TraspasoInventario::find($id);
+                if ($traspaso_inventario->update($json_modificar)) {
+                    if (DB::table('detalle_traspaso_inventario')->where('id_traspaso_inventario', $id)->delete()) {
+                        foreach ($traspaso['inventario'] as $key_2 => $value_2) {
+                            $inventario = DB::table('inventario')
+                                ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
+                                ->select('inventario.id_inventario', 'detalle_inventario.stock', 'detalle_inventario.id_detalle_inventario')
+                                ->where('upc', $value_2['upc'])
+                                ->where('detalle_inventario.id_sucursal', $traspaso['sucursal_salida'])->get();
+                            $json_detalle = [
+                                'id_traspaso_inventario' => $id,
+                                'id_inventario' => $inventario[0]->id_inventario,
+                                'cantidad' => $value_2['cantidad'],
+                                'cantidad_comprobada' => 0,
+                                'autorizado' => 0
+                            ];
+                            if (!DB::table('detalle_traspaso_inventario')->insert($json_detalle)) {
+                                //Aquí iba el proceso de movimiento del stock
+                                //se cambió para mejor autorizar desde la vista de traspasoss desde la sucursal de entrada
+                                array_push($value, [
+                                    'error' => 'No se puedo insertar el detalle del traspaso!',
+                                    'index' => $key_2
+                                ]);
+                                array_push($incompletos, $value);
+                                DB::rollBack();
+                            }
+                        }
+                    }
+                    DB::commit();
+                    return [
+                        ['response' => 'success', 'message' => 'Se modificó correctamente el traspaso!']
+                    ];
+                } else {
+                    array_push($value, [
+                        'error' => 'No se puedo insertar el traspaso'
+                    ]);
+                    array_push($incompletos, $value);
+                    DB::rollBack();
+                }
+            }
+
+        } catch (\Throwable $th) {
+            $request->flush();
+            return [
+                ['response' => 'error', 'message' => 'Algo pasó al intenar modificar el traspaso!']
+            ];
+        }
     }
 
     /**
@@ -88,5 +298,181 @@ class TraspasoInventarioController extends Controller
     public function destroy(TraspasoInventario $traspasoInventario)
     {
         //
+    }
+
+    /**
+     * Busca el artículo en inventario por sucursal
+     * @param $UPC/EAN
+     * @return Response
+     */
+    public function buscarInventarioSucursal(Request $request)
+    {
+
+        try {
+            $pos = strpos($request->sucursal, " ", 0);
+            $id = substr($request->sucursal, 0, $pos);
+            $articulo = DB::table('inventario')->select('inventario.*', 'modelo.*', 'marca.*', 'categoria.*', 'color.*', 'capacidad.*', 'detalle_inventario.id_detalle_inventario', 'detalle_inventario.stock')
+                ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
+                ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
+                ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')
+                ->leftJoin('color', 'color.id_color', 'inventario.id_color')
+                ->leftJoin('capacidad', 'capacidad.id_capacidad', 'inventario.id_capacidad')
+                ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
+                ->where('detalle_inventario.id_sucursal', $id)
+                ->where('upc', $request->upc)
+                ->where('stock', '>', 0)->get();
+            if (count($articulo) > 0) {
+                foreach ($articulo as $art) {
+                    $id_inventario = $art->id_inventario;
+                }
+                $detalle = DB::table('detalle_inventario')->where('id_inventario', $id_inventario)->get();
+                return [$articulo, $detalle];
+            } else {
+                return ['res' => false];
+            }
+        } catch (\Throwable $th) {
+            return redirect()->back()->withErrors($th);
+        }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function checklistAutorizarTraspaso(Request $request)
+    {
+        $traspaso = TraspasoInventario::where('id_traspaso_inventario', $request->id_traspaso_inventario)
+            ->select('traspaso_inventario.*', 'usuario.name', 'sucursal.sucursal as sucursal_salida', 'sucursal_2.sucursal as sucursal_entrada')
+            ->leftJoin('sucursal', 'sucursal.id_sucursal', 'traspaso_inventario.id_sucursal_salida')
+            ->leftJoin('sucursal as sucursal_2', 'sucursal_2.id_sucursal', 'traspaso_inventario.id_sucursal_entrada')
+            ->leftJoin('usuario', 'usuario.id', 'traspaso_inventario.id_usuario')->get();
+        if ($traspaso[0]->estatus == 1) {
+            return redirect()->back()->withErrors('error', 'Este traspaso no se puede autorizar, ya ha sido autorizado!');
+        } else {
+            $detalle_traspaso = DB::table('detalle_traspaso_inventario')
+                ->leftJoin('inventario', 'inventario.id_inventario', 'detalle_traspaso_inventario.id_inventario')
+                ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
+                ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
+                ->leftJoin('color', 'color.id_color', 'inventario.id_color')
+                ->leftJoin('categoria', 'categoria.id_categoria',  'inventario.id_categoria')
+                ->where('id_traspaso_inventario', $request->id_traspaso_inventario)->get();
+            return view('TraspasoInventario.autorizarTraspasoInventario', compact('traspaso', 'detalle_traspaso'));
+        }
+    }
+
+    /**
+     * Autoriza el traspaso entre sucursales
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function autorizarTraspasoSucursal(Request $request)
+    {
+        if ($request->estatus == 1) {
+            $incompletos = array();
+            //Cambiamos el estatus de traspaso a aprovar y hacemos los respectivos movimientos de inventario
+            $traspaso = TraspasoInventario::where('id_traspaso_inventario', $request->id_traspaso_inventario)->get();
+            $detalle_traspaso = DB::table('detalle_traspaso_inventario')->where('id_traspaso_inventario',  $request->id_traspaso_inventario)->get();
+            foreach ($detalle_traspaso as $key => $value_2) {
+                DB::beginTransaction();;
+                try {
+                    $inventario = DB::table('inventario')
+                        ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
+                        ->select('inventario.id_inventario', 'detalle_inventario.stock', 'detalle_inventario.id_detalle_inventario')
+                        ->where('inventario.id_inventario', $value_2->id_inventario)
+                        ->where('detalle_inventario.id_sucursal', $traspaso[0]['id_sucursal_salida'])->get();
+                    $json_update = [
+                        'stock' => $inventario[0]->stock - $value_2->cantidad
+                    ];
+                    if (DB::table('detalle_inventario')->groupBy('stock')->havingRaw('? >= 0', [($inventario[0]->stock - $value_2->cantidad)])->where('id_detalle_inventario', $inventario[0]->id_detalle_inventario)->update($json_update)) {
+                        $consulta = DB::table('detalle_inventario')->where('id_sucursal', $traspaso[0]['id_sucursal_entrada'])->where('id_inventario', $inventario[0]->id_inventario)->get();
+                        if ($consulta->isNotEmpty()) {
+                            if (!DB::table('detalle_inventario')->where('id_detalle_inventario', $consulta[0]->id_detalle_inventario)->update(['stock' => $consulta[0]->stock + $value_2->cantidad])) {
+                                array_push($value, [
+                                    'error' => 'No se pudo agregar stock del siguente UPC/EAN  ' . $inventario[0]->upc . ' a la sucursal de destino!',
+                                    'index' => $key
+                                ]);
+                                array_push($incompletos, $value);
+                                DB::rollBack();
+                            }
+                        } else {
+                            $json_detalle_inventario = [
+                                'id_inventario' => $inventario[0]->id_inventario,
+                                'id_sucursal' => $traspaso[0]['id_sucursal_entrada'],
+                                'stock' => $value_2->cantidad
+                            ];
+                            if (!DB::table('detalle_inventario')->insert($json_detalle_inventario)) {
+                                array_push($value, [
+                                    'error' => 'No se pudo agregar stock del siguente UPC/EAN  ' . $inventario[0]->upc . ' a la sucursal de destino!',
+                                    'index' => $key
+                                ]);
+                                array_push($incompletos, $value);
+                                DB::rollBack();
+                            }
+                        }
+                    } else {
+                        array_push($value, [
+                            'error' => 'No se tiene stock suficiente del siguente UPC/EAN  ' . $inventario[0]->upc,
+                            'index' => $key
+                        ]);
+                        array_push($incompletos, $value);
+                        DB::rollBack();
+                    }
+                } catch (\Exception $e) {
+                    array_push($incompletos, $value_2);
+                    DB::rollback();
+                    throw $e;
+                } catch (\Throwable $e) {
+                    array_push($incompletos, $value_2);
+                    DB::rollback();
+                    throw $e;
+                }
+            }
+            if (count($incompletos) > 0) {
+                $request->flush();
+                DB::rollBack();
+                return redirect()->back()->withErrors('error', $incompletos);
+            } else {
+                TraspasoInventario::find($request->id_traspaso_inventario)->update(['estatus' => 1]);
+                DB::commit();
+                return redirect()->back()->with('success', 'Se han realizado los movimientos de inventario del traspaso!');
+            }
+        } elseif ($request->estatus == 2) {
+            //Cambiamos el estatus de traspaso a rechazado
+            DB::beginTransaction();
+            try {
+                TraspasoInventario::find($request->id_traspaso_inventario)->update(['estatus' => 2]);
+                DB::commit();
+                return redirect()->back()->with('success', 'Se modifico el estatus del traspaso a Rechazado');
+            } catch (\Throwable $th) {
+                DB::rollback();
+                return redirect()->back()->withErrors('error', 'Algo pasó al intenar modificar los datos!');
+            }
+        }
+    }
+
+    /**
+     * Muestra el detalle del traspaso seleccionado.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function detalleTraspasoSucursal(Request $request)
+    {
+        $traspaso = TraspasoInventario::where('id_traspaso_inventario', $request->id_traspaso_inventario)
+            ->select('traspaso_inventario.*', 'usuario.name', 'sucursal.sucursal as sucursal_salida', 'sucursal_2.sucursal as sucursal_entrada')
+            ->leftJoin('sucursal', 'sucursal.id_sucursal', 'traspaso_inventario.id_sucursal_salida')
+            ->leftJoin('sucursal as sucursal_2', 'sucursal_2.id_sucursal', 'traspaso_inventario.id_sucursal_entrada')
+            ->leftJoin('usuario', 'usuario.id', 'traspaso_inventario.id_usuario')->get();
+        $detalle_traspaso = DB::table('detalle_traspaso_inventario')
+            ->leftJoin('inventario', 'inventario.id_inventario', 'detalle_traspaso_inventario.id_inventario')
+            ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')
+            ->leftJoin('marca', 'marca.id_marca', 'modelo.id_marca')
+            ->leftJoin('color', 'color.id_color', 'inventario.id_color')
+            ->leftJoin('categoria', 'categoria.id_categoria',  'inventario.id_categoria')
+            ->where('id_traspaso_inventario', $request->id_traspaso_inventario)->get();
+        return view('TraspasoInventario.detalleTraspasoInventario', compact('traspaso', 'detalle_traspaso'));
     }
 }

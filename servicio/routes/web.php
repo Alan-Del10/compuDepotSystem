@@ -121,6 +121,10 @@ Route::resource('Compra', CompraController::class)->middleware('auth:root,admin,
 
 //Traspaso de Inventario routes
 Route::resource('TraspasoInventario', TraspasoInventarioController::class)->middleware('auth:root,admin,sub_admin,vendedor,servicio_cliente');
+Route::get('/traspasoInventario/inventarioSucursal', 'TraspasoInventarioController@buscarInventarioSucursal')->name('buscarInventarioSucursal')->middleware('auth');
+Route::post('/traspasoInventario/autorizarTraspasoSucursal', 'TraspasoInventarioController@autorizarTraspasoSucursal')->name('autorizarTraspasoSucursal')->middleware('auth');
+Route::get('/traspasoInventario/checklistAutorizarTraspaso', 'TraspasoInventarioController@checklistAutorizarTraspaso')->name('checklistAutorizarTraspaso')->middleware('auth');
+Route::get('/traspasoInventario/detalleTraspasoSucursal', 'TraspasoInventarioController@detalleTraspasoSucursal')->name('detalleTraspasoSucursal')->middleware('auth');
 
 //Capacidad routes
 Route::resource('Capacidad', CapacidadController::class)->middleware('auth');
@@ -136,6 +140,7 @@ Route::resource('Sucursal', SucursalController::class)->middleware('auth');
 Route::resource('Venta', VentaController::class)->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');
 Route::post('/venta/ticket', 'VentaController@reimprimirTicket')->name('ReimprimirTicket')->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');
 Route::get('/venta/verificarUPC', 'VentaController@verificarUPCVenta')->name('verificarUPCVenta')->middleware('auth');
+Route::get('/venta/verificarUPC/compra', 'VentaController@verificarUPCCompra')->name('verificarUPCCompra')->middleware('auth');
 
 //Corte de Caja routes
 Route::resource('CorteCaja', CorteCajaController::class)->middleware('auth:root,sub_admin,admin,vendedor,servicio_cliente');

@@ -12,5 +12,5 @@ class TraspasoInventario extends Model
     public $timestamps = false;
     protected $primaryKey = 'id_traspaso_inventario';
     public $incrementing = true;
-    protected $fillable = array('id_usuario', 'id_sucursal_salidad', 'id_sucursal_entrada', 'total_productos', 'razon');
+    protected $fillable = array('id_usuario', 'id_sucursal_salida', 'id_sucursal_entrada', 'total_productos', 'razon', 'fecha_traspaso', 'estatus');
 }

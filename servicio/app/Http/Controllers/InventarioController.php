@@ -387,6 +387,91 @@ class InventarioController extends Controller
                     'venta_online' => $online,
                     'imagen' => $fileName
                 ];
+
+                //Verificar que se cambio
+                $changed = null;
+                //Si cambio el UPC
+                if (DB::table('inventario')->where('id_inventario', $id)->where('upc', $request->upc)->doesntExist()) {
+                    $upc_anterior = DB::table('inventario')->where('id_inventario', $id)->get('upc');
+
+                    $changed .= ' el UPC de ' . $upc_anterior[0]->upc . ' a ' . $request->upc;
+                }
+                //Si cambio el Proveedor
+                if (DB::table('inventario')->where('id_inventario', $id)->where('id_proveedor', $proveedor[0]->id_proveedor)->doesntExist()) {
+                    $prov_anterior = DB::table('proveedor')->where('id_proveedor', $proveedor[0]->id_proveedor)->get('proveedor');
+
+
+
+                    $changed .= ' el proveedor de $' . $prov_anterior . ' a ' . $request->proveedor;
+                }
+                //Si cambio la categoria
+                if (DB::table('inventario')->where('id_inventario', $id)->where('id_categoria', $categoria[0]->id_categoria)->doesntExist()) {
+
+                    $cat_anterior = DB::table('inventario')
+                        ->where('id_inventario', '=', $id)
+                        ->leftJoin('categoria', 'categoria.id_categoria', '=', 'inventario.id_categoria')
+                        ->get('categoria.categoria');
+
+
+                    $changed .= ' la categoria cambio de ' . $cat_anterior[0]->categoria . ' a ' . $request->categoria;
+                }
+                //Si cambio el modelo
+                if (DB::table('inventario')->where('id_inventario', $id)->where('id_modelo', $modelo[0]->id_modelo)->doesntExist()) {
+                    $mod_anterior = DB::table('inventario')
+                        ->where('id_inventario', '=', $id)
+                        ->leftJoin('modelo', 'modelo.id_modelo', '=', 'inventario.id_modelo')
+                        ->get('modelo.modelo');
+
+
+                    $changed .= ' el modelo de ' . $mod_anterior[0]->modelo . ' cambio a ' . $request->modelo;
+                }
+                //Si cambio el costo
+                if (DB::table('inventario')->where('id_inventario', $id)->where('costo', $request->costo)->doesntExist()) {
+                    $costo_anterior = DB::table('inventario')->where('id_inventario', $id)->get('costo');
+
+                    $changed .= ' el costo de $' . $costo_anterior[0]->costo . ' cambio a $' . $request->costo;
+                }
+                //Si cambio el precio minímo
+                if (DB::table('inventario')->where('id_inventario', $id)->where('precio_min', $request->precioMin)->doesntExist()) {
+                    $precio_min_anterior = DB::table('inventario')->where('id_inventario', $id)->get('precio_min');
+
+                    $changed .= ' el precio minímo de $' . $precio_min_anterior[0]->precio_min . ' cambio a $' . $request->precioMin;
+                }
+                //Si cambio el precio máximo
+                if (DB::table('inventario')->where('id_inventario', $id)->where('precio_max', $request->precioMax)->doesntExist()) {
+                    $precio_max_anterior = DB::table('inventario')->where('id_inventario', $id)->get('precio_max');
+
+                    $changed .= ' el precio máximo de $' . $precio_max_anterior[0]->precio_max . ' cambio a $' . $request->precioMax;
+                }
+
+                //Si cambio el largo
+                if (DB::table('inventario')->where('id_inventario', $id)->where('largo', $request->largo)->doesntExist()) {
+                    $largo_anterior = DB::table('inventario')->where('id_inventario', $id)->get('largo');
+
+                    $changed .= ' el largo de ' . $largo_anterior[0]->largo . 'm cambio a ' . $request->largo . 'm';
+
+                    //dd($changed);
+
+                }
+                //Si cambio el alto
+                if (DB::table('inventario')->where('id_inventario', $id)->where('alto', $request->alto)->doesntExist()) {
+                    $alto_anterior = DB::table('inventario')->where('id_inventario', $id)->get('alto');
+
+                    $changed .= ' el alto de ' . $alto_anterior[0]->alto . 'm cambio a ' . $request->alto . 'm';
+
+                    //dd($changed);
+
+                }
+                //Si cambio el ancho
+                if (DB::table('inventario')->where('id_inventario', $id)->where('ancho', $request->ancho)->doesntExist()) {
+                    $ancho_anterior = DB::table('inventario')->where('id_inventario', $id)->get('ancho');
+
+                    $changed .= ' el ancho de ' . $ancho_anterior[0]->ancho . 'm cambio a ' . $request->ancho . 'm';
+
+                    //dd($changed);
+
+                }
+
                 if ($inventario->update($json_actualizar)) {
                     if ($request->compatibilidad != null && count($request->compatibilidad) != 0) {
                         $compatibilidad = $request->compatibilidad;
@@ -412,10 +497,15 @@ class InventarioController extends Controller
                     if ($request->detalleInventario != null && count($request->detalleInventario) != 0) {
                         $bitacora = new BitacoraGeneralController;
                         $detalleInventario = $request->detalleInventario;
+                        //Sacar el stock actual
+                        $stock_actual = DB::table('detalle_inventario')->where('id_inventario', $id)->get('stock');
                         DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
                         foreach ($detalleInventario as $detalle) {
                             $sucursal = DB::table('sucursal')->where('sucursal', $detalle['sucursal'])->get();
                             $sucursal = $this->comprobarConsultaDB($sucursal);
+                            if (isset($atock_actual) && $stock_actual[0]->stock != $detalle['stock']) {
+                                $changed .= ' el stock de ' . $stock_actual[0]->stock . ' pza(s) cambio a ' . $detalle['stock'] . ' pza(s)';
+                            }
                             $json_detalle = [
                                 'id_inventario' => $id,
                                 'id_sucursal' => $sucursal[0]->id_sucursal,
@@ -434,7 +524,7 @@ class InventarioController extends Controller
                             }
                             //$this->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                             $bitacora->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
-                            $bitacora->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal, $sucursal[0]->direccion, $fecha, null, $request->upc, $request->titulo, null, $detalle['stock']);
+                            $bitacora->mensajeTelegram($usuario_nombre, $sucursal[0]->sucursal, $sucursal[0]->direccion, $fecha, null, $request->upc, $request->titulo, null, $detalle['stock'], null, null, null, null, null, null, null, $changed);
                         }
                     } elseif (DB::table('detalle_inventario')->where('id_inventario', $id)->get()) {
                         DB::table('detalle_inventario')->where('id_inventario', $id)->delete();
@@ -574,7 +664,6 @@ class InventarioController extends Controller
      */
     public function imprimirEtiqueta($id_inventario, $etiquetas, $id_sucursal)
     {
-
         $inventario = DB::table('inventario')->where('id_inventario', $id_inventario)
             ->leftJoin('categoria', 'categoria.id_categoria', 'inventario.id_categoria')
             ->leftJoin('modelo', 'modelo.id_modelo', 'inventario.id_modelo')

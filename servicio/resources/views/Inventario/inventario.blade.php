@@ -237,6 +237,7 @@
                 }
 
             });
+            $('#tablaCompatibilidad').children().remove();
             compatibilidades.forEach(compatibilidad => {
                 if ($(this).children().eq(0).text() == compatibilidad.upc) {
                     $('#tablaCompatibilidad').append(

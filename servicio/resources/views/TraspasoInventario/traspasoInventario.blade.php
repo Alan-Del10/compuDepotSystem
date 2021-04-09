@@ -42,7 +42,8 @@
                                 <ul class="nav nav-pills ml-auto">
                                     <li class="nav-item">
                                         <a id="agregarVenta" href='{{ route('TraspasoInventario.create') }}'
-                                            class="btn btn-primary btn-sm">Realizar Traspaso de inventario <i class="far fa-plus-square"></i></a>
+                                            class="btn btn-primary btn-sm">Realizar Traspaso de inventario <i
+                                                class="far fa-plus-square"></i></a>
                                     </li>
                                 </ul>
                             </div>
@@ -53,17 +54,45 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 10px">ID</th>
-                                        <th>Compra #</th>
                                         <th>Usuario</th>
-                                        <th>Proveedor</th>
+                                        <th>Sucursal Salida</th>
+                                        <th>Sucursal Entrada</th>
+                                        <th>Cantidad</th>
                                         <th>Fecha</th>
-                                        <th>Total</th>
+                                        <th>Estatus</th>
+                                        @if (Auth::guard('admin')->check() || Auth::guard('sub_admin')->check() || Auth::guard('root')->check() || Auth::guard('almacenista')->check())
+                                            <th scope="col" colspan="4">Acciones</th>
+                                        @endif
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($traspasos as $traspaso)
                                         <tr class="items">
-
+                                            <td>{{ $traspaso->id_traspaso_inventario }}</td>
+                                            <td>{{ $traspaso->name }}</td>
+                                            <td>{{ $traspaso->sucursal_salida }}</td>
+                                            <td>{{ $traspaso->sucursal_entrada }}</td>
+                                            <td>{{ $traspaso->total_productos }}</td>
+                                            <td>{{ $traspaso->fecha_traspaso }}</td>
+                                            <td>
+                                                @if ($traspaso->estatus == 0)
+                                                    Pendiente
+                                                @elseif ($traspaso->estatus == 2)
+                                                    Rechazado
+                                                @else
+                                                    Aprovado
+                                                @endif
+                                            </td>
+                                            @if (Auth::guard('admin')->check() || Auth::guard('sub_admin')->check() || Auth::guard('root')->check() || Auth::guard('almacenista')->check())
+                                                <td><a href="{{ route('detalleTraspasoSucursal',  ['id_traspaso_inventario' => $traspaso->id_traspaso_inventario]) }}"
+                                                        class="btn btn-info"><i class="fas fa-info-circle"></i></a></td>
+                                                <td><a href="{{ route('TraspasoInventario.edit',$traspaso->id_traspaso_inventario) }}"
+                                                        class="btn btn-primary {{ $traspaso->estatus != 1 ?: 'disabled' }}"><i
+                                                            class="far fa-edit"></i></a></td>
+                                                <td><a href="{{ route('checklistAutorizarTraspaso', ['id_traspaso_inventario' => $traspaso->id_traspaso_inventario]) }}"
+                                                        class="btn btn-success {{ $traspaso->estatus != 2 && $traspaso->estatus == 1 ? 'disabled' : '' }}"><i
+                                                            class="fas fa-thumbs-up"></i></a></td>
+                                            @endif
                                         </tr>
                                     @endforeach
 
@@ -83,6 +112,21 @@
             <!-- /.row -->
             <!-- /.row -->
         </div><!-- /.container-fluid -->
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @elseif (Session::has('message'))
+            <div class="alert alert-success">
+                <ul>
+                    {{ Session::get('success') }}
+                </ul>
+            </div>
+        @endif
     </section>
     <!-- /.content -->
     <script>
@@ -115,78 +159,27 @@
             });
         }
         //Esta función nos permite reimprimir los tickets de las ventas con autorización de algún superior
-        function imprimirTicket(venta) {
-            id_venta = venta.parent().siblings().eq(0).text();
-            Swal.mixin({
-                input: 'text',
-                confirmButtonText: 'Siguiente &rarr;',
-                showCancelButton: true,
-                cancelButtonText: 'Cancelar',
-                progressSteps: ['1', '2']
-            }).queue([{
-                    title: 'Correo',
-                    text: 'Introduce el correo con privilegios',
-                    input: 'email'
+        function autorizarTraspaso(id, estatus) {
+            $.ajax({
+                type: "post",
+                url: "{{ route('autorizarTraspasoSucursal') }}",
+                data: {
+                    'id_traspaso_inventario': id,
+                    'estatus': estatus
                 },
-                {
-                    title: 'Contraseña',
-                    text: 'Introduce la contraseña del usuario',
-                    input: 'password'
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
                 },
-            ]).then((result) => {
-                if (result.value) {
-                    const answers = {
-                        'email': result.value[0],
-                        'password': result.value[1]
-                    };
-                    $.ajax({
-                        type: "post",
-                        url: "{{ route('validarPermiso') }}",
-                        data: answers,
-                        headers: {
-                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                        },
-                        success: function(data) {
-                            console.log(data);
-                            if (data == true) {
-                                $.ajax({
-                                    type: "post",
-                                    url: "{{ route('ReimprimirTicket') }}",
-                                    data: {
-                                        'id_venta': id_venta
-                                    },
-                                    headers: {
-                                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                                    },
-                                    success: function(data) {
-                                        Toast.fire({
-                                            icon: 'success',
-                                            title: 'Imprimiendo ticket...'
-                                        })
-                                    },
-                                    error: function(data) {
-                                        Toast.fire({
-                                            icon: 'error',
-                                            title: 'No se pudo imprimir el ticket!'
-                                        })
-                                    }
-                                });
-                            } else {
-                                Toast.fire({
-                                    icon: 'error',
-                                    title: 'No tiene los permisos para esta acción!'
-                                })
-                            }
-                        },
-                        error: function(data) {
-                            Toast.fire({
-                                icon: 'error',
-                                title: 'No tiene los permisos para esta acción!'
-                            })
-                        }
-                    });
+                success: function(data) {
+                    console.log(data);
+                },
+                error: function(data) {
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'No tiene los permisos para esta acción!'
+                    })
                 }
-            })
+            });
         }
 
     </script>
