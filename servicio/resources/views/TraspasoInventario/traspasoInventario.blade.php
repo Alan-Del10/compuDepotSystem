@@ -58,7 +58,7 @@
                                         <th>Sucursal Salida</th>
                                         <th>Sucursal Entrada</th>
                                         <th>Cantidad</th>
-                                        <th>Fecha</th>
+                                        <th>Fecha Alta</th>
                                         <th>Estatus</th>
                                         @if (Auth::guard('admin')->check() || Auth::guard('sub_admin')->check() || Auth::guard('root')->check() || Auth::guard('almacenista')->check())
                                             <th scope="col" colspan="4">Acciones</th>

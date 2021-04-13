@@ -100,31 +100,63 @@
                                         <tr>
                                             <th scope="col">UPC/EAN</th>
                                             <th scope="col">Título</th>
-                                            <th scope="col">Categoria</th>
+                                            <th scope="col" class="d-none d-lg-table-cell">Categoria</th>
                                             <th scope="col" class="d-none d-lg-table-cell">Marca</th>
                                             <th scope="col" class="d-none d-lg-table-cell">Modelo</th>
                                             <th scope="col" class="d-none d-lg-table-cell">Color</th>
                                             <th scope="col">Cantidad</th>
-                                            <th scope="col">Cantidad Entregada</th>
+                                            <th scope="col" colspan="2">Cantidad Recibida</th>
                                         </tr>
                                     </thead>
                                     <tbody class="scroll" id="ticketTabla">
                                         @foreach ($detalle_traspaso as $detalle)
                                             <tr>
-                                                <td><small>{{ $detalle->upc }}</small></td>
+                                                <td id="upc_art"><small>{{ $detalle->upc }}</small></td>
                                                 <td><small>{{ $detalle->titulo_inventario }}</small></td>
-                                                <td><small>{{ $detalle->categoria }}</small></td>
-                                                <td><small>{{ $detalle->marca }}</small></td>
-                                                <td><small>{{ $detalle->modelo }}</small></td>
-                                                <td><small>{{ $detalle->color }}</small></td>
+                                                <td class="d-none d-lg-table-cell">
+                                                    <small>{{ $detalle->categoria }}</small>
+                                                </td>
+                                                <td class="d-none d-lg-table-cell"><small>{{ $detalle->marca }}</small>
+                                                </td>
+                                                <td class="d-none d-lg-table-cell"><small>{{ $detalle->modelo }}</small>
+                                                </td>
+                                                <td class="d-none d-lg-table-cell"><small>{{ $detalle->color }}</small>
+                                                </td>
                                                 <td><small>{{ $detalle->cantidad }}</small></td>
-                                                <td><input type="number" name="cantidad_comprobada" id="cantidad_comprobada" class="form-control form-control-sm"></td>
+                                                <td>
+                                                    <input type="number" name="cantidad_comprobada" id="cantidad_comprobada"
+                                                        class="form-control form-control-sm cantidad_comprobada"
+                                                        oninput="validity.valid||(value='');"
+                                                        placeholder="Cantidad Recibida" disabled>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
                             </div>
                             <!-- /.card-body -->
+                        </div>
+                        <div class="card card-success" name="finalizar">
+                            <div class="card-header">
+                                <h3 class="card-title col-11">Finalizar</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-input row">
+                                    <div class="col-sm-6">
+                                        <div class="form-check form-check-inline">
+                                            <input type="checkbox" class="form-check-input" id="checkFinalizar"
+                                                name="checkFinalizar" onclick="checkFinalizarTraspaso()">
+                                            <label class="form-check-label" for="checkFinalizar">Finalizar Traspaso</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <input type="submit" value="Rechazar Traspaso" class="btn btn-danger float-right"
+                                            id="rechazarTraspaso" onclick="rechazarTraspaso()">
+                                        <input type="submit" value="Realizar Traspaso" class="btn btn-success float-right"
+                                            disabled id="finalizarTraspaso" onclick="finalizarTraspaso()">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
                     <!-- /.card-footer -->
@@ -158,6 +190,8 @@
         let listaTraspasos = [];
         let seleccionado = null;
         let indexArray = null;
+        let infoTraspao = @json($traspaso);
+        let detalle_traspaso = @json($detalle_traspaso);
         //Configuración de notificaciones pequeñas
         const Toast = Swal.mixin({
             toast: true,
@@ -176,9 +210,43 @@
             upc = upc.toString();
             if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);
             if (upc.length == 12 || upc.length == 13 || upc.length == 14) {
-
-            } else {
-
+                $.each($('#ticketTabla').children(), function(i, v) {
+                    fila = $(this);
+                    if (fila.find('#upc_art').text() == upc) {
+                        seleccionado = upc;
+                        $('#upc').attr('disabled', true);
+                        fila.find('#cantidad_comprobada').attr('disabled', false);
+                        fila.find('#cantidad_comprobada').focus();
+                    }
+                });
+            }
+        });
+        //Función para comprobar la cantidad recibida del traspaso
+        $('.cantidad_comprobada').on('keyup', function(e) {
+            fila = $(this);
+            if (e.keyCode === 13) {
+                fila.attr('disabled', true);
+                $('#upc').attr('disabled', false);
+                $('#upc').val("");
+                e.preventDefault();
+                $.each(detalle_traspaso, function(i, v) {
+                    if (v['upc'] == seleccionado) {
+                        if (fila.val() == 0 || fila.val() == null) {
+                            fila.parent().parent().removeClass('table-success').removeClass('table-primary')
+                                .removeClass('table-warning');
+                        } else if (fila.val() < v['cantidad']) {
+                            fila.parent().parent().removeClass('table-success').removeClass('table-primary')
+                                .addClass('table-warning');
+                        } else if (fila.val() > v['cantidad']) {
+                            fila.parent().parent().removeClass('table-warning').removeClass('table-success')
+                                .addClass('table-primary');
+                        } else {
+                            fila.parent().parent().removeClass('table-warning').removeClass('table-primary')
+                                .addClass('table-success');
+                        }
+                    }
+                });
+                seleccionado = null;
             }
         });
         //Función para habílitar el botón que envía los datos el controlador
@@ -194,89 +262,154 @@
         function finalizarTraspaso() {
             $('#mensajeTraspaso').hide();
             $('#mensajeTraspaso').find('#errores').remove();
-            listaTraspasosValidacion = true;
-            total_inventario = 0;
-            pos_salida = $('#sucursal_salida').val().indexOf(" ");
-            id_salida = $('#sucursal_salida').val().substring(0, pos_salida);
-            salida = $('#sucursal_salida').val().substring(pos_salida, $('#sucursal_salida').val().length);
-            pos_entrada = $('#sucursal_entrada').val().indexOf(" ");
-            id_entrada = $('#sucursal_entrada').val().substring(0, pos_entrada);
-            entrada = $('#sucursal_entrada').val().substring(pos_entrada, $('#sucursal_entrada').val().length);
-            datos_generales = {
-                'sucursal_salida': id_salida,
-                'sucursal_entrada': id_entrada,
-                'razon': $('#razon').val(),
-                'cantidad': 0,
-                'inventario': []
-            };
+            listaTraspasosValidacion = [];
             $.each($('#ticketTabla').children(), function(i, v) {
-                datos_generales['inventario'].push({
-                    'upc': $(this).find('#upc_art').text(),
-                    'cantidad': $(this).find('#cantidad').val(),
-                    'titulo': $(this).find('#titulo_art').text(),
-                    'marca': $(this).find('#marca_art').text(),
-                    'modelo': $(this).find('#modelo_art').text(),
-                    'color': $(this).find('#color_art').text(),
-                    'cantidad_disponible': $(this).find('#cantidad option:last').val()
-                });
-                total_inventario += parseInt($(this).find('#cantidad').val());
-            });
-            datos_generales.cantidad = total_inventario;
-            if (datos_generales.length == 0) {
-                $('#listaTraspasos').addClass('is-invalid');
-                listaTraspasosValidacion = false;
-            } else {
-                $('#listaTraspasos').removeClass('is-invalid');
-                listaTraspasosValidacion = true;
-            }
-            if (listaTraspasosValidacion == true) {
-                $.ajax({
-                    type: "post",
-                    url: "{{ route('autorizarTraspasoSucursal') }}",
-                    data: datos_generales,
-                    dataType: 'JSON',
-                    headers: {
-                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                    },
-                    success: function(response) {
-                        console.log(response);
-                        if (response[0].response == "success") {
-                            $('#mensajeTraspaso ul').text(response[0].message);
-                            $('#mensajeTraspaso').removeClass('alert-danger').addClass('alert-success');
-                            $('#mensajeTraspaso').show();
+                filaTicket = $(this);
+                $.each(detalle_traspaso, function(x, e) {
+                    if (filaTicket.find('#upc_art').text() == e['upc']) {
+                        if (filaTicket.find('#cantidad_comprobada').val()) {
+                            detalle_traspaso[i]['cantidad_comprobada'] = filaTicket.find(
+                                '#cantidad_comprobada').val();
                         } else {
-                            $('#mensajeTraspaso ul').text(response[0].message);
-                            $('#mensajeTraspaso').removeClass('alert-success').addClass('alert-danger');
-                            response[1]['traspaso_invalido'].forEach(element => {
-                                $.each($('#listaTraspasos').children(), function(i, v) {
-                                    if ($(this).index() == element[0].index) {
-                                        $(this).addClass('table-warning');
-                                    } else {
-                                        $(this).remove();
-                                    }
-                                });
-                                $.each($('#listaTraspasos').children(), function(i, v) {
-                                    $(this).find('#index small').text(i + 1);
-                                });
-                                $('#mensajeTraspaso').append(
-                                    '<ul id="errores">' +
-                                    '<li>Error en el traspaso #' + parseInt(element[0].index + 1) +
-                                    '. ' + element[0].error + '</li>' +
-                                    '</ul>'
-                                )
-                            });
-                            $('#mensajeTraspaso').show();
+                            listaTraspasosValidacion.push(e);
                         }
-
-                    },
-                    error: function(e) {
-                        console.log(e);
-                        Swal.fire({
-                            html: e.responseText
-                        })
                     }
                 });
+            });
+            if (listaTraspasosValidacion.length > 0) {
+                Swal.fire({
+                    title: 'Tienes productos sin cantidad comprobada, deseas continuar?',
+                    showDenyButton: true,
+                    showCancelButton: false,
+                    confirmButtonText: `Sí`,
+                    denyButtonText: `No`,
+                }).then((result) => {
+                    /* Read more about isConfirmed, isDenied below */
+                    if (result.isConfirmed) {
+                        traspasar();
+                    } else if (result.isDenied) {
+                        $.each($('#ticketTabla').children(), function(i, v) {
+                            $.each(listaTraspasosValidacion, function(x, e) {
+
+                            });
+                        });
+                    }
+                })
+            } else if (listaTraspasosValidacion.length == 0) {
+                traspasar();
             }
+        }
+        //Función que manda a llamar el rechazo del traspaso
+        function rechazarTraspaso() {
+            Swal.fire({
+                title: 'Seguro que quieres rechazar el traspaso?, una vez rechazado ya no se podrá aprobar.',
+                showDenyButton: true,
+                showCancelButton: false,
+                confirmButtonText: `Sí`,
+                denyButtonText: `No`,
+            }).then((result) => {
+                /* Read more about isConfirmed, isDenied below */
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: "post",
+                        url: "{{ route('autorizarTraspasoSucursal') }}",
+                        data: {
+                            'traspaso': infoTraspao,
+                            'detalle_traspaso': detalle_traspaso,
+                            'estatus': 2
+                        },
+                        dataType: 'JSON',
+                        headers: {
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        },
+                        success: function(response) {
+                            console.log(response);
+                            $('#finalizarTraspaso').attr('disabled', true);
+                            $('#rechazarTraspaso').attr('disabled', true);
+                            $('#upc').attr('disabled', true);
+                            if (response[0].response == "success") {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: response[0].message
+                                })
+                            } else {
+                                Toast.fire({
+                                    icon: 'warning',
+                                    title: response[0].message
+                                })
+                            }
+                        },
+                        error: function(e) {
+                            console.log(e);
+                            Swal.fire({
+                                html: e.responseText
+                            })
+                        }
+                    });
+                }
+            })
+
+        }
+        //Función con la petición AJAX para realizar el traspaso
+        function traspasar() {
+            $.ajax({
+                type: "post",
+                url: "{{ route('autorizarTraspasoSucursal') }}",
+                data: {
+                    'traspaso': infoTraspao,
+                    'detalle_traspaso': detalle_traspaso,
+                    'estatus': 1
+                },
+                dataType: 'JSON',
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                },
+                success: function(response) {
+                    console.log(response);
+                    $('#finalizarTraspaso').attr('disabled', true);
+                    $('#rechazarTraspaso').attr('disabled', true);
+                    $('#upc').attr('disabled', true);
+                    if (response[0].response == "success") {
+                        Toast.fire({
+                            icon: 'success',
+                            title: response[0].message
+                        })
+                    } else {
+                        Toast.fire({
+                            icon: 'warning',
+                            title: response[0].message
+                        })
+                        /*$('#mensajeTraspaso ul').text(response[0].message);*/
+                        $('#mensajeTraspaso').removeClass('alert-success').addClass('alert-danger');
+                        /*response[1][0].forEach(element => {
+                            $.each($('#listaTraspasos').children(), function(i, v) {
+                                if ($(this).index() == element[0].index) {
+                                    $(this).addClass('table-warning');
+                                } else {
+                                    $(this).remove();
+                                }
+                            });
+                            $.each($('#listaTraspasos').children(), function(i, v) {
+                                $(this).find('#index small').text(i + 1);
+                            });
+                            $('#mensajeTraspaso').append(
+                                '<ul id="errores">' +
+                                '<li>Error en el traspaso #' + parseInt(element[0].index + 1) +
+                                '. ' + element[0].error + '</li>' +
+                                '</ul>'
+                            )
+                        });*/
+                        //$('#mensajeTraspaso').show();
+                    }
+
+                },
+                error: function(e) {
+                    console.log(e);
+                    Swal.fire({
+                        html: e.responseText
+                    })
+                }
+            });
         }
 
     </script>
