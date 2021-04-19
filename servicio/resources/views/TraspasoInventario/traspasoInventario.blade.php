@@ -90,7 +90,7 @@
                                                         class="btn btn-primary {{ $traspaso->estatus != 1 ?: 'disabled' }}"><i
                                                             class="far fa-edit"></i></a></td>
                                                 <td><a href="{{ route('checklistAutorizarTraspaso', ['id_traspaso_inventario' => $traspaso->id_traspaso_inventario]) }}"
-                                                        class="btn btn-success {{ $traspaso->estatus != 2 && $traspaso->estatus == 1 ? 'disabled' : '' }}"><i
+                                                        class="btn btn-success {{ $traspaso->estatus == 2 || $traspaso->estatus == 1 ? 'disabled' : '' }}"><i
                                                             class="fas fa-thumbs-up"></i></a></td>
                                             @endif
                                         </tr>

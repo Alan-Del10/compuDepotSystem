@@ -520,7 +520,27 @@ class InventarioController extends Controller
                             $fecha = date_format($fecha_modificacion, 'Y-m-d H:i:s');
                             $descripcion = 'El usuario ' . $usuario_nombre . ' ha modificado los atributos del artículo con el UPC/EAN ' . $request->upc . ' con el título ' . $request->titulo . ' desde la sucursal ' . $sucursal[0]->sucursal . ' con stock ' . $detalle['stock'] . 'pza(s). a la fecha ' . date_format($fecha_modificacion, 'Y-m-d H:i:s');
                             if ($detalle['etiquetas'] > 0) {
-                                $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal);
+                                $error_etiqueta = $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal);
+                                //Marcar errores según lo que falte.
+                                switch ($error_etiqueta) {
+                                    case 1:
+                                        $request->flash();
+                                        DB::rollback();
+                                        //dd($error_etiqueta);
+                                        return redirect()->back()->with('error', 'No tienes una imagen para el logo. Asigna una e intenta después.');
+                                    case 2:
+                                        $request->flash();
+                                        DB::rollback();
+                                        //dd($error_etiqueta);
+                                        return redirect()->back()->with('error', 'No se encontro el archivo o directorio del pdf.');
+                                    case 3:
+                                        $request->flash();
+                                        DB::rollback();
+                                        //dd($error_etiqueta);
+                                        return redirect()->back()->with('error', 'No se encontro una impresora conectada o configurada.');
+
+                                    default:;
+                                }
                             }
                             //$this->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                             $bitacora->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
@@ -702,7 +722,12 @@ class InventarioController extends Controller
         if (Storage::disk('local')->exists('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf')) {
             Storage::disk('local')->delete('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf');
         }
-        $imagen = base64_encode(Storage::get('public/sucursales/' . $sucursal[0]->logo));
+        try {
+            $imagen = base64_encode(Storage::get('public/sucursales/' . $sucursal[0]->logo));
+        } catch (\Throwable $th) {
+            //dd($th);
+            return 1;
+        }
         $datos = [
             'codigo' => $inventario[0]->upc,
             'precio_min' => $inventario[0]->precio_min,
@@ -715,13 +740,21 @@ class InventarioController extends Controller
             'total' => $etiquetas,
             'logo' => $imagen
         ];
-        PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)
-            ->save(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf');
+        try {
+            PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)
+                ->save(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf');
+        } catch (\Throwable $th) {
+            return 2;
+        }
 
-        Printing::newPrintTask()
-            ->printer($sucursal[0]->etiquetas)
-            ->file(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf')
-            ->send();
+        try {
+            Printing::newPrintTask()
+                ->printer($sucursal[0]->etiquetas)
+                ->file(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf')
+                ->send();
+        } catch (\Throwable $th) {
+            return 3;
+        }
     }
 
     /**

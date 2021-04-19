@@ -121,6 +121,7 @@ Route::resource('Compra', CompraController::class)->middleware('auth:root,admin,
 
 //Traspaso de Inventario routes
 Route::resource('TraspasoInventario', TraspasoInventarioController::class)->middleware('auth:root,admin,sub_admin,vendedor,servicio_cliente');
+Route::post('/traspasoInventario/update','TraspasoInventarioController@traspasoUpdate')->name('traspasoUpdate')->middleware('auth');
 Route::get('/traspasoInventario/inventarioSucursal', 'TraspasoInventarioController@buscarInventarioSucursal')->name('buscarInventarioSucursal')->middleware('auth');
 Route::post('/traspasoInventario/autorizarTraspasoSucursal', 'TraspasoInventarioController@autorizarTraspasoSucursal')->name('autorizarTraspasoSucursal')->middleware('auth');
 Route::get('/traspasoInventario/checklistAutorizarTraspaso', 'TraspasoInventarioController@checklistAutorizarTraspaso')->name('checklistAutorizarTraspaso')->middleware('auth');

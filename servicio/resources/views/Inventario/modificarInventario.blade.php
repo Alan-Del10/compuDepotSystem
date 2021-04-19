@@ -11,6 +11,28 @@
             </div>
         </div>
     </div>
+    <!-- Callback-->
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @elseif (Session::has('success'))
+        <div class="alert alert-success">
+            <ul>
+                {{ Session::get('success') }}
+            </ul>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger text-center msg" id="error">
+            <strong>{{ session('error') }}</strong>
+        </div>
+    @endif
+    <!-- /Callback-->
     <!-- /.container-fluid -->
     <!-- Main content -->
     <section class="content">
@@ -165,7 +187,7 @@
                                 <div class="form-group row">
                                     <div class="col-sm-4">
                                         <div class="form-check form-check-inline">
-                                            @if (count($compatibilidad)>0)
+                                            @if (count($compatibilidad) > 0)
                                                 <input type="checkbox" class="form-check-input" id="checkCompatibilidad"
                                                     name="checkCompatibilidad" checked
                                                     onclick="checkCompatibilidadModelos()">
@@ -178,7 +200,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div id="divCompatibilidad" style="display: {{ (count($compatibilidad)>0) ? 'block' : 'none' }}">
+                                <div id="divCompatibilidad"
+                                    style="display: {{ count($compatibilidad) > 0 ? 'block' : 'none' }}">
                                     <hr>
                                     <div class="form-group row">
                                         <h4 class="col-12">Compatibilidad</h4>
@@ -200,7 +223,8 @@
                                                 name="modelo2" placeholder="Seleccionar Modelo" />
                                             <datalist id="modeloData2">
                                                 @foreach ($modelos as $modelo)
-                                                    <option value="{{ $modelo->modelo }}">{{ $modelo->modelo }}</option>
+                                                    <option value="{{ $modelo->modelo }}">{{ $modelo->modelo }}
+                                                    </option>
                                                 @endforeach
                                             </datalist>
                                             <div class="input-group-append">
@@ -261,8 +285,8 @@
                                 <div class="form-group row" id="sucursalStock">
                                     <label for="sucursal" class="col-sm-2 col-form-label">Sucursal</label>
                                     <input type="text" list="sucursalData" class="form-control col-4" id="sucursal"
-                                        name="sucursal" value="{{ old('sucursal') }}" placeholder="Seleccionar Sucursal"
-                                         />
+                                        name="sucursal" value="{{ old('sucursal') }}"
+                                        placeholder="Seleccionar Sucursal" />
                                     <datalist id="sucursalData">
                                         @foreach ($sucursales as $sucursal)
                                             <option value="{{ $sucursal->sucursal }}">{{ $sucursal->sucursal }}
@@ -271,11 +295,11 @@
                                     </datalist>
                                     <div class="input-group col-6">
                                         <label for="stock" class="col-sm-3 col-form-label">Stock (pz)</label>
-                                        <input type="number" class="form-control" id="stock" name="stock"
-                                            placeholder="Stock" >
+                                        <input type="number" min="1" class="form-control" id="stock" name="stock"
+                                            placeholder="Stock">
                                         <div class="input-group-append">
-                                            <button type="button" class="btn btn-success" id="agregarStockSucursal"
-                                                ><i class="fas fa-plus"></i></button>
+                                            <button type="button" class="btn btn-success" id="agregarStockSucursal"><i
+                                                    class="fas fa-plus"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -290,15 +314,28 @@
                                         </thead>
                                         <tbody id="tablaStockSucursal">
                                             @if (count($detalle_inventario) > 0)
-                                            {{$x = 0}}
+                                                {{ $x = 0 }}
                                                 @foreach ($detalle_inventario as $detalle)
                                                     <tr>
-                                                        <th scope="row"><input type="text" class="form-control form-control-sm" value="{{ $detalle->sucursal }}" name="detalleInventario[{{$x}}][sucursal]" readonly></th>
-                                                        <th scope="row"><input type="number" class="form-control form-control-sm" value="{{ $detalle->stock }}" name="detalleInventario[{{$x}}][stock]"></th>
-                                                        <th scope="row"><input type="number" class="form-control form-control-sm" value="{{ $detalle->stock }}" name="detalleInventario[{{$x}}][etiquetas]"></th>
-                                                        <th scope="row"><a href="#" class="btn btn-danger btn-sm" onclick="$(this).parent().parent().remove(); conteoDetalle -= 1;"><i class="fas fa-trash"></i></a></th>
+                                                        <th scope="row"><input type="text"
+                                                                class="form-control form-control-sm"
+                                                                value="{{ $detalle->sucursal }}"
+                                                                name="detalleInventario[{{ $x }}][sucursal]"
+                                                                readonly></th>
+                                                        <th scope="row"><input type="number" min="1"
+                                                                class="form-control form-control-sm"
+                                                                value="{{ $detalle->stock }}"
+                                                                name="detalleInventario[{{ $x }}][stock]"></th>
+                                                        <th scope="row"><input type="number" min="1"
+                                                                class="form-control form-control-sm"
+                                                                value="{{ $detalle->stock }}"
+                                                                name="detalleInventario[{{ $x }}][etiquetas]">
+                                                        </th>
+                                                        <th scope="row"><a href="#" class="btn btn-danger btn-sm"
+                                                                onclick="$(this).parent().parent().remove(); conteoDetalle -= 1;"><i
+                                                                    class="fas fa-trash"></i></a></th>
                                                     </tr>
-                                                    {{$x++}}
+                                                    {{ $x++ }}
                                                 @endforeach
                                             @endif
                                         </tbody>
@@ -311,14 +348,15 @@
                                 <div class="form-group row">
                                     <label for="costo" class="col-sm-2 col-form-label">Costo ($)</label>
                                     <div class="col-sm-4">
-                                        <input type="number" class="form-control @error('costo') is-invalid @enderror"
-                                            id="costo" name="costo" placeholder="Costo" step="0.01"
+                                        <input type="number" min="0.01"
+                                            class="form-control @error('costo') is-invalid @enderror" id="costo"
+                                            name="costo" placeholder="Costo" step="0.01"
                                             value="{{ old('costo', $inventario[0]->costo) }}">
                                     </div>
                                     <label for="stockMin" class="col-sm-2 col-form-label">Stock Mínimo (pz)</label>
                                     <div class="col-sm-4">
                                         <input type="number" class="form-control @error('stockMin') is-invalid @enderror"
-                                            id="stockMin" name="stockMin" placeholder="Stock Mínimo"
+                                            min="1" id="stockMin" name="stockMin" placeholder="Stock Mínimo"
                                             value="{{ old('stockMin', $inventario[0]->stock_min) }}">
                                     </div>
                                 </div>
@@ -330,21 +368,21 @@
                                     <div class="col-sm-2">
                                         <input type="number"
                                             class="form-control precios @error('precioMin') is-invalid @enderror"
-                                            id="precioMin" name="precioMin" placeholder="Precio Mínimo" step="0.01"
-                                            value="{{ old('precioMin', $inventario[0]->precio_min) }}">
+                                            id="precioMin" name="precioMin" placeholder="Precio Mínimo" min="0.01"
+                                            step="0.01" value="{{ old('precioMin', $inventario[0]->precio_min) }}">
                                     </div>
                                     <label for="precioMax" class="col-sm-2 col-form-label">Precio Max.</label>
                                     <div class="col-sm-2">
                                         <input type="number"
                                             class="form-control precios @error('precioMax') is-invalid @enderror"
-                                            id="precioMax" name="precioMax" placeholder="Precio Máximo" step="0.01"
-                                            value="{{ old('precioMax', $inventario[0]->precio_max) }}">
+                                            id="precioMax" name="precioMax" placeholder="Precio Máximo" min="0.01"
+                                            step="0.01" value="{{ old('precioMax', $inventario[0]->precio_max) }}">
                                     </div>
                                     <label for="mayoreo" class="col-sm-2 col-form-label">Precio May.</label>
                                     <div class="col-sm-2">
                                         <input type="number"
                                             class="form-control precios @error('mayoreo') is-invalid @enderror" id="mayoreo"
-                                            name="mayoreo" placeholder="Precio Mayoreo" step="0.01"
+                                            name="mayoreo" placeholder="Precio Mayoreo" min="0.01" step="0.01"
                                             value="{{ old('mayoreo', $inventario[0]->precio_mayoreo) }}">
                                     </div>
                                 </div>
@@ -356,21 +394,21 @@
                                     <label for="largo" class="col-sm-2 col-form-label">Largo(m)</label>
                                     <div class="col-sm-2">
                                         <input type="number" class="form-control @error('largo') is-invalid @enderror"
-                                            id="largo" name="largo" placeholder="Largo" step="0.01"
+                                            id="largo" name="largo" min="0.01" placeholder="Largo" step="0.01"
                                             value="{{ old('largo', $inventario[0]->largo) }}">
                                     </div>
 
                                     <label for="alto" class="col-sm-2 col-form-label">Alto(m)</label>
                                     <div class="col-sm-2">
                                         <input type="number" class="form-control @error('alto') is-invalid @enderror"
-                                            id="alto" name="alto" placeholder="Alto" step="0.01"
+                                            id="alto" name="alto" min="0.01" placeholder="Alto" step="0.01"
                                             value="{{ old('alto', $inventario[0]->alto) }}">
                                     </div>
 
                                     <label for="ancho" class="col-sm-2 col-form-label">Ancho(m)</label>
                                     <div class="col-sm-2">
                                         <input type="number" class="form-control @error('ancho') is-invalid @enderror"
-                                            id="ancho" name="ancho" placeholder="Ancho" step="0.01"
+                                            id="ancho" name="ancho" min="0.01" placeholder="Ancho" step="0.01"
                                             value="{{ old('ancho', $inventario[0]->ancho) }}">
                                     </div>
                                 </div>
@@ -388,15 +426,20 @@
                             <div class="card-body">
                                 <div class="form-input row">
                                     <div class="col-sm-6">
-                                        <div class="form-check form-check-inline">
-                                            <input type="checkbox" class="form-check-input" id="checkFinalizar"
-                                                name="checkFinalizar" onclick="checkFinalizarInventario()">
-                                            <label class="form-check-label" for="checkFinalizar">Finalizar Proceso</label>
-                                        </div>
+                                        <!--  <div class="form-check form-check-inline">
+                                                <input type="checkbox" class="form-check-input" id="checkFinalizar"
+                                                    name="checkFinalizar" onclick="checkFinalizarInventario()">
+                                                <label class="form-check-label" for="checkFinalizar">Finalizar Proceso</label>
+                                            </div> -->
                                     </div>
-                                    <div class="col-sm-6">
-                                        <input type="submit" value="Agregar Inventario" class="btn btn-success float-right"
-                                            id="agregarInventario" disabled>
+                                    <div class="col-sm-12 text-center">
+                                        <input type="submit" value="Editar Inventario" class="btn btn-success "
+                                            id="editarInventario">
+                                        <div class="spinner-border spinner-layer spinner-blue-only" role="status"
+                                            id="loading" style="display:none">
+                                            <span class="sr-only">Loading...</span>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -407,23 +450,7 @@
             </form>
         </div>
     </section>
-    <!-- Callback-->
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @elseif (Session::has('success'))
-        <div class="alert alert-success">
-            <ul>
-                {{ Session::get('success') }}
-            </ul>
-        </div>
-    @endif
-    <!-- /Callback-->
+
     <script>
         var detalle_inventario = @json($detalle_inventario);
         let conteoDetalle = detalle_inventario.length;
@@ -501,7 +528,7 @@
         });
         //Función para desabilitar los campos
         function deshabilitarFormulario(estado) {
-            $('#agregarInventario').attr('disabled', true);
+            $('#editarInventario').attr('disabled', true);
             $('#agregarDetalle').attr('disabled', true);
             $('#agregarDetalleInventario').attr('disabled', true);
             $('#formInventario').find('.card-body').children().each(function() {
@@ -514,7 +541,7 @@
         function habilitarFormulario(estado, datosFormulario) {
             $('#checkOnline').attr('disabled', false);
             $('#checkCompatibilidad').attr('disabled', false);
-            //$('#agregarInventario').attr('disabled', false);
+            //$('#editarInventario').attr('disabled', false);
             $('#checkFinalizar').attr('disabled', false);
             $('#agregarDetalle').attr('disabled', false);
             $('#agregarDetalleInventario').attr('disabled', false);
@@ -645,14 +672,14 @@
             }
         }
         //Funcion para habílitar el botón que envía los datos el controlador
-        function checkFinalizarInventario() {
-            var checkBox = document.getElementById("checkFinalizar");
-            if (checkBox.checked == true) {
-                $('#agregarInventario').attr('disabled', false);
-            } else {
-                $('#agregarInventario').attr('disabled', true);
-            }
-        }
+        /*       function checkFinalizarInventario() {
+                  var checkBox = document.getElementById("checkFinalizar");
+                  if (checkBox.checked == true) {
+                      $('#editarInventario').attr('disabled', false);
+                  } else {
+                      $('#editarInventario').attr('disabled', true);
+                  }
+              } */
         //Cargar marcas dependiendo de la categoria
         $('#categoria').change(function() {
             if ($(this).val() != null) {
@@ -665,6 +692,15 @@
                         $('#marca').append('<option value="' + marca.marca + '">' + marca.marca +
                             '</option>');
                     }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Este artículo ya existe!',
+                    text: "Puede editar este artículo dando clic en el botón!",
+                    icon: 'warning',
+                    showCancelButton: false,
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Entendido!'
                 });
             }
         });
@@ -701,7 +737,7 @@
         $('#agregarMarca').on('click', function() {
             //sacar una cadena de options para el sweet alert
             var cadenaOption =
-            '<select class="form-control" id="categoriaOption">'; //inicializo variable para el options del sweet alert
+                '<select class="form-control" id="categoriaOption">'; //inicializo variable para el options del sweet alert
             categorias.forEach(categoria => {
                 cadenaOption = cadenaOption + '<option value="' + categoria.categoria + '">' + categoria
                     .categoria + '</option>';
@@ -767,7 +803,7 @@
                     input.parent().find('.error').remove();
                     input.parent().append(
                         '<div class="invalid-feedback error">Error solo se permiten Letras,Números y Guíones!</div>'
-                        );
+                    );
                 } else {
                     input.removeClass("is-invalid").addClass("is-valid");
                     input.parent().find('.error').remove();
@@ -779,7 +815,7 @@
         $('#agregarModelo').on('click', function() {
             //sacar una cadena de options para el sweet alert
             var cadenaOption =
-            '<select class="form-control" id="marcaOption">'; //inicializo variable para el options del sweet alert
+                '<select class="form-control" id="marcaOption">'; //inicializo variable para el options del sweet alert
             marcas.forEach(marca => {
                 if ($('#marca').val() == marca.marca) {
                     cadenaOption = cadenaOption + '<option value="' + marca.marca + '" selected>' + marca
@@ -790,10 +826,11 @@
                 }
 
             });
-            if(marcasExtras){
+            if (marcasExtras) {
                 marcasExtras.forEach(marca => {
                     if ($('#marca').val() == marca.marca) {
-                        cadenaOption = cadenaOption + '<option value="' + marca.marca + '" selected>' + marca
+                        cadenaOption = cadenaOption + '<option value="' + marca.marca + '" selected>' +
+                            marca
                             .marca + '</option>';
                     } else {
                         cadenaOption = cadenaOption + '<option value="' + marca.marca + '">' + marca.marca +
@@ -864,7 +901,7 @@
                     input.parent().find('.error').remove();
                     input.parent().append(
                         '<div class="invalid-feedback error">Error solo se permiten Letras,Números y Guíones!</div>'
-                        );
+                    );
                 } else {
                     input.removeClass("is-invalid").addClass("is-valid");
                     input.parent().find('.error').remove();
@@ -1073,13 +1110,16 @@
                 conteoDetalle += 0;
                 $('#tablaStockSucursal').append(
                     '<tr>' +
-                        '<th scope="row"><input type="text" class="form-control form-control-sm" value="' + $(
-                        '#sucursal').val() + '"" name="detalleInventario['+conteoDetalle+'][sucursal]" readonly></th>' +
-                        '<th scope="row"><input type="number" class="form-control form-control-sm" value="' + $(
-                            '#stock').val() + '"" name="detalleInventario['+conteoDetalle+'][stock]" readonly></th>' +
-                        '<th scope="row"><input type="number" class="form-control form-control-sm" value="' + $(
-                        '#stock').val() + '"" name="detalleInventario['+conteoDetalle+'][etiquetas]"></th>' +
-                        '<th scope="row"><a href="#" class="btn btn-danger btn-sm" onclick="$(this).parent().parent().remove(); conteoDetalle -= 1;"><i class="fas fa-trash"></i></a></th>' +
+                    '<th scope="row"><input type="text" class="form-control form-control-sm" value="' + $(
+                        '#sucursal').val() + '"" name="detalleInventario[' + conteoDetalle +
+                    '][sucursal]" readonly></th>' +
+                    '<th scope="row"><input type="number" class="form-control form-control-sm" value="' + $(
+                        '#stock').val() + '"" name="detalleInventario[' + conteoDetalle +
+                    '][stock]" readonly></th>' +
+                    '<th scope="row"><input type="number" class="form-control form-control-sm" value="' + $(
+                        '#stock').val() + '"" name="detalleInventario[' + conteoDetalle +
+                    '][etiquetas]"></th>' +
+                    '<th scope="row"><a href="#" class="btn btn-danger btn-sm" onclick="$(this).parent().parent().remove(); conteoDetalle -= 1;"><i class="fas fa-trash"></i></a></th>' +
                     '</tr>'
                 );
                 $('#stock').val("");
@@ -1147,6 +1187,29 @@
                 $('#upc').val(upc);
             }
         }
+
+        $('#editarInventario').on('click', function(e) {
+            /* e.preventDefault(); */
+            $(this).hide();
+            $('#loading').show();
+            var data = [];
+            data = $('#formInventario').serializeArray();
+
+            //24, 26, 27
+            if (data.length == 24 || data.length == 26 || data.length == 27) {
+
+            } else {
+                Swal.fire({
+                    title: 'Oops',
+                    text: "Algún campo no lo has llenado.",
+                    icon: 'error',
+                    showCancelButton: false,
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Regresar'
+                });
+            }
+
+        });
 
     </script>
 @endsection

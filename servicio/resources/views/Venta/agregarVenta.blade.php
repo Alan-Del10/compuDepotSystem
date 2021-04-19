@@ -27,8 +27,8 @@
                             <!-- /.card-header -->
                             <div class="card-body">
                                 <div class="form-group row">
-                                    <label for="cliente" class="col-sm-3 col-form-label">Nombre Cliente</label>
-                                    <div class="col-sm-3 input-group">
+                                    <label for="cliente" class="col-sm-2 col-form-label">Nombre Cliente</label>
+                                    <div class="col-sm-4 input-group">
                                         <input type="text" list="clienteData" class="form-control @error('cliente') is-invalid @enderror" id="cliente" name="cliente" value="{{old('cliente')}}" placeholder="Seleccionar Cliente"/>
                                         <datalist id="clienteData">
                                             @foreach ($clientes as $cliente)
@@ -39,9 +39,9 @@
                                             <button type="button" class="btn btn-primary" id="habilitarFormCliente"><i class="fas fa-plus"></i></button>
                                         </div>
                                     </div>
-                                    <label for="usuario_cliente" class="col-sm-3 col-form-label">¿De quién es cliente?</label>
-                                    <div class="col-sm-3 input-group">
-                                        <input type="text" list="usuarioClienteData" class="form-control @error('usuario_cliente') is-invalid @enderror" id="usuario_cliente" name="usuario_cliente" value="{{old('usuario_cliente')}}" placeholder="Seleccionar Empleado"/>
+                                    <label for="usuario_cliente" class="col-sm-2 col-form-label">¿De quién es cliente?</label>
+                                    <div class="col-sm-4 input-group">
+                                        <input type="text" list="usuarioClienteData" class="form-control @error('usuario_cliente') is-invalid @enderror" id="usuario_cliente" name="usuario_cliente" value="{{old('usuario_cliente')}}" placeholder="Seleccionar Cliente"/>
                                         <datalist id="usuarioClienteData">
                                             @foreach ($usuarios as $usuario)
                                             <option value="{{$usuario->id}} {{$usuario->name}}">{{$usuario->name}}</option>
@@ -235,15 +235,19 @@
                             </div>
                             <div class="card-body">
                                 <div class="form-input row">
-                                    <div class="col-sm-6">
+                                    <!-- <div class="col-sm-6">
                                         <div class="form-check form-check-inline">
                                             <input type="checkbox" class="form-check-input" id="checkFinalizar" name="checkFinalizar"  onclick="checkFinalizarVenta()">
                                             <label class="form-check-label" for="checkFinalizar">Finalizar Venta</label>
                                         </div>
-                                    </div>
+                                    </div> -->
                                     <div class="col-sm-6">
-                                        <input type="submit" value="Realizar Venta" class="btn btn-success float-right" disabled id="agregarVenta" onclick="finalizarVenta()" >
+                                        <input type="submit" value="Realizar Venta" class="btn btn-success float-right"  id="agregarVenta" onclick="finalizarVenta()" >
+                                        <div class="spinner-border spinner-layer spinner-blue-only" role="status" id="loading" style="display:none">
+                                        <span class="sr-only">Loading...</span>
+</div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -348,7 +352,6 @@
                     }
                 });
             }else{
-
             }
         });
         //Agregar Formulario en Formas de pago
@@ -373,7 +376,6 @@
                         '<input type="number" class="form-control vida" id="pago" step="0.01" name="formas_pago[][pago]" onkeypress="return (event.charCode == 8 || event.charCode == 0 || event.charCode == 13) ? null : event.charCode >= 46 && event.charCode <= 57" placeholder="Cantidad">'+
                     '</div>'+
                 '</div>'
-
             );
         });
         //Función para sumar o restar el total del ticket
@@ -495,14 +497,14 @@
             }
         }
         //Función para habílitar el botón que envía los datos el controlador
-        function checkFinalizarVenta(){
+   /*      function checkFinalizarVenta(){
             var checkBox = document.getElementById("checkFinalizar");
             if (checkBox.checked == true){
                 $('#agregarVenta').attr('disabled', false);
             } else {
                 $('#agregarVenta').attr('disabled', true);
             }
-        }
+        } */
         //Función que envía el formulario al controlador
         function finalizarVenta(){
             $('#mensajeVenta').hide();
@@ -528,7 +530,6 @@
                         'upc' : $(this).find('#upc_art').text(),
                         'piezas' : $(this).children().find('#cantidad').val(),
                         'precio' : $(this).children().find('#precio').val()
-
                     }
                 );
             });
@@ -555,7 +556,6 @@
                 $('#mensajeFormas').hide();
                 formasPagoValidacion = true;
             }
-
             if(totalFormasPago < total){
                 $('#mensajeTotalFormas').show();
                 totalFormasPagoValidacion = false;
@@ -583,15 +583,23 @@
                     headers: {
                         'X-CSRF-TOKEN': "{{ csrf_token() }}"
                     },
+                    beforeSend: function () {
+                        $('#agregarVenta').hide();
+                        $('#loading').show();
+                    },
                     success: function(response){
                         if(response.response == "success"){
                             $('#mensajeVenta ul').text(response.message);
                             $('#mensajeVenta').removeClass('alert-danger').addClass('alert-success');
                             $('#mensajeVenta').show();
+                            $('#loading').hide();
+                            $('#agregarVenta').show();
                         }else{
                             $('#mensajeVenta ul').text(response.message);
                             $('#mensajeVenta').removeClass('alert-success').addClass('alert-danger');
                             $('#mensajeVenta').show();
+                            $('#loading').hide();
+                            $('#agregarVenta').show();
                         }
                         limpiarFormulario();
                     },
@@ -603,7 +611,6 @@
                     }
                 });
             }
-
         }
         //Función que limpia el formulario
         function limpiarFormulario(){
@@ -673,7 +680,6 @@
                     whatsapp = 1;
                 else
                     whatsapp = 0;
-
                 let correo = $('#correo').val();
                 let tipo_cliente = $('#tipo_cliente').val();
                 $.ajax({
@@ -719,6 +725,3 @@
         }
     </script>
 @endsection
-
-
-

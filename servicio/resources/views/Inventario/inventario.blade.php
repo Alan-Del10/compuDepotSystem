@@ -53,16 +53,16 @@
                                     @foreach ($sucursales as $sucursal)
                                         <li class="nav-item" role="presentation">
                                             <a class="nav-link" data-toggle="tab" href="#{{ $sucursal->sucursal }}"
-                                                role="tab" aria-controls="{{ $sucursal->sucursal }}"
-                                                aria-selected="false" id="{{ $sucursal->sucursal }}">{{ $sucursal->sucursal }}</a>
+                                                role="tab" aria-controls="{{ $sucursal->sucursal }}" aria-selected="false"
+                                                id="{{ $sucursal->sucursal }}">{{ $sucursal->sucursal }}</a>
                                         </li>
                                     @endforeach
                                 @endif
                             @else
                                 <li class="nav-item">
                                     <a class="nav-link active" data-toggle="tab" href="#{{ $sucursal[0]->sucursal }}"
-                                        role="tab" aria-controls="{{ $sucursal[0]->sucursal }}"
-                                        aria-selected="true" id="{{ $sucursal[0]->sucursal }}">{{ $sucursal[0]->sucursal }}</a>
+                                        role="tab" aria-controls="{{ $sucursal[0]->sucursal }}" aria-selected="true"
+                                        id="{{ $sucursal[0]->sucursal }}">{{ $sucursal[0]->sucursal }}</a>
                                 </li>
                             @endif
                         </ul>
@@ -104,7 +104,9 @@
                                             <td><small><a
                                                         href="{{ route('Inventario.edit', $inventario->id_inventario) }}"
                                                         class="btn btn-primary btn-sm"><i class="far fa-edit"></i>
-                                                        Editar</a></small></td>
+                                                        Editar</a></small>
+                                            </td>
+
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -237,7 +239,6 @@
                 }
 
             });
-            $('#tablaCompatibilidad').children().remove();
             compatibilidades.forEach(compatibilidad => {
                 if ($(this).children().eq(0).text() == compatibilidad.upc) {
                     $('#tablaCompatibilidad').append(
@@ -301,14 +302,15 @@
             });
         }
 
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function(event) {
             event.target // newly activated tab
             event.relatedTarget // previous active tab
-            if($(this).attr('id') == 'general'){
+            if ($(this).attr('id') == 'general') {
 
-            }else{
+            } else {
 
             }
         })
+
     </script>
 @endsection

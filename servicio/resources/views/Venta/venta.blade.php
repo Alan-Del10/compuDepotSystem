@@ -74,8 +74,11 @@
                                             <td>{{ $venta->total }}</td>
                                             <td>
                                                 <!--<a href="#" class="btn btn-primary"><i class="far fa-edit"></i> Editar</a>-->
-                                                <a href="#" class="btn btn-success" onclick="imprimirTicket($(this))"><i
+                                                <a href="#" class="btn btn-success" id="imprimir" onclick="imprimirTicket($(this))"><i
                                                         class="fas fa-file-invoice-dollar"></i> Ticket</a>
+                                                        <div class="spinner-border spinner-layer spinner-blue-only" role="status" id="loading" style="display:none">
+                                        <span class="sr-only">Loading...</span>
+</div>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -85,7 +88,6 @@
                             </table>
 
                         </div>
-
                         <!-- /.card-body -->
 
                     </div>
@@ -130,6 +132,7 @@
         }
         //Esta función nos permite reimprimir los tickets de las ventas con autorización de algún superior
         function imprimirTicket(venta) {
+
             id_venta = venta.parent().siblings().eq(0).text();
             Swal.mixin({
                 input: 'text',
@@ -160,6 +163,7 @@
                         headers: {
                             'X-CSRF-TOKEN': "{{ csrf_token() }}"
                         },
+
                         success: function(data) {
                             console.log(data);
                             if (data == true) {
@@ -172,17 +176,26 @@
                                     headers: {
                                         'X-CSRF-TOKEN': "{{ csrf_token() }}"
                                     },
+                                    beforeSend: function () {
+                        $('#imprimir').hide();
+                        $('#loading').show();
+                         },
                                     success: function(data) {
+
                                         Toast.fire({
                                             icon: 'success',
                                             title: 'Imprimiendo ticket...'
-                                        })
+                                        });
+                                        $('#imprimir').show();
+                                        $('#loading').hide();
                                     },
                                     error: function(data) {
                                         Toast.fire({
                                             icon: 'error',
                                             title: 'No se pudo imprimir el ticket!'
                                         })
+                                        $('#imprimir').show();
+                                        $('#loading').hide();
                                     }
                                 });
                             } else {

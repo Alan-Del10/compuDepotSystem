@@ -351,9 +351,10 @@
             }
             if (listaTraspasosValidacion == true) {
                 $.ajax({
-                    type: "put",
-                    url: "{{ route('TraspasoInventario.update', $traspaso[0]->id_traspaso_inventario) }}",
+                    type: "post",
+                    url: "{{ route('traspasoUpdate')}}",
                     data: {
+                        'id_traspaso_inventario' : id_traspaso,
                         'traspasos': datos_generales
                     },
                     dataType: 'JSON',
@@ -363,12 +364,20 @@
                     success: function(response) {
                         console.log(response);
                         if (response[0].response == "success") {
-                            $('#mensajeTraspaso ul').text(response[0].message);
+                            /*$('#mensajeTraspaso ul').text(response[0].message);
                             $('#mensajeTraspaso').removeClass('alert-danger').addClass('alert-success');
-                            $('#mensajeTraspaso').show();
+                            $('#mensajeTraspaso').show();*/
+                            Toast.fire({
+                                icon: 'success',
+                                title: response[0].message
+                            })
                         } else {
-                            $('#mensajeTraspaso ul').text(response[0].message);
-                            $('#mensajeTraspaso').removeClass('alert-success').addClass('alert-danger');
+                            Toast.fire({
+                                icon: 'warning',
+                                title: response[0].message
+                            })
+                            /*$('#mensajeTraspaso ul').text(response[0].message);
+                            $('#mensajeTraspaso').removeClass('alert-success').addClass('alert-danger');*/
                             /*response[1]['traspaso_invalido'].forEach(element => {
                                 $.each($('#listaTraspasos').children(), function(i, v) {
                                     if ($(this).index() == element[0].index) {
@@ -387,7 +396,7 @@
                                     '</ul>'
                                 )
                             });*/
-                            $('#mensajeTraspaso').show();
+                            //$('#mensajeTraspaso').show();
                         }
 
                     },

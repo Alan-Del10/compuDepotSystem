@@ -510,11 +510,19 @@
                             listaTraspasos = [];
                             indexArray = null;
                             seleccionado = null;
-                            $('#mensajeTraspaso ul').text(response[0].message);
+                            /*$('#mensajeTraspaso ul').text(response[0].message);
                             $('#mensajeTraspaso').removeClass('alert-danger').addClass('alert-success');
-                            $('#mensajeTraspaso').show();
+                            $('#mensajeTraspaso').show();*/
+                            Toast.fire({
+                                icon: 'success',
+                                title: response[0].message
+                            })
                         } else {
-                            $('#mensajeTraspaso ul').text(response[0].message);
+                            Toast.fire({
+                                icon: 'warning',
+                                title: response[0].message
+                            })
+                            /*$('#mensajeTraspaso ul').text(response[0].message);
                             $('#mensajeTraspaso').removeClass('alert-success').addClass('alert-danger');
                             response[1]['traspaso_invalido'].forEach(element => {
                                 $.each($('#listaTraspasos').children(), function(i, v) {
@@ -534,7 +542,7 @@
                                     '</ul>'
                                 )
                             });
-                            $('#mensajeTraspaso').show();
+                            $('#mensajeTraspaso').show();*/
                         }
 
                     },

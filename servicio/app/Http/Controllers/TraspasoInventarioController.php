@@ -225,13 +225,13 @@ class TraspasoInventarioController extends Controller
             $validator = Validator::make($request->all(), [
                 'traspasos' => 'required'
             ]);
-
             $traspaso = $request->traspasos;
             $json_modificar = [
                 'id_sucursal_salida' => $traspaso['sucursal_salida'],
                 'id_sucursal_entrada' => $traspaso['sucursal_entrada'],
                 'total_productos' => $traspaso['cantidad'],
-                'razon' => $traspaso['razon']
+                'razon' => $traspaso['razon'],
+                'estatus' => 0
             ];
             if (Sucursal::where('id_sucursal', $traspaso['sucursal_entrada'])->doesntExist() || Sucursal::where('id_sucursal', $traspaso['sucursal_salida'])->doesntExist()) {
                 array_push($traspaso, [
@@ -251,6 +251,83 @@ class TraspasoInventarioController extends Controller
                                 ->where('detalle_inventario.id_sucursal', $traspaso['sucursal_salida'])->get();
                             $json_detalle = [
                                 'id_traspaso_inventario' => $id,
+                                'id_inventario' => $inventario[0]->id_inventario,
+                                'cantidad' => $value_2['cantidad'],
+                                'cantidad_comprobada' => 0,
+                                'autorizado' => 0
+                            ];
+                            if (!DB::table('detalle_traspaso_inventario')->insert($json_detalle)) {
+                                //Aquí iba el proceso de movimiento del stock
+                                //se cambió para mejor autorizar desde la vista de traspasoss desde la sucursal de entrada
+                                array_push($value, [
+                                    'error' => 'No se puedo insertar el detalle del traspaso!',
+                                    'index' => $key_2
+                                ]);
+                                array_push($incompletos, $value);
+                                DB::rollBack();
+                            }
+                        }
+                    }
+                    DB::commit();
+                    return [
+                        ['response' => 'success', 'message' => 'Se modificó correctamente el traspaso!']
+                    ];
+                } else {
+                    array_push($value, [
+                        'error' => 'No se puedo insertar el traspaso'
+                    ]);
+                    array_push($incompletos, $value);
+                    DB::rollBack();
+                }
+            }
+        } catch (\Throwable $th) {
+            $request->flush();
+            return [
+                ['response' => 'error', 'message' => 'Algo pasó al intenar modificar el traspaso!']
+            ];
+        }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\TraspasoInventario  $traspasoInventario
+     * @return \Illuminate\Http\Response
+     */
+    public function traspasoUpdate(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($request->all(), [
+                'traspasos' => 'required'
+            ]);
+            $traspaso = $request->traspasos;
+            $json_modificar = [
+                'id_sucursal_salida' => $traspaso['sucursal_salida'],
+                'id_sucursal_entrada' => $traspaso['sucursal_entrada'],
+                'total_productos' => $traspaso['cantidad'],
+                'razon' => $traspaso['razon'],
+                'estatus' => 0
+            ];
+            if (Sucursal::where('id_sucursal', $traspaso['sucursal_entrada'])->doesntExist() || Sucursal::where('id_sucursal', $traspaso['sucursal_salida'])->doesntExist()) {
+                array_push($traspaso, [
+                    'error' => 'Una sucursal no existe!'
+                ]);
+                array_push($incompletos, $traspaso);
+                DB::rollBack();
+            } else {
+                $traspaso_inventario = TraspasoInventario::find($request->id_traspaso_inventario);
+                if ($traspaso_inventario->update($json_modificar)) {
+                    if (DB::table('detalle_traspaso_inventario')->where('id_traspaso_inventario', $request->id_traspaso_inventario)->delete()) {
+                        foreach ($traspaso['inventario'] as $key_2 => $value_2) {
+                            $inventario = DB::table('inventario')
+                                ->leftJoin('detalle_inventario', 'detalle_inventario.id_inventario', 'inventario.id_inventario')
+                                ->select('inventario.id_inventario', 'detalle_inventario.stock', 'detalle_inventario.id_detalle_inventario')
+                                ->where('upc', $value_2['upc'])
+                                ->where('detalle_inventario.id_sucursal', $traspaso['sucursal_salida'])->get();
+                            $json_detalle = [
+                                'id_traspaso_inventario' => $request->id_traspaso_inventario,
                                 'id_inventario' => $inventario[0]->id_inventario,
                                 'cantidad' => $value_2['cantidad'],
                                 'cantidad_comprobada' => 0,
@@ -388,10 +465,10 @@ class TraspasoInventarioController extends Controller
                         $json_update = [
                             'stock' => $inventario[0]->stock - $value_2['cantidad_comprobada']
                         ];
-                        if ($value_2['cantidad_comprobada'] > 0 && $json_update['stock'] > 0 && DB::table('detalle_inventario')->groupBy('stock')->havingRaw('? >= 0', [($inventario[0]->stock - $value_2['cantidad_comprobada'])])->where('id_detalle_inventario', $inventario[0]->id_detalle_inventario)->update($json_update)) {
+                        if ($value_2['cantidad_comprobada'] > 0 && $json_update['stock'] >= 0 && DB::table('detalle_inventario')->groupBy('stock')->havingRaw('? >= 0', [($inventario[0]->stock - $value_2['cantidad_comprobada'])])->where('id_detalle_inventario', $inventario[0]->id_detalle_inventario)->update($json_update)) {
                             $consulta = DB::table('detalle_inventario')->where('id_sucursal', $traspaso[0]['id_sucursal_entrada'])->where('id_inventario', $inventario[0]->id_inventario)->get();
                             if ($consulta->isNotEmpty()) {
-                                if (!DB::table('detalle_inventario')->where('id_detalle_inventario', $consulta[0]->id_detalle_inventario)->update(['stock' => $consulta[0]->stock + $value_2['cantidad_comprobada']])) {
+                                if (!DB::table('detalle_inventario')->where('id_detalle_inventario', $consulta[0]->id_detalle_inventario)->update(['stock' => (intval($consulta[0]->stock) + intval($value_2['cantidad_comprobada']))])) {
                                     array_push($value_2, [
                                         'error' => 'No se pudo agregar stock del siguente UPC/EAN  ' . $inventario[0]->upc . ' a la sucursal de destino!',
                                         'index' => $key
@@ -422,6 +499,14 @@ class TraspasoInventarioController extends Controller
                             ]);
                             array_push($incompletos, $value_2);
 
+                            DB::rollBack();
+                        }
+                        if (!DB::table('detalle_traspaso_inventario')->where('id_traspaso_inventario', $request->traspaso[0]['id_traspaso_inventario'])->where('id_inventario', $value_2['id_inventario'])->update(['cantidad_comprobada' =>  $value_2['cantidad_comprobada'], 'autorizado' => 1])) {
+                            array_push($value_2, [
+                                'error' => 'No se pudo autorizar el traspaso de stock del siguente UPC/EAN  ' . $inventario[0]->upc,
+                                'index' => $key
+                            ]);
+                            array_push($incompletos, $value_2);
                             DB::rollBack();
                         }
                     } catch (\Exception $e) {
@@ -455,6 +540,13 @@ class TraspasoInventarioController extends Controller
             DB::beginTransaction();
             try {
                 TraspasoInventario::find($request->traspaso[0]['id_traspaso_inventario'])->update(['estatus' => 2, 'fecha_aprobacion' => date_format($fecha_aprobacion, 'Y-m-d H:i:s')]);
+                foreach ($request->detalle_traspaso as $key => $value_2) {
+                    if (!DB::table('detalle_traspaso_inventario')->where('id_traspaso_inventario', $request->traspaso[0]['id_traspaso_inventario'])->where('id_inventario', $value_2['id_inventario'])->update(['autorizado' => 0])) {
+                        return [
+                            ['response' => 'error', 'message' => 'Algo pasó al intenar rechazar el traspaso!']
+                        ];
+                    }
+                }
                 DB::commit();
                 if (!$request->ajax())
                     return redirect()->back()->with('success', 'Se modifico el estatus del traspaso a Rechazado');
