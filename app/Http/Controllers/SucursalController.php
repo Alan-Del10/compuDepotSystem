@@ -136,6 +136,7 @@ class SucursalController extends Controller
                 'etiquetas' => 'nullable'
             ]);
             $fileName = "";
+            dd($request->has('imagenSucursal'));
             if ($request->has('imagenSucursal')) {
 
                 $image      = $request->file('imagenSucursal');
@@ -146,7 +147,6 @@ class SucursalController extends Controller
                 $img->resize(120, 120, function ($constraint) {
                     $constraint->aspectRatio();
                 });
-                dd('aquí');
                 $img->stream(); // <-- Key point
                 if(Storage::disk('local')->exists('public/sucursales/'.$request->sucursal.'.'.$extension)) {
                     Storage::disk('local')->delete('public/sucursales/'.$request->sucursal.'.'.$extension);
