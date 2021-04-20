@@ -123,7 +123,6 @@ class SucursalController extends Controller
      */
     public function update(Request $request, $id)
     {
-        dd($request);
         //Si surge un error lo controlamos con el try/catch
         try {
             $data = $request->except('_method','_token');
@@ -147,7 +146,7 @@ class SucursalController extends Controller
                 $img->resize(120, 120, function ($constraint) {
                     $constraint->aspectRatio();
                 });
-
+                dd("aquí");
                 $img->stream(); // <-- Key point
                 if(Storage::disk('local')->exists('public/sucursales/'.$request->sucursal.'.'.$extension)) {
                     Storage::disk('local')->delete('public/sucursales/'.$request->sucursal.'.'.$extension);
