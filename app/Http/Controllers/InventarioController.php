@@ -540,8 +540,6 @@ class InventarioController extends Controller
                                         DB::rollback();
                                         //dd($error_etiqueta);
                                         return redirect()->back()->with('error', 'No se encontro una impresora conectada o configurada.');
-
-                                    default:;
                                 }
                             }
                             //$this->registrarBitacora($fecha_modificacion, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
