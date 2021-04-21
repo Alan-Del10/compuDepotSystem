@@ -62,7 +62,7 @@
                 </div>
                 <div class="col-sm">
                     <!--<img src='data:image/png;base64,{{$logo}}'' class="absolute" height="45px" width="35px" alt="logo" id="logo"/>-->
-                    <img src="{{ public_path('storage/sucursales/'.$imagen)}}" class="absolute" height="35px" width="25px" alt="logo"/>
+                    <img src="{{ public_path('storage/sucursales/'.$imagen)}}" class="absolute" height="35px" width="25px" alt="logo_sucursal"/>
                 </div>
             </div>
             <div class="row" style="padding-left:-60px; text-align: center;">
