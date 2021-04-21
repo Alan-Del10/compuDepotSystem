@@ -111,19 +111,19 @@ class ConfiguracionController extends Controller
             $image      = $request->file('logoAplicacion');
             $fileName   = 'logo.' . $image->getClientOriginalExtension();
 
-            $img = Image::make($image->getRealPath());
-            //dd($img);
-            $img->resize(120, 120, function ($constraint) {
+            $image->move(public_path("storage/img"),$fileName);
+            
+            /* $img = Image::make($image->getRealPath()); */
+            /* $img->resize(120, 120, function ($constraint) {
                 $constraint->aspectRatio();
-            });
+            }); */
 
-            $img->stream(); // <-- Key point
+           /*  $img->stream(); */ // <-- Key point
 
-            if(Storage::disk('local')->exists('public/img/logo.png')) {
+           /*  if(Storage::disk('local')->exists('public/img/logo.png')) {
                 Storage::disk('local')->delete('public/img/logo.png');
-            }
-            //dd();
-            Storage::disk('local')->put('public/img'.'/'.$fileName, $img, 'public');
+            } */
+            /* Storage::disk('local')->put('public/img'.'/'.$fileName, $img, 'public'); */
         }
         return redirect()->back();
     }

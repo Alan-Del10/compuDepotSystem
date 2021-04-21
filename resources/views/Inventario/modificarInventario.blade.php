@@ -1189,25 +1189,8 @@
         }
 
         $('#editarInventario').on('click', function(e) {
-            /* e.preventDefault(); */
             $(this).hide();
             $('#loading').show();
-            var data = [];
-            data = $('#formInventario').serializeArray();
-
-            //24, 26, 27
-            if (data.length == 24 || data.length == 26 || data.length == 27) {
-
-            } else {
-                Swal.fire({
-                    title: 'Oops',
-                    text: "Algún campo no lo has llenado.",
-                    icon: 'error',
-                    showCancelButton: false,
-                    confirmButtonColor: '#3085d6',
-                    confirmButtonText: 'Regresar'
-                });
-            }
 
         });
 
