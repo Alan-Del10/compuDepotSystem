@@ -110,7 +110,7 @@ class ConfiguracionController extends Controller
         if ($request->has('logoAplicacion')) {
             $image      = $request->file('logoAplicacion');
             $fileName   = 'logo.' . $image->getClientOriginalExtension();
-    dd(public_path())
+            dd($image);
             $img = Image::make($image->getRealPath());
             //dd($img);
             $img->resize(120, 120, function ($constraint) {
