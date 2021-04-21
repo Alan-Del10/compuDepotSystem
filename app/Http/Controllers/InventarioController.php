@@ -333,19 +333,21 @@ class InventarioController extends Controller
                 if ($request->has('imagenProducto')) {
                     $image      = $request->file('imagenProducto');
                     $fileName   = $request->upc . '.' . $image->getClientOriginalExtension();
-                    $img = Image::make($image->getRealPath());
+                    $image->move(public_path("storage/inventario"),$fileName);
+                    /*$img = Image::make($image->getRealPath());
                     $extension = $image->getClientOriginalExtension();
                     //dd($img);
                     $img->resize(120, 120, function ($constraint) {
                         $constraint->aspectRatio();
                     });
 
-                    $img->stream(); // <-- Key point
+                    $img->stream(); // <-- Key point*/
 
-                    if (Storage::disk('local')->exists('public/inventario/' . $request->upc . '.' . $extension)) {
+                    /*if (Storage::disk('local')->exists('public/inventario/' . $request->upc . '.' . $extension)) {
                         Storage::disk('local')->delete('public/inventario/' . $request->upc . '.' . $extension);
-                    }
-                    Storage::disk('local')->put('public/inventario' . '/' . $fileName, $img, 'public');
+                    }*/
+                    //Storage::disk('local')->put('public/inventario' . '/' . $fileName, $img, 'public');
+
                 } else {
                     $verificarImagen = DB::table('inventario')->where('upc', $request->upc)->where('imagen', '!=', null)->get();
                     if (count($verificarImagen) > 0) {
@@ -745,7 +747,7 @@ class InventarioController extends Controller
         try {
             $documento = PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)->output();
                 //->move(public_path("storage/inventario"), $inventario[0]->upc . '-2.pdf');
-            Storage::disk('public')->put('inventario/etiqueta'.'/'.$inventario[0]->upc . '-2.pdf', $documento);
+            Storage::disk('local')->put('inventario/etiqueta'.'/'.$inventario[0]->upc . '-2.pdf', $documento);
             //$documento->save(public_path("storage/inventario").$inventario[0]->upc . '-2.pdf');
         } catch (\Throwable $th) {
             return 2;
