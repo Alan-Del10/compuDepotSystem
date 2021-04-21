@@ -756,7 +756,7 @@ class InventarioController extends Controller
         try {
             Printing::newPrintTask()
                 ->printer($sucursal[0]->etiquetas)
-                ->file(storage_path('app/public/inventario/etiqueta/'.$inventario[0]->upc . '-2.pdf'))
+                ->file(storage_path('app/inventario/etiqueta/'.$inventario[0]->upc . '-2.pdf'))
                 ->send();
         } catch (\Throwable $th) {
             return 3;
