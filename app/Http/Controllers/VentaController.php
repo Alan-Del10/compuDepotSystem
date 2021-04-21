@@ -164,8 +164,6 @@ class VentaController extends Controller
                         $request->flash();
                         DB::rollBack();
                         return ['response' => 'error', 'message' => 'No se encontro una impresora conectada o configurada.'];
-
-                    default:;
                 }
                 $usuario_nombre = Auth::user()->name;
                 $usuario_id = Auth::user()->id;
