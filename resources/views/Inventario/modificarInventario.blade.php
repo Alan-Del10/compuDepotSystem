@@ -322,11 +322,11 @@
                                                                 value="{{ $detalle->sucursal }}"
                                                                 name="detalleInventario[{{ $x }}][sucursal]"
                                                                 readonly></th>
-                                                        <th scope="row"><input type="number" min="1"
+                                                        <th scope="row"><input type="number" min="0"
                                                                 class="form-control form-control-sm"
                                                                 value="{{ $detalle->stock }}"
                                                                 name="detalleInventario[{{ $x }}][stock]"></th>
-                                                        <th scope="row"><input type="number" min="1"
+                                                        <th scope="row"><input type="number" min="0"
                                                                 class="form-control form-control-sm"
                                                                 value="{{ $detalle->stock }}"
                                                                 name="detalleInventario[{{ $x }}][etiquetas]">
