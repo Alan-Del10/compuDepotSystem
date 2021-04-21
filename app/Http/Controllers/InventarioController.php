@@ -721,8 +721,8 @@ class InventarioController extends Controller
         ->send();*/
 
         //Etiquetas para cada stock de producto
-        if (Storage::disk('local')->exists('inventario/etiqueta'. '/' . $inventario[0]->upc . '-2.pdf')) {
-            Storage::disk('local')->delete('inventario/etiqueta'. '/' . $inventario[0]->upc . '-2.pdf');
+        if (Storage::disk('local')->exists('inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf')) {
+            Storage::disk('local')->delete('inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf');
         }
         try {
             $imagen = base64_encode(public_path("storage/sucursales/" . $sucursal[0]->logo));
@@ -747,17 +747,16 @@ class InventarioController extends Controller
         try {
             $documento = PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)->output();
                 //->move(public_path("storage/inventario"), $inventario[0]->upc . '-2.pdf');
-            Storage::disk('local')->put('inventario/etiqueta'.'/'.$inventario[0]->upc . '-2.pdf', $documento);
+            Storage::disk('local')->put('inventario/etiqueta/'.$inventario[0]->upc . '-2.pdf', $documento);
             //Storage::
             //$documento->save(public_path("storage/inventario").$inventario[0]->upc . '-2.pdf');
         } catch (\Throwable $th) {
             return 2;
         }
-        //dd(storage_path('app/public/inventario/etiqueta/'.$inventario[0]->upc . '-2.pdf'));
         try {
             Printing::newPrintTask()
                 ->printer($sucursal[0]->etiquetas)
-                ->file(storage_path('app\\public\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf')
+                ->file(storage_path('app\\inventario\\etiqueta\\') . $inventario[0]->upc . '-2.pdf')
                 ->send();
         } catch (\Throwable $th) {
             return 3;
