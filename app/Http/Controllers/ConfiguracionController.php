@@ -112,7 +112,7 @@ class ConfiguracionController extends Controller
             $fileName   = 'logo.' . $image->getClientOriginalExtension();
 
             $image->move(public_path("storage/img"),$fileName);
-            
+
             /* $img = Image::make($image->getRealPath()); */
             /* $img->resize(120, 120, function ($constraint) {
                 $constraint->aspectRatio();
