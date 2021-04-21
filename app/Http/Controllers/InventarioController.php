@@ -747,7 +747,7 @@ class InventarioController extends Controller
         try {
             $documento = PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)->output();
                 //->move(public_path("storage/inventario"), $inventario[0]->upc . '-2.pdf');
-            Storage::disk('local')->put('inventario/etiqueta/'.$inventario[0]->upc . '-2.pdf', $documento);
+            Storage::disk('local')->put('inventario/etiqueta'.'/'.$inventario[0]->upc . '-2.pdf', $documento);
             //Storage::
             //$documento->save(public_path("storage/inventario").$inventario[0]->upc . '-2.pdf');
         } catch (\Throwable $th) {
