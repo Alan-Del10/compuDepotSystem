@@ -721,8 +721,8 @@ class InventarioController extends Controller
         ->send();*/
 
         //Etiquetas para cada stock de producto
-        if (Storage::disk('local')->exists('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf')) {
-            Storage::disk('local')->delete('public/inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf');
+        if (Storage::disk('local')->exists('inventario/etiqueta'. '/' . $inventario[0]->upc . '-2.pdf')) {
+            Storage::disk('local')->delete('inventario/etiqueta'. '/' . $inventario[0]->upc . '-2.pdf');
         }
         try {
             $imagen = base64_encode(public_path("storage/sucursales/" . $sucursal[0]->logo));
