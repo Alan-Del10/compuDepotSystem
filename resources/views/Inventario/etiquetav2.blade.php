@@ -61,8 +61,8 @@
                     <b style="padding-right:20px;">${{$precio_max}}</b>
                 </div>
                 <div class="col-sm">
-                    <img src="data:image/png;base64,{{$logo}}" class="absolute" height="45px" width="35px" alt="logo" id="logo"/>
-                    <!--<img src="{{ public_path('storage/sucursales/'.$logo)}}" height="35px" width="75px" alt="logo"/>-->
+                    <!--<img src='data:image/png;base64,{{$logo}}'' class="absolute" height="45px" width="35px" alt="logo" id="logo"/>-->
+                    <img src="{{ public_path('storage/sucursales/'.$imagen)}}" class="absolute" height="35px" width="25px" alt="logo"/>
                 </div>
             </div>
             <div class="row" style="padding-left:-60px; text-align: center;">
