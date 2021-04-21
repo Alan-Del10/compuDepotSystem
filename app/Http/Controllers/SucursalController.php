@@ -56,7 +56,8 @@ class SucursalController extends Controller
             if ($request->has('imagenSucursal')) {
                 $image      = $request->file('imagenSucursal');
                 $fileName   = $request->sucursal.'.'. $image->getClientOriginalExtension();
-                $img = Image::make($image->getRealPath());
+                $image->move(public_path("storage/sucursales"),$fileName);
+                /*$img = Image::make($image->getRealPath());
                 $extension = $image->getClientOriginalExtension();
                 //dd($img);
                 $img->resize(120, 120, function ($constraint) {
@@ -68,7 +69,7 @@ class SucursalController extends Controller
                 if(Storage::disk('local')->exists('public/sucursales/'.$request->sucursal.'.'.$extension)) {
                     Storage::disk('local')->delete('public/sucursales/'.$request->sucursal.'.'.$extension);
                 }
-                Storage::disk('local')->put('public/sucursales'.'/'.$fileName, $img, 'public');
+                Storage::disk('local')->put('public/sucursales'.'/'.$fileName, $img, 'public');*/
             }
             //Si encuentra datos erroneos los regresa con un mensaje de error
             if($validator->fails()){
@@ -136,22 +137,22 @@ class SucursalController extends Controller
                 'etiquetas' => 'nullable'
             ]);
             $fileName = "";
-            dd($request->has('imagenSucursal'));
             if ($request->has('imagenSucursal')) {
 
                 $image      = $request->file('imagenSucursal');
                 $fileName   = $request->sucursal.'.'. $image->getClientOriginalExtension();
-                $img = Image::make($image->getRealPath());
+                $image->move(public_path("storage/sucursales"),$fileName);
+                /*$img = Image::make($image->getRealPath());
                 $extension = $image->getClientOriginalExtension();
 
                 $img->resize(120, 120, function ($constraint) {
                     $constraint->aspectRatio();
                 });
-                $img->stream(); // <-- Key point
-                if(Storage::disk('local')->exists('public/sucursales/'.$request->sucursal.'.'.$extension)) {
+                $img->stream(); // <-- Key point*/
+                /*if(Storage::disk('local')->exists('public/sucursales/'.$request->sucursal.'.'.$extension)) {
                     Storage::disk('local')->delete('public/sucursales/'.$request->sucursal.'.'.$extension);
-                }
-                Storage::disk('local')->put('public/sucursales'.'/'.$fileName, $img, 'public');
+                }*/
+                //Storage::disk('local')->put('public/sucursales'.'/'.$fileName, $img, 'public');
             }else{
 
                 $verificarImagen = DB::table('sucursal')->where('sucursal', $request->sucursal)->where('logo', '!=', null)->get();
