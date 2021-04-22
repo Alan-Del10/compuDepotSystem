@@ -723,7 +723,7 @@ class InventarioController extends Controller
             Storage::disk('public')->delete('inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf');
         }*/
         try {
-            $imagen = base64_encode(public_path("storage/sucursales/") . $sucursal[0]->logo);
+            $imagen = base64_encode(public_path("storage/sucursales/" . $sucursal[0]->logo));
         } catch (\Throwable $th) {
             //dd($th);
             return 1;
@@ -748,11 +748,10 @@ class InventarioController extends Controller
         } catch (\Throwable $th) {
             return 2;
         }
-        //dd(public_path("storage/inventario/etiqueta/"), ($inventario[0]->upc . '-2.pdf'));
         try {
             Printing::newPrintTask()
                 ->printer($sucursal[0]->etiquetas)
-                ->file(public_path("storage/inventario/etiqueta/") . ($inventario[0]->upc . '-2.pdf'))
+                ->file(public_path("storage/inventario/etiqueta/" . ($inventario[0]->upc . '-2.pdf')))
                 ->send();
         } catch (\Throwable $th) {
             return 3;
