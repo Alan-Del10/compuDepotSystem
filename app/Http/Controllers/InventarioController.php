@@ -741,18 +741,14 @@ class InventarioController extends Controller
             'logo' => $imagen,
             'imagen' => $sucursal[0]->logo
         ];
-        $documento = "";
+
         try {
-            $documento = PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)->save(public_path("storage/inventario/".$inventario[0]->upc . '-2.pdf'));
-            /*$documento_2 = $documento
-            $documento->move(public_path("storage/inventario/etiqueta"),$inventario[0]->upc . '-2.pdf');*/
-            //Storage::disk('public')->put('inventario/etiqueta/'.$inventario[0]->upc . '-2.pdf', $documento);
+            $documento = PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)->output();
+            Storage::disk('public')->put('inventario/etiqueta'.'/'.$inventario[0]->upc . '-2.pdf', $documento);
         } catch (\Throwable $th) {
+            print_r($th);
             return 2;
         }
-
-        //$etiqueta = chunk_split(base64_encode($documento));
-        //dd(url('storage/inventario/etiqueta/'));
         try {
             if (Storage::disk('public')->exists('inventario/' . $inventario[0]->upc . '-2.pdf')) {
                 $data = public_path("/storage/inventario/". $inventario[0]->upc . '-2.pdf');
@@ -762,6 +758,7 @@ class InventarioController extends Controller
                 ->file($data)
                 ->send();
         } catch (\Throwable $th) {
+            print_r($th);
             return 3;
         }
     }
