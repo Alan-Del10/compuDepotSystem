@@ -8,6 +8,7 @@
     ],
     "license": "MIT",
     "require": {
+        "ext-gd": "*",
         "php": "^7.4",
         "barryvdh/laravel-dompdf": "^0.9.0",
         "fideloper/proxy": "^4.2",
