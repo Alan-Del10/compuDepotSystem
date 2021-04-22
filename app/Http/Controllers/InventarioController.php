@@ -744,12 +744,9 @@ class InventarioController extends Controller
         $documento = "";
         try {
             $documento = PDF::loadView('Inventario.etiquetav2', $datos)->setPaper('b8', 'landscape')->setWarnings(false)->output();
-            Storage::disk('public')->put('inventario/etiqueta'.'/'.$inventario[0]->upc . '-2.pdf', $documento);
+            Storage::disk('public')->put('/inventario/etiqueta'.'/'.$inventario[0]->upc . '-2.pdf', $documento, 'public');
         } catch (\Throwable $th) {
             return 2;
-        }
-        if (Storage::disk('public')->exists('inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf')) {
-            $data = Storage::disk('public')->get('inventario/etiqueta/' . $inventario[0]->upc . '-2.pdf');
         }
 
         //$etiqueta = chunk_split(base64_encode($documento));
