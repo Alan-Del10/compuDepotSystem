@@ -750,6 +750,7 @@ class InventarioController extends Controller
             return 2;
         }
         try {
+            $data = null;
             if (Storage::disk('public')->exists('inventario/' . $inventario[0]->upc . '-2.pdf')) {
                 $data = public_path("/storage/inventario/". $inventario[0]->upc . '-2.pdf');
             }
