@@ -752,7 +752,7 @@ class InventarioController extends Controller
         try {
             $data = null;
             if (Storage::disk('public')->exists('inventario/' . $inventario[0]->upc . '-2.pdf')) {
-                $data = public_path("/storage/inventario/". $inventario[0]->upc . '-2.pdf');
+                $data = public_path("/storage/inventario/etiqueta/". $inventario[0]->upc . '-2.pdf');
             }
             Printing::newPrintTask()
                 ->printer($sucursal[0]->etiquetas)
