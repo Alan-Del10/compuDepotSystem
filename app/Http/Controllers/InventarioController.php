@@ -218,7 +218,27 @@ class InventarioController extends Controller
                                     DB::rollBack();
                                     return redirect()->back()->withErrors('error', 'Algo pasó al intenar agregar los datos!');
                                 }
-                                $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal);
+                                if ($detalle['etiquetas'] > 0) {
+                                    $error_etiqueta = $this->imprimirEtiqueta($id, $detalle['etiquetas'], $sucursal[0]->id_sucursal);
+                                    //Marcar errores según lo que falte.
+                                    switch ($error_etiqueta) {
+                                        case 1:
+                                            $request->flash();
+                                            DB::rollback();
+                                            //dd($error_etiqueta);
+                                            return redirect()->back()->with('error', 'No tienes una imagen para el logo. Asigna una e intenta después.');
+                                        case 2:
+                                            $request->flash();
+                                            DB::rollback();
+                                            //dd($error_etiqueta);
+                                            return redirect()->back()->with('error', 'No se encontro el archivo o directorio del pdf.');
+                                        case 3:
+                                            $request->flash();
+                                            DB::rollback();
+                                            //dd($error_etiqueta);
+                                            return redirect()->back()->with('error', 'No se encontro una impresora conectada o configurada.');
+                                    }
+                                }
                                 $descripcion = 'El usuario ' . $usuario_nombre . ' ha agregado al inventario el artículo con el UPC/EAN ' . $request->upc . ' con el título ' . $request->titulo . ' desde la sucursal ' . $sucursal[0]->sucursal . ' con stock ' . $detalle['stock'] . 'pza(s). a la fecha ' . date_format($fecha_alta, 'Y-m-d H:i:s');
                                 //$this->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
                                 (new BitacoraGeneralController)->registrarBitacora($fecha_alta, $descripcion, $usuario_id, $sucursal[0]->id_sucursal);
