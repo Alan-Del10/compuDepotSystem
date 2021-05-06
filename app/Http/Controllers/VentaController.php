@@ -531,7 +531,7 @@ class VentaController extends Controller
             return 2;
         }
         $fecha_venta = new DateTime();
-        (new BitacoraGeneralController)->mensajeTelegram($venta[0]->name,$venta[0]->sucursal,$venta[0]->direccion_sucursal,$fecha_venta, $id_venta,null,null,null,null,null,null,null,$totalArticulos,$venta[0]->cliente_usuario,$venta[0]->total,$prod_mensaje,null,$reimprimr);
+        (new BitacoraGeneralController)->mensajeTelegram($venta[0]->name,$venta[0]->sucursal,$venta[0]->direccion_sucursal,$fecha_venta, $id_venta,null,null,null,null,null,null,null,$totalArticulos,$venta[0]->cliente_usuario,$venta[0]->total,$prod_mensaje,null,$reimprimr,$venta[0]->nombre_completo);
     }
 
     public function reimprimirTicket(Request $request)
