@@ -104,7 +104,7 @@ class BitacoraGeneralController extends Controller
         ]);
     }
 
-    public function mensajeTelegram($name, $sucursal = null, $direccion = null, $fecha_modificacion = null, $num_ticket = null, $upc = null, $titulo = null, $ticket_impreso = null, $stock = null, $puesto = null, $correo = null, $ip = null, $tot_articulos = null, $cliente_de = null, $total_venta = null, $productos = null, $se_cambio = null, $reimprimir = false)
+    public function mensajeTelegram($name, $sucursal = null, $direccion = null, $fecha_modificacion = null, $num_ticket = null, $upc = null, $titulo = null, $ticket_impreso = null, $stock = null, $puesto = null, $correo = null, $ip = null, $tot_articulos = null, $cliente_de = null, $total_venta = null, $productos = null, $se_cambio = null, $reimprimir = false, $nombre_cliente=null)
     {
 
 
@@ -181,6 +181,7 @@ class BitacoraGeneralController extends Controller
                     . "<b> " . $num_ticket . "</b> "
                     . "<b>\n\nDatos de la venta</b>"
                     . "<b>\nTotal de articulos: " . $tot_articulos . "</b>"
+                    ."<b>\nNombre del cliente: ".$nombre_cliente."</b>"
                     . "<b>\nCliente de:" . $cliente_de . "</b>"
                     . "<b>\nTotal($):" . $total_venta . "</b>"
                     . " \ndesde la sucursal"
