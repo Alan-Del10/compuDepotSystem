@@ -383,7 +383,7 @@ class VentaController extends Controller
             ."\nNombre del articulo: \n".$detalle->titulo_inventario
             ." X". $detalle->cantidad
             ."\nImporte: $".($detalle->precio_momento * $detalle->cantidad)
-            ."\nStock actualizado: ". $stock . "pieza(s)";
+            ."\nStock actualizado: ". $stock[0]->stock . " pieza(s)";
             if($i > 1 ){
                 $prod_mensaje .= "\n -";
             }
