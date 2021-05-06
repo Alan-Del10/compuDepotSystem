@@ -153,7 +153,7 @@ class VentaController extends Controller
                     }
                 }
 
-                $error_imprimir = $this->imprimirTicketVentaV2($id);
+                $error_imprimir = $this->imprimirTicketVentaV2($id,false,$detalle_inventario[0]->stock);
 
                 switch ($error_imprimir) {
                     case 1:
@@ -354,7 +354,7 @@ class VentaController extends Controller
         $impresora->feed(4);
         $impresora->close();
     }
-    public function imprimirTicketVentaV2($id_venta, $reimprimr = false)
+    public function imprimirTicketVentaV2($id_venta, $reimprimr = false,$stock=null)
     {
 
         $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'sucursal.politicas as politicas', 'sucursal.tickets as tickets', 'cliente.*', 'usuario.*', 'usuario2.name as cliente_usuario')
@@ -371,15 +371,21 @@ class VentaController extends Controller
         $productos = "";
         $prod_mensaje = "";
         $totalArticulos = 0;
+         $i=0;
         foreach ($detalle_venta as $detalle) {
+             $i += 1;
             $productos .= $detalle->upc . " " . $detalle->titulo_inventario . "\n"
                 . "            " . $detalle->cantidad . "X          $" . $detalle->precio_momento . "           $" . ($detalle->precio_momento * $detalle->cantidad . "\n");
             $totalArticulos += $detalle->cantidad;
             $prod_mensaje .=
-                "\nUPC: " . $detalle->upc
-                . "\nNombre del articulo: \n" . $detalle->titulo_inventario
-                . " X" . $detalle->cantidad
-                . "\nImporte: $" . ($detalle->precio_momento * $detalle->cantidad);
+            "\nUPC: ".$detalle->upc
+            ."\nNombre del articulo: \n".$detalle->titulo_inventario
+            ." X". $detalle->cantidad
+            ."\nImporte: $".($detalle->precio_momento * $detalle->cantidad)
+            ."\nStock actualizado: ".($stock - $detalle->cantidad). "pieza(s)";
+            if($i > 1 ){
+                $prod_mensaje .= "\n -";
+            }
         }
         $formas = "";
         foreach ($pago_venta as $pago) {
