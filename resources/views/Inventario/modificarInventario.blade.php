@@ -426,11 +426,11 @@
                             <div class="card-body">
                                 <div class="form-input row">
                                     <div class="col-sm-6">
-                                        <!--  <div class="form-check form-check-inline">
+                                        <div class="form-check form-check-inline">
                                                 <input type="checkbox" class="form-check-input" id="checkFinalizar"
                                                     name="checkFinalizar" onclick="checkFinalizarInventario()">
                                                 <label class="form-check-label" for="checkFinalizar">Finalizar Proceso</label>
-                                            </div> -->
+                                            </div>
                                     </div>
                                     <div class="col-sm-12 text-center">
                                         <input type="submit" value="Editar Inventario" class="btn btn-success "
