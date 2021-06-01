@@ -434,7 +434,7 @@
                                     </div>
                                     <div class="col-sm-12 text-center">
                                         <input type="submit" value="Editar Inventario" class="btn btn-success "
-                                            id="editarInventario">
+                                            id="editarInventario" disabled>
                                         <div class="spinner-border spinner-layer spinner-blue-only" role="status"
                                             id="loading" style="display:none">
                                             <span class="sr-only">Loading...</span>
