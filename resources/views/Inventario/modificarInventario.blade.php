@@ -672,14 +672,14 @@
             }
         }
         //Funcion para habílitar el botón que envía los datos el controlador
-        /*       function checkFinalizarInventario() {
+              function checkFinalizarInventario() {
                   var checkBox = document.getElementById("checkFinalizar");
                   if (checkBox.checked == true) {
                       $('#editarInventario').attr('disabled', false);
                   } else {
                       $('#editarInventario').attr('disabled', true);
                   }
-              } */
+              }
         //Cargar marcas dependiendo de la categoria
         $('#categoria').change(function() {
             if ($(this).val() != null) {
