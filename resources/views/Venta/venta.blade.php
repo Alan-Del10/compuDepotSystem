@@ -166,7 +166,7 @@
 
                         success: function(data) {
                             console.log(data);
-                            if (data == true) {
+                            if (data == true || data == 1) {
                                 $.ajax({
                                     type: "post",
                                     url: "{{ route('ReimprimirTicket') }}",

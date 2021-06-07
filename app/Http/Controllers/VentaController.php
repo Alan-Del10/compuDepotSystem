@@ -153,7 +153,7 @@ class VentaController extends Controller
                     }
                 }
 
-                 $error_imprimir = $this->imprimirTicketVentaV2($id,false, $usuario->id_sucursal);
+                $error_imprimir = $this->imprimirTicketVentaV2($id, false, $usuario->id_sucursal);
 
                 switch ($error_imprimir) {
                     case 1:
@@ -354,7 +354,7 @@ class VentaController extends Controller
         $impresora->feed(4);
         $impresora->close();
     }
-    public function imprimirTicketVentaV2($id_venta, $reimprimr = false,$id_sucursal=null)
+    public function imprimirTicketVentaV2($id_venta, $reimprimr = false, $id_sucursal = null)
     {
 
         $venta = DB::table('venta')->select('venta.*', 'sucursal.direccion as direccion_sucursal', 'sucursal.sucursal as sucursal', 'sucursal.logo as logo', 'sucursal.politicas as politicas', 'sucursal.tickets as tickets', 'cliente.*', 'usuario.*', 'usuario2.name as cliente_usuario')
@@ -371,22 +371,26 @@ class VentaController extends Controller
         $productos = "";
         $prod_mensaje = "";
         $totalArticulos = 0;
-         $i=0;
+        $i = 0;
+
         foreach ($detalle_venta as $detalle) {
-             $i += 1;
+            $i += 1;
             $stock = DB::table('detalle_inventario')->where('id_inventario', $detalle->id_inventario)->where('id_sucursal', $id_sucursal)->get('stock');
             $productos .= $detalle->upc . " " . $detalle->titulo_inventario . "\n"
                 . "            " . $detalle->cantidad . "X          $" . $detalle->precio_momento . "           $" . ($detalle->precio_momento * $detalle->cantidad . "\n");
             $totalArticulos += $detalle->cantidad;
-            $prod_mensaje .=
-            "\nUPC: ".$detalle->upc
-            ."\nNombre del articulo: \n".$detalle->titulo_inventario
-            ." X". $detalle->cantidad
-            ."\nImporte: $".($detalle->precio_momento * $detalle->cantidad)
-            ."\nStock actualizado: ". $stock[0]->stock . " pieza(s)";
-            if($i > 1 ){
-                $prod_mensaje .= "\n -";
+            if ($reimprimr === false) {
+                $prod_mensaje .=
+                    "\nUPC: " . $detalle->upc
+                    . "\nNombre del articulo: \n" . $detalle->titulo_inventario
+                    . " X" . $detalle->cantidad
+                    . "\nImporte: $" . ($detalle->precio_momento * $detalle->cantidad)
+                    . "\nStock actualizado: " . $stock[0]->stock . " pieza(s)";
+                if ($i > 1) {
+                    $prod_mensaje .= "\n -";
+                }
             }
+            /**/
         }
         $formas = "";
         foreach ($pago_venta as $pago) {
@@ -532,12 +536,18 @@ class VentaController extends Controller
             return 2;
         }
         $fecha_venta = new DateTime();
-        (new BitacoraGeneralController)->mensajeTelegram($venta[0]->name,$venta[0]->sucursal,$venta[0]->direccion_sucursal,$fecha_venta, $id_venta,null,null,null,null,null,null,null,$totalArticulos,$venta[0]->cliente_usuario,$venta[0]->total,$prod_mensaje,null,$reimprimr,$venta[0]->nombre_completo);
+        (new BitacoraGeneralController)->mensajeTelegram($venta[0]->name, $venta[0]->sucursal, $venta[0]->direccion_sucursal, $fecha_venta, $id_venta, null, null, null, null, null, null, null, $totalArticulos, $venta[0]->cliente_usuario, $venta[0]->total, $prod_mensaje, null, $reimprimr, $venta[0]->nombre_completo);
     }
 
     public function reimprimirTicket(Request $request)
     {
-        $this->imprimirTicketVentaV2($request->id_venta, true);
+        //dd($request->id_venta);
+        try {
+            $this->imprimirTicketVentaV2($request->id_venta, true);
+        } catch (\Throwable $e) {
+            dd($e);
+        }
+
         $fecha = new DateTime();
         $usuario = Auth::user()->name;
         $usuario_id = Auth::user()->id;
@@ -547,6 +557,6 @@ class VentaController extends Controller
         //$this->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
         (new BitacoraGeneralController)->registrarBitacora($fecha, $descripcion, $usuario_id, $sucursal_id);
 
-        (new BitacoraGeneralController)->mensajeTelegram($usuario,$sucursal[0]->sucursal,$sucursal[0]->direccion, $fecha,$request->id_venta,null,null,true,null,null,null,null,null,null,null,null,null,true);
+        (new BitacoraGeneralController)->mensajeTelegram($usuario, $sucursal[0]->sucursal, $sucursal[0]->direccion, $fecha, $request->id_venta, null, null, true, null, null, null, null, null, null, null, null, null, true);
     }
 }
